@@ -1,3 +1,9 @@
+import { createLogger, initLogger } from "../utils/logger";
+
 export default defineBackground(() => {
-  console.log('Hello background!', { id: browser.runtime.id });
+	(async () => {
+		await initLogger();
+		const logger = createLogger("background");
+		logger.debug("Hello background!");
+	})();
 });

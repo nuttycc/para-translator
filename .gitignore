@@ -1,8 +1,14 @@
+
+# agent rules
 .cursor
+.augment
+.qoder
+
+# docs
 .docs
 
+# env
 .env
-
 
 # Logs
 logs

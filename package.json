@@ -12,9 +12,9 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "compile": "vue-tsc --noEmit",
-    "lint": "oxlint --type-aware .",
     "test": "vitest",
     "test:run": "vitest run",
+    "lint": "oxlint --type-aware .",
     "format": "prettier --write .",
     "postinstall": "wxt prepare"
   },

@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 // See https://wxt.dev/api/config.html
 export default defineConfig({
   srcDir: 'src',
-  webExt:{
+  webExt: {
     disabled: true,
   },
   modules: ['@wxt-dev/module-vue'],

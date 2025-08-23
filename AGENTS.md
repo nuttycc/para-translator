@@ -15,10 +15,11 @@
 
 ## 构建与运行
 
-_当前禁止 Agents 执行构建、运行、打包等任务。_
+_当前禁止 Agents 执行任何构建、运行、打包等任务。_
 
 ## 开发约定
 
+- **Path Alias:** The project uses the `@` alias to refer to the `src` directory.
 - **模块化**: 代码遵循模块化原则，利用 TypeScript 的强类型特性。
 - **组件化**: UI 部分使用 Vue 3 单文件组件 (`.vue`) 进行开发，存放于 `src/components` 和 `src/entrypoints`。
 - **代码风格**: 项目使用 Prettier 进行代码格式化，并使用 Oxlint 进行代码质量检查。相关配置见 `.prettierrc` 和 `package.json`。

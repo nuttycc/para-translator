@@ -35,11 +35,9 @@ describe('LangAgent Integration Tests', () => {
   });
 
   describe('Real API Integration Tests', () => {
-    it('should perform translation with real API call', async () => {
+    it('should perform translation with real API call', async ({ skip }) => {
       if (!GROQ_API_KEY) {
-        console.warn('Skipping real API test - VITE_GROQ_API_KEY not available');
-        expect(true).toBe(true);
-        return;
+        skip('Skipping real API test - VITE_GROQ_API_KEY not available');
       }
 
       const taskType = 'translate';

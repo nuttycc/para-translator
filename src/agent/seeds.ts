@@ -31,7 +31,7 @@ const DEFAULT_AI_CONFIGS: AIConfigs = [
     createdAt: 0,
     updatedAt: 0,
   },
-];
+] as const;
 
 const DEFAULT_AI_CONFIGS_BY_ID: Record<string, AIConfig> = DEFAULT_AI_CONFIGS.reduce(
   (map, config) => {
@@ -60,7 +60,7 @@ const DEFAULT_TASK_RUNTIME_CONFIGS: TaskRuntimeConfigs = {
       user: 'Explain the following text in %{targetLanguage}: %{sourceText}',
     },
   },
-};
+} as const;
 
 
 export const AGENT_SEEDS = {

@@ -4,7 +4,7 @@ import {
   type AgentResult,
   type LangAgentSpec,
   type TaskExecutor,
-  type TaskType
+  type TaskType,
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { TranslateExecutor } from './executor';
@@ -14,8 +14,7 @@ export class LangAgent implements LangAgentSpec {
   readonly taskTypes = TASK_TYPES;
   private taskExecutors: Map<TaskType, TaskExecutor> = new Map();
 
-
-  async init(){
+  async init() {
     const translateExecutor = new TranslateExecutor();
     await translateExecutor.init();
     this.taskExecutors.set('translate', translateExecutor);
@@ -30,4 +29,14 @@ export class LangAgent implements LangAgentSpec {
 
     return await executor.execute(context);
   }
+}
+
+let langAgent: LangAgent | null = null;
+
+export async function getLangAgent(): Promise<LangAgent> {
+  if (!langAgent) {
+    langAgent = new LangAgent();
+    await langAgent.init();
+  }
+  return langAgent;
 }

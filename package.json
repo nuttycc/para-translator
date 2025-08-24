@@ -21,6 +21,7 @@
   "dependencies": {
     "@logtape/logtape": "^1.0.4",
     "@logtape/pretty": "^1.0.4",
+    "es-toolkit": "^1.39.10",
     "openai": "^5.13.1",
     "vue": "^3.5.19",
     "zod": "^4.0.17"

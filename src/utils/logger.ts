@@ -1,8 +1,7 @@
-import { configureSync, getConsoleSink, getLogger } from '@logtape/logtape';
-import { prettyFormatter } from '@logtape/pretty';
+import { configureSync, defaultConsoleFormatter, getConsoleSink, getLogger } from '@logtape/logtape';
 
 configureSync({
-  sinks: { console: getConsoleSink({ formatter: prettyFormatter }) },
+  sinks: { console: getConsoleSink({ formatter: defaultConsoleFormatter }) },
   loggers: [{ category: 'my-app', lowestLevel: 'debug', sinks: ['console'] }],
 });
 

@@ -1,6 +1,6 @@
 import { type AIConfig, type AIConfigs, type TaskRuntimeConfigs} from '@/agent/types';
 
-const DEFAULT_AI_CONFIGS: AIConfigs = [
+const DEFAULT_AI_CONFIGS = [
   {
     id: 'deepseek-123',
     provider: 'deepseek',
@@ -31,7 +31,7 @@ const DEFAULT_AI_CONFIGS: AIConfigs = [
     createdAt: 0,
     updatedAt: 0,
   },
-] as const;
+] as const satisfies AIConfigs;
 
 const DEFAULT_AI_CONFIGS_BY_ID: Record<string, AIConfig> = DEFAULT_AI_CONFIGS.reduce(
   (map, config) => {
@@ -41,7 +41,7 @@ const DEFAULT_AI_CONFIGS_BY_ID: Record<string, AIConfig> = DEFAULT_AI_CONFIGS.re
   {} as Record<string, AIConfig>
 );
 
-const DEFAULT_TASK_RUNTIME_CONFIGS: TaskRuntimeConfigs = {
+const DEFAULT_TASK_RUNTIME_CONFIGS = {
   translate: {
     aiConfigId: 'groq-123',
     temperature: 0.7,
@@ -60,7 +60,7 @@ const DEFAULT_TASK_RUNTIME_CONFIGS: TaskRuntimeConfigs = {
       user: 'Explain the following text in %{targetLanguage}: %{sourceText}',
     },
   },
-} as const;
+} as const satisfies TaskRuntimeConfigs;
 
 
 export const AGENT_SEEDS = {

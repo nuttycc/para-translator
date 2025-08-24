@@ -21,11 +21,15 @@ export class TranslateExecutor extends BaseTaskExecutor {
 
 
   async init() {
-    this.runtimeConfig = await agentStorage.taskConfigs.getValue()
-      .then((configs) => configs[this.taskType]);
+    const loaded = await agentStorage.taskConfigs
+      .getValue()
+      .catch(() => undefined as unknown as TaskRuntimeConfigs | undefined);
+    this.runtimeConfig =
+      loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
 
-    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs) => {
-      this.runtimeConfig = newConfigs[this.taskType];
+    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
+      const nextCfg = newConfigs?.[this.taskType];
+      if (nextCfg) this.runtimeConfig = nextCfg;
     });
   }
 
@@ -60,10 +64,13 @@ export class TranslateExecutor extends BaseTaskExecutor {
         ],
         temperature: runtimeConfig.temperature,
       });
-
-      return { ok: true, data: response.choices[0].message.content || 'empty response' };
+      const content = response.choices?.[0]?.message?.content ?? '';
+      if (!content.trim()) {
+        return { ok: false, error: 'empty response' };
+      }
+      return { ok: true, data: content };
     } catch (error) {
-      this.log.error('perform', { error });
+      this.log.error('execute', { error });
       return { ok: false, error: (error as Error).message };
     }
   }

@@ -42,18 +42,17 @@ describe('LangAgent Integration Tests', () => {
   });
 
   describe('Real API Integration Tests', () => {
-    it('should perform translation with real API call', async ({ skip }) => {
-      if (!GROQ_API_KEY) {
-        skip('Skipping real API test - VITE_GROQ_API_KEY not available');
-      }
+    it.skipIf(!GROQ_API_KEY)('should perform translation with real API call', async () => {
 
       const taskType = 'translate';
       const sourceText = 'Hello world';
 
       const langAgent = await getLangAgent();
 
-      // The executor reads from AGENT_SEEDS.AI_CONFIGS_BY_ID
-      AGENT_SEEDS.AI_CONFIGS_BY_ID['groq-123'].apiKey = GROQ_API_KEY as string;
+      // update the API key in the config(in storage)
+      await agentStorage.aiConfigs.getValue().then((configs) => configs.map((c: AIConfig) =>
+        c.id === 'groq-123' ? { ...c, apiKey: GROQ_API_KEY as string } : c,
+      )).then((configs) => agentStorage.aiConfigs.setValue(configs));
 
       const context: AgentContext = {
         sourceText,

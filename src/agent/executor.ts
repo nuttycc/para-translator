@@ -1,4 +1,10 @@
-import type { TaskRuntimeConfig, TaskExecutor, TaskRuntimeConfigs, TaskType } from '@/agent/types';
+import type {
+  TaskRuntimeConfig,
+  TaskExecutor,
+  TaskRuntimeConfigs,
+  TaskType,
+  AIConfig,
+} from '@/agent/types';
 import { AgentContext, AgentResult } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate } from '@/utils/template';
@@ -19,13 +25,11 @@ export class TranslateExecutor extends BaseTaskExecutor {
   readonly taskType = 'translate';
   runtimeConfig: TaskRuntimeConfig = AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
 
-
   async init() {
     const loaded = await agentStorage.taskConfigs
       .getValue()
       .catch(() => undefined as unknown as TaskRuntimeConfigs | undefined);
-    this.runtimeConfig =
-      loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
+    this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
 
     agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
       const nextCfg = newConfigs?.[this.taskType];
@@ -35,7 +39,9 @@ export class TranslateExecutor extends BaseTaskExecutor {
 
   async execute(context: AgentContext): Promise<AgentResult> {
     const runtimeConfig = this.runtimeConfig;
-    const aiConfig = AGENT_SEEDS.AI_CONFIGS_BY_ID[runtimeConfig.aiConfigId];
+    const aiConfig = await agentStorage.aiConfigs
+      .getValue()
+      .then((configs) => configs.find((c: AIConfig) => c.id === runtimeConfig.aiConfigId));
 
     if (!aiConfig) {
       return { ok: false, error: 'AI config not found' };

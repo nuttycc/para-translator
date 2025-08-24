@@ -3,7 +3,7 @@
  * comments: Keep simple and focused for content-script use.
  */
 
-const PARAGRAPH_SELECTOR = 'p, li, blockquote, dd, dt, pre, article, section, div';
+const PARAGRAPH_SELECTOR = 'p, a, li, blockquote, dd, dt, pre, article, section, div';
 
 /** Return the closest paragraph-like element for a given event target. */
 export function findClosestTextContainer(target: EventTarget | null): HTMLElement | null {
@@ -11,7 +11,7 @@ export function findClosestTextContainer(target: EventTarget | null): HTMLElemen
   const element =
     target.nodeType === Node.ELEMENT_NODE ? (target as Element) : target.parentElement;
   if (!element) return null;
-  return element.closest(PARAGRAPH_SELECTOR) as HTMLElement | null;
+  return element.closest(PARAGRAPH_SELECTOR);
 }
 
 /** Extract readable text from an element. Trims and normalizes whitespace. */
@@ -24,7 +24,7 @@ export function extractReadableText(el: HTMLElement | null): string {
 /** Basic filter to decide if a text looks like a paragraph. */
 export function isParagraphLike(text: string): boolean {
   if (!text) return false;
-  if (text.length < 10) return false;
+  if (text.length < 2) return false;
   // Avoid extremely long blocks to reduce noise
   if (text.length > 5000) return false;
   return true;

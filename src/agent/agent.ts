@@ -33,6 +33,15 @@ export class LangAgent implements LangAgentSpec {
 
 let langAgent: LangAgent | null = null;
 
+/**
+ * Returns the singleton LangAgent, initializing it on first invocation.
+ *
+ * If no instance exists, a new LangAgent is created and its async init() is awaited before returning.
+ * Note: concurrent callers that run after the instance is created but before init() completes may receive
+ * the same LangAgent reference while initialization is still in progress.
+ *
+ * @returns The initialized (or initializing) singleton LangAgent instance.
+ */
 export async function getLangAgent(): Promise<LangAgent> {
   if (!langAgent) {
     langAgent = new LangAgent();

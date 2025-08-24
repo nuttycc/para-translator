@@ -22,9 +22,9 @@
     "@logtape/logtape": "^1.0.4",
     "@logtape/pretty": "^1.0.4",
     "es-toolkit": "^1.39.10",
-    "openai": "^5.13.1",
+    "openai": "^5.15.0",
     "vue": "^3.5.19",
-    "zod": "^4.0.17"
+    "zod": "^4.1.1"
   },
   "devDependencies": {
     "@prettier/plugin-oxc": "^0.0.4",

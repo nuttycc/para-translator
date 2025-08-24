@@ -1,13 +1,13 @@
 // @vitest-environment node
+/// <reference types="./vite-env.d.ts" />
 
-import { describe, it, expect, beforeAll } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 import { getLangAgent } from '@/agent/agent';
-import type { AgentContext, AIConfig } from '@/agent/types';
+import type { AgentContext, AIConfig, AIConfigs } from '@/agent/types';
 import { agentStorage } from '../storage';
-import { AGENT_SEEDS } from '@/agent/seeds';
 
-const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY as string || undefined;
+const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY as string) || undefined;
 
 describe('LangAgent Integration Tests', () => {
   beforeAll(() => {
@@ -17,42 +17,53 @@ describe('LangAgent Integration Tests', () => {
   });
 
   describe('Config Tests', () => {
-    it.skipIf(!GROQ_API_KEY)('should update default config with API key from environment', async () => {
-      const aiConfigs = await agentStorage.aiConfigs.getValue();
-      expect(aiConfigs).toBeDefined();
+    it.skipIf(!GROQ_API_KEY)(
+      'should update default config with API key from environment',
+      async () => {
+        const aiConfigs = await agentStorage.aiConfigs.getValue();
+        expect(aiConfigs).toBeDefined();
 
-      const groqConfig = aiConfigs.find((config: AIConfig) => config.id === 'groq-123');
+        const groqConfig = aiConfigs.find((config: AIConfig) => config.id === 'groq-123');
 
-      console.log('[integration test] groqConfig', groqConfig);
-      expect(groqConfig).toBeDefined();
+        console.log('[integration test] groqConfig', groqConfig);
+        expect(groqConfig).toBeDefined();
 
-      if (!groqConfig) return;
-      const apiKey = GROQ_API_KEY as string;
-      const updated = aiConfigs.map((c: AIConfig) =>
-        c.id === 'groq-123' ? { ...c, apiKey } : c,
-      );
+        if (!groqConfig) return;
+        const apiKey = GROQ_API_KEY as string;
+        const updated = aiConfigs.map((c: AIConfig) =>
+          c.id === 'groq-123' ? { ...c, apiKey } : c
+        );
 
-      await agentStorage.aiConfigs.setValue(updated);
-      const updatedAiConfigs = await agentStorage.aiConfigs.getValue().then((configs) => configs.find((config: AIConfig) => config.id === 'groq-123'));
-      console.log('[integration test] updatedAiConfigs', updatedAiConfigs);
+        await agentStorage.aiConfigs.setValue(updated);
+        const updatedAiConfigs = await agentStorage.aiConfigs
+          .getValue()
+          .then((configs: AIConfigs) =>
+            configs.find((config: AIConfig) => config.id === 'groq-123')
+          );
+        console.log('[integration test] updatedAiConfigs', updatedAiConfigs);
 
-      expect(updatedAiConfigs).toBeDefined();
-      expect(updatedAiConfigs?.apiKey).toBe(GROQ_API_KEY);
-    });
+        expect(updatedAiConfigs).toBeDefined();
+        expect(updatedAiConfigs?.apiKey).toBe(GROQ_API_KEY);
+      }
+    );
   });
 
   describe('Real API Integration Tests', () => {
     it.skipIf(!GROQ_API_KEY)('should perform translation with real API call', async () => {
-
       const taskType = 'translate';
       const sourceText = 'Hello world';
 
       const langAgent = await getLangAgent();
 
       // update the API key in the config(in storage)
-      await agentStorage.aiConfigs.getValue().then((configs) => configs.map((c: AIConfig) =>
-        c.id === 'groq-123' ? { ...c, apiKey: GROQ_API_KEY as string } : c,
-      )).then((configs) => agentStorage.aiConfigs.setValue(configs));
+      await agentStorage.aiConfigs
+        .getValue()
+        .then((configs: AIConfigs) =>
+          configs.map((c: AIConfig) =>
+            c.id === 'groq-123' ? { ...c, apiKey: GROQ_API_KEY as string } : c
+          )
+        )
+        .then((configs: AIConfigs) => agentStorage.aiConfigs.setValue(configs));
 
       const context: AgentContext = {
         sourceText,
@@ -76,4 +87,3 @@ describe('LangAgent Integration Tests', () => {
     });
   });
 });
-

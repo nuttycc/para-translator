@@ -5,8 +5,8 @@
 .qoder
 .claude
 
-# gemini-cli settings
-.gemini/
+# test
+src/agent/__tests__/vite-env.d.ts
 
 # GitHub App credentials
 gha-creds-*.json

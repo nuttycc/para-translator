@@ -53,12 +53,12 @@ export interface TaskExecutor {
 }
 
 export interface TranslatorTaskExecutor extends TaskExecutor {
-  taskType: 'translate';
+  readonly taskType: 'translate';
   execute(context: AgentContext): Promise<AgentResult>;
 }
 
 export interface ExplainTaskExecutor extends TaskExecutor {
-  taskType: 'explain';
+  readonly taskType: 'explain';
   execute(context: AgentContext): Promise<AgentResult>;
 }
 

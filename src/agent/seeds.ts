@@ -1,4 +1,4 @@
-import { type AIConfig, type AIConfigs, type TaskRuntimeConfigs} from '@/agent/types';
+import { type AIConfig, type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 
 const DEFAULT_AI_CONFIGS = [
   {
@@ -62,9 +62,8 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
   },
 } as const satisfies TaskRuntimeConfigs;
 
-
 export const AGENT_SEEDS = {
   AI_CONFIGS: DEFAULT_AI_CONFIGS,
   AI_CONFIGS_BY_ID: DEFAULT_AI_CONFIGS_BY_ID,
   TASK_RUNTIME_CONFIGS: DEFAULT_TASK_RUNTIME_CONFIGS,
-}
+};

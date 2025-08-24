@@ -9,6 +9,10 @@ import {
 import { createLogger } from '@/utils/logger';
 import { TranslateExecutor } from './executor';
 
+/**
+ * The LangAgent class is a singleton that manages the task executors for the LangAgent.
+ * It is responsible for initializing the task executors and performing tasks.
+ */
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;

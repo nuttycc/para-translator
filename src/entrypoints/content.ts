@@ -7,33 +7,47 @@ export default defineContentScript({
   main() {
     const logger = createLogger('content');
 
-    // Feature: Hover + Shift to translate nearest paragraph
-    let lastHoverEl: HTMLElement | null = null;
-    let lastHoverText: string | null = null;
+    // Feature: Press Shift to translate paragraph under cursor
+    let lastPointerX = 0;
+    let lastPointerY = 0;
     let lastTriggeredText: string | null = null;
 
     const triggerTranslateIfEligible = async () => {
-      if (!isParagraphLike(lastHoverText || '')) return;
-      if (!lastHoverText) return;
-      if (lastHoverText === lastTriggeredText) return;
-      lastTriggeredText = lastHoverText;
+      const el = document.elementFromPoint(lastPointerX, lastPointerY);
+      logger.debug`keydown@Shift elementFromPoint ${{
+        x: lastPointerX,
+        y: lastPointerY,
+        elTag: el instanceof Element ? el.tagName : null,
+        elId: el instanceof Element ? (el as Element).id || null : null,
+      }}`;
+      const container = findClosestTextContainer(el);
+      logger.debug`closest text container ${{
+        containerTag: container ? container.tagName : null,
+        containerId: container ? container.id || null : null,
+      }}`;
+      const text = extractReadableText(container);
+      logger.debug`extracted text meta ${{ length: text.length, preview: text.slice(0, 80) }}`;
+
+      if (!isParagraphLike(text)) {
+        logger.debug('skip: not paragraph-like');
+        return;
+      }
+      if (text === lastTriggeredText) {
+        logger.debug('skip: duplicate text');
+        return;
+      }
+      lastTriggeredText = text;
 
       const result = await sendMessage('translate', {
-        sourceText: lastHoverText,
+        sourceText: text,
         targetLanguage: 'zh-CN',
       });
-      logger.debug('translated result', { result });
+      logger.debug`translated result ${result}`;
     };
 
-    const handleMouseMove = (ev: MouseEvent) => {
-      const container = findClosestTextContainer(ev.target);
-      if (container !== lastHoverEl) {
-        lastHoverEl = container;
-        lastHoverText = extractReadableText(container);
-      }
-      if (ev.shiftKey) {
-        triggerTranslateIfEligible();
-      }
+    const handlePointerMove = (ev: PointerEvent) => {
+      lastPointerX = ev.clientX;
+      lastPointerY = ev.clientY;
     };
 
     const handleKeyDown = (ev: KeyboardEvent) => {
@@ -42,7 +56,7 @@ export default defineContentScript({
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    window.addEventListener('keydown', handleKeyDown, { passive: true } as AddEventListenerOptions);
+    window.addEventListener('pointermove', handlePointerMove, { passive: true });
+    window.addEventListener('keydown', handleKeyDown, { passive: true });
   },
 });

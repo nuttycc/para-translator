@@ -9,14 +9,14 @@ export interface PromptUnit {
   user: string;
 }
 
-export interface RuntimeConfig {
+export interface TaskRuntimeConfig {
   aiConfigId: string;
   temperature: number;
   prompt: PromptUnit;
 }
 
 // storage.local
-export type TaskRuntimeConfig = Record<TaskType, RuntimeConfig>;
+export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
 
 export interface AgentContext {
   sourceText: string;
@@ -26,13 +26,7 @@ export interface AgentContext {
   siteUrl?: string;
 }
 
-export interface LangAgentSpec {
-  readonly taskTypes: typeof TASK_TYPES;
-
-  perform(taskType: TaskType, context: AgentContext): Promise<AgentResult>;
-}
-
-export interface IConfig {
+export interface AIConfig {
   id: string;
   provider: string;
   model: string;
@@ -45,10 +39,31 @@ export interface IConfig {
 }
 
 // storage.local
-export type IConfigList = IConfig[];
+export type AIConfigs = AIConfig[];
 
 export interface AgentResult {
   ok: boolean;
   data?: string;
   error?: string;
+}
+
+export interface TaskExecutor {
+  readonly taskType: TaskType;
+  execute(context: AgentContext): Promise<AgentResult>;
+}
+
+export interface TranslatorTaskExecutor extends TaskExecutor {
+  taskType: 'translate';
+  execute(context: AgentContext): Promise<AgentResult>;
+}
+
+export interface ExplainTaskExecutor extends TaskExecutor {
+  taskType: 'explain';
+  execute(context: AgentContext): Promise<AgentResult>;
+}
+
+export interface LangAgentSpec {
+  readonly taskTypes: typeof TASK_TYPES;
+
+  perform(taskType: TaskType, context: AgentContext): Promise<AgentResult>;
 }

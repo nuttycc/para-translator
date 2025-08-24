@@ -1,6 +1,6 @@
-import { type IConfig, type IConfigList, type TaskRuntimeConfig } from '@/agent/types';
+import { type AIConfig, type AIConfigs, type TaskRuntimeConfigs} from '@/agent/types';
 
-export const DEFAULT_AI_CONFIG_LIST: IConfigList = [
+const DEFAULT_AI_CONFIGS: AIConfigs = [
   {
     id: 'deepseek-123',
     provider: 'deepseek',
@@ -8,8 +8,8 @@ export const DEFAULT_AI_CONFIG_LIST: IConfigList = [
     localModels: ['deepseek-chat', 'deepseek-reasoner'],
     apiKey: '',
     baseUrl: 'https://api.deepseek.com/v1/',
-    createdAt: -1,
-    updatedAt: -1,
+    createdAt: 0,
+    updatedAt: 0,
   },
   {
     id: 'glm-123',
@@ -18,8 +18,8 @@ export const DEFAULT_AI_CONFIG_LIST: IConfigList = [
     localModels: ['glm-4.5-flash'],
     apiKey: '',
     baseUrl: 'https://open.bigmodel.cn/api/paas/v4/',
-    createdAt: -2,
-    updatedAt: -2,
+    createdAt: 0,
+    updatedAt: 0,
   },
   {
     id: 'groq-123',
@@ -28,20 +28,20 @@ export const DEFAULT_AI_CONFIG_LIST: IConfigList = [
     localModels: ['openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
     apiKey: '',
     baseUrl: 'https://api.groq.com/openai/v1',
-    createdAt: -3,
-    updatedAt: -3,
+    createdAt: 0,
+    updatedAt: 0,
   },
 ];
 
-export const DEFAULT_AI_CONFIG_MAP: Record<string, IConfig> = DEFAULT_AI_CONFIG_LIST.reduce(
+const DEFAULT_AI_CONFIGS_BY_ID: Record<string, AIConfig> = DEFAULT_AI_CONFIGS.reduce(
   (map, config) => {
     map[config.id] = config;
     return map;
   },
-  {} as Record<string, IConfig>
+  {} as Record<string, AIConfig>
 );
 
-export const DefaultTaskConfig: TaskRuntimeConfig = {
+const DEFAULT_TASK_RUNTIME_CONFIGS: TaskRuntimeConfigs = {
   translate: {
     aiConfigId: 'groq-123',
     temperature: 0.7,
@@ -61,3 +61,10 @@ export const DefaultTaskConfig: TaskRuntimeConfig = {
     },
   },
 };
+
+
+export const AGENT_SEEDS = {
+  AI_CONFIGS: DEFAULT_AI_CONFIGS,
+  AI_CONFIGS_BY_ID: DEFAULT_AI_CONFIGS_BY_ID,
+  TASK_RUNTIME_CONFIGS: DEFAULT_TASK_RUNTIME_CONFIGS,
+}

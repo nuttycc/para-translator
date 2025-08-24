@@ -31,12 +31,15 @@ export class LangAgent implements LangAgentSpec {
   }
 }
 
-let langAgent: LangAgent | null = null;
+let langAgentPromise: Promise<LangAgent> | null = null;
 
 export async function getLangAgent(): Promise<LangAgent> {
-  if (!langAgent) {
-    langAgent = new LangAgent();
-    await langAgent.init();
+  if (!langAgentPromise) {
+    langAgentPromise = (async () => {
+      const agent = new LangAgent();
+      await agent.init();
+      return agent;
+    })();
   }
-  return langAgent;
+  return await langAgentPromise;
 }

@@ -7,8 +7,15 @@ exclude_patterns = [
   "**/coverage/**",
   "**/.next/**",
   "**/out/**",
-  "**/.nuxt/**",
+  "**/.nuxt/**"
 ]
 
 [[analyzers]]
 name = "javascript"
+
+  [analyzers.meta]
+  plugins = ["vue"]
+  environment = [
+    "browser",
+    "vitest"
+  ]

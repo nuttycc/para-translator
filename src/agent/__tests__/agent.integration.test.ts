@@ -17,12 +17,7 @@ describe('LangAgent Integration Tests', () => {
   });
 
   describe('Config Tests', () => {
-    it('should update default config with API key from environment', async () => {
-      if (!GROQ_API_KEY) {
-        skip('Skipping AIConfigManager Configuration Tests - VITE_GROQ_API_KEY not available');
-        return;
-      }
-
+    it.skipIf(!GROQ_API_KEY)('should update default config with API key from environment', async () => {
       const aiConfigs = await agentStorage.aiConfigs.getValue();
       expect(aiConfigs).toBeDefined();
 
@@ -32,7 +27,7 @@ describe('LangAgent Integration Tests', () => {
       expect(groqConfig).toBeDefined();
 
       if (!groqConfig) return;
-      const apiKey = GROQ_API_KEY;
+      const apiKey = GROQ_API_KEY as string;
       const updated = aiConfigs.map((c: AIConfig) =>
         c.id === 'groq-123' ? { ...c, apiKey } : c,
       );
@@ -82,6 +77,4 @@ describe('LangAgent Integration Tests', () => {
     });
   });
 });
-function skip(_reason: string) {
-  throw new Error('Function not implemented.');
-}
+

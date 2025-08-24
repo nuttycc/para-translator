@@ -1,7 +1,7 @@
 import {
   TASK_TYPES,
   type AgentContext,
-  type AgentResult,
+  type AgentResponse,
   type LangAgentSpec,
   type TaskExecutor,
   type TaskType,
@@ -24,7 +24,7 @@ export class LangAgent implements LangAgentSpec {
     this.taskExecutors.set('translate', translateExecutor);
   }
 
-  async perform(taskType: TaskType, context: AgentContext): Promise<AgentResult> {
+  async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
     this.log.info('perform', { taskType });
     const executor = this.taskExecutors.get(taskType);
     if (!executor) {

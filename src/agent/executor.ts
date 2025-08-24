@@ -6,7 +6,7 @@ import type {
   AIConfig,
   AIConfigs,
 } from '@/agent/types';
-import { AgentContext, AgentResult } from '@/agent/types';
+import { AgentContext, AgentResponse } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate } from '@/utils/template';
 import { OpenAI } from 'openai';
@@ -17,7 +17,7 @@ abstract class BaseTaskExecutor implements TaskExecutor {
   abstract readonly taskType: TaskType;
   abstract runtimeConfig: TaskRuntimeConfig;
 
-  abstract execute(context: AgentContext): Promise<AgentResult>;
+  abstract execute(context: AgentContext): Promise<AgentResponse>;
 }
 
 export class TranslateExecutor extends BaseTaskExecutor {
@@ -38,7 +38,7 @@ export class TranslateExecutor extends BaseTaskExecutor {
     });
   }
 
-  async execute(context: AgentContext): Promise<AgentResult> {
+  async execute(context: AgentContext): Promise<AgentResponse> {
     const runtimeConfig = this.runtimeConfig;
     const aiConfig = await agentStorage.aiConfigs
       .getValue()

@@ -1,5 +1,6 @@
-import { defineConfig } from 'wxt';
+import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
+import { defineConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
 export default defineConfig({
@@ -17,5 +18,6 @@ export default defineConfig({
         '@': fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
+    plugins: [tailwindcss()],
   }),
 });

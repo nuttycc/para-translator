@@ -1,4 +1,9 @@
-import { configureSync, defaultConsoleFormatter, getConsoleSink, getLogger } from '@logtape/logtape';
+import {
+  configureSync,
+  defaultConsoleFormatter,
+  getConsoleSink,
+  getLogger,
+} from '@logtape/logtape';
 
 configureSync({
   sinks: { console: getConsoleSink({ formatter: defaultConsoleFormatter }) },

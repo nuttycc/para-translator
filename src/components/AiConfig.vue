@@ -27,6 +27,11 @@ watch(
   },
   { deep: true }
 );
+
+onBeforeUnmount(() => {
+  // Flush latest edits on navigation away
+  emit('update', config);
+});
 </script>
 <template>
   <div class="container mx-auto p-4">

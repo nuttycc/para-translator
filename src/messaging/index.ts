@@ -6,5 +6,3 @@ export const { sendMessage, onMessage } = defineExtensionMessaging<MessagingProt
 
 export type { MessagingProtocol } from './protocol';
 export * from './protocol';
-
-

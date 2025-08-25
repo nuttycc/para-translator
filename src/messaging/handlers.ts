@@ -4,7 +4,5 @@ import type { AgentContext, AgentResponse } from '@/agent/types';
 export async function handleTranslate(_data: AgentContext): Promise<AgentResponse> {
   // console.log used per project logging guideline; replace with real logic
   console.log('handleTranslate called', _data);
-  return { ok: true, data: 'test' };
+  return { ok: true, data: _data.sourceText };
 }
-
-

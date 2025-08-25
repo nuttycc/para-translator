@@ -10,5 +10,4 @@ export default defineBackground(() => {
   onMessage('translate', async ({ data }) => {
     return handleTranslate(data);
   });
-
 });

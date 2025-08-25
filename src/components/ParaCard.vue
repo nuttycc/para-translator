@@ -1,16 +1,15 @@
 <script setup lang="ts">
 export interface ParaCardProps {
-  text: string;
+  sourceText: string;
   loading: boolean;
-  result: string;
+  translatedText: string;
   error: string | null;
   [key: string]: any;
 }
 
 const props = withDefaults(defineProps<ParaCardProps>(), {
-  text: '',
   loading: false,
-  result: '',
+  translatedText: '',
   error: null,
 });
 </script>
@@ -43,7 +42,7 @@ const props = withDefaults(defineProps<ParaCardProps>(), {
       </div>
 
       <div v-else class="text-base-content">
-        {{ props.result }}
+        {{ props.translatedText }}
       </div>
     </div>
   </div>

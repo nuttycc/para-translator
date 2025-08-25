@@ -1,11 +1,13 @@
-import { configure, getConsoleSink, getLogger } from '@logtape/logtape';
-import { prettyFormatter } from '@logtape/pretty';
+import {
+  configureSync,
+  defaultConsoleFormatter,
+  getConsoleSink,
+  getLogger,
+} from '@logtape/logtape';
 
-export async function initLogger() {
-  await configure({
-    sinks: { console: getConsoleSink({ formatter: prettyFormatter }) },
-    loggers: [{ category: 'my-app', lowestLevel: 'debug', sinks: ['console'] }],
-  });
-}
+configureSync({
+  sinks: { console: getConsoleSink({ formatter: defaultConsoleFormatter }) },
+  loggers: [{ category: 'my-app', lowestLevel: 'debug', sinks: ['console'] }],
+});
 
 export const createLogger = (...categoryParts: string[]) => getLogger(['my-app', ...categoryParts]);

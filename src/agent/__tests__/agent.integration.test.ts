@@ -23,23 +23,19 @@ describe('LangAgent Integration Tests', () => {
         const aiConfigs = await agentStorage.aiConfigs.getValue();
         expect(aiConfigs).toBeDefined();
 
-        const groqConfig = aiConfigs.find((config: AIConfig) => config.id === 'groq-123');
+        const groqConfig = aiConfigs['groq-123'];
 
         console.log('[integration test] groqConfig', groqConfig);
         expect(groqConfig).toBeDefined();
 
         if (!groqConfig) return;
         const apiKey = GROQ_API_KEY as string;
-        const updated = aiConfigs.map((c: AIConfig) =>
-          c.id === 'groq-123' ? { ...c, apiKey } : c
-        );
+        const updated = { ...aiConfigs, 'groq-123': { ...aiConfigs['groq-123'], apiKey } };
 
         await agentStorage.aiConfigs.setValue(updated);
         const updatedAiConfigs = await agentStorage.aiConfigs
           .getValue()
-          .then((configs: AIConfigs) =>
-            configs.find((config: AIConfig) => config.id === 'groq-123')
-          );
+          .then((configs: AIConfigs) => configs['groq-123']);
         console.log('[integration test] updatedAiConfigs', updatedAiConfigs);
 
         expect(updatedAiConfigs).toBeDefined();
@@ -58,11 +54,10 @@ describe('LangAgent Integration Tests', () => {
       // update the API key in the config(in storage)
       await agentStorage.aiConfigs
         .getValue()
-        .then((configs: AIConfigs) =>
-          configs.map((c: AIConfig) =>
-            c.id === 'groq-123' ? { ...c, apiKey: GROQ_API_KEY as string } : c
-          )
-        )
+        .then((configs: AIConfigs) => ({
+          ...configs,
+          'groq-123': { ...configs['groq-123'], apiKey: GROQ_API_KEY as string },
+        }))
         .then((configs: AIConfigs) => agentStorage.aiConfigs.setValue(configs));
 
       const context: AgentContext = {

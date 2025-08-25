@@ -26,6 +26,12 @@ export interface AgentContext {
   siteUrl?: string;
 }
 
+export interface AgentResponse {
+  ok: boolean;
+  data?: string;
+  error?: string;
+}
+
 export interface AIConfig {
   id: string;
   provider: string;
@@ -39,31 +45,25 @@ export interface AIConfig {
 }
 
 // storage.local
-export type AIConfigs = AIConfig[];
-
-export interface AgentResult {
-  ok: boolean;
-  data?: string;
-  error?: string;
-}
+export type AIConfigs = Record<string, AIConfig>;
 
 export interface TaskExecutor {
   readonly taskType: TaskType;
-  execute(context: AgentContext): Promise<AgentResult>;
+  execute(context: AgentContext): Promise<AgentResponse>;
 }
 
 export interface TranslatorTaskExecutor extends TaskExecutor {
   readonly taskType: 'translate';
-  execute(context: AgentContext): Promise<AgentResult>;
+  execute(context: AgentContext): Promise<AgentResponse>;
 }
 
 export interface ExplainTaskExecutor extends TaskExecutor {
   readonly taskType: 'explain';
-  execute(context: AgentContext): Promise<AgentResult>;
+  execute(context: AgentContext): Promise<AgentResponse>;
 }
 
 export interface LangAgentSpec {
   readonly taskTypes: typeof TASK_TYPES;
 
-  perform(taskType: TaskType, context: AgentContext): Promise<AgentResult>;
+  perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse>;
 }

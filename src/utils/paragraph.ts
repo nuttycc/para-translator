@@ -11,7 +11,8 @@ export function findClosestTextContainer(target: EventTarget | null): HTMLElemen
   const element =
     target.nodeType === Node.ELEMENT_NODE ? (target as Element) : target.parentElement;
   if (!element) return null;
-  return element.closest(PARAGRAPH_SELECTOR);
+  const closest = element.closest(PARAGRAPH_SELECTOR);
+  return closest instanceof HTMLElement ? closest : null;
 }
 
 /** Extract readable text from an element. Trims and normalizes whitespace. */

@@ -5,5 +5,5 @@ import type { AgentContext, AgentResponse } from '@/agent/types';
 
 // Protocol map consumed by defineExtensionMessaging
 export interface MessagingProtocol {
-  translate(context: AgentContext): AgentResponse;
+  translate(context: AgentContext): Promise<AgentResponse>;
 }

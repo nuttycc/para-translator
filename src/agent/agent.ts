@@ -30,8 +30,13 @@ export class LangAgent implements LangAgentSpec {
     if (!executor) {
       return { ok: false, error: `Executor for task type ${taskType} not found` };
     }
-
-    return await executor.execute(context);
+    try {
+      return await executor.execute(context);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.log.error('perform failed', { taskType, error: message });
+      return { ok: false, error: message };
+    }
   }
 }
 

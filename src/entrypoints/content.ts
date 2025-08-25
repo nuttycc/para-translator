@@ -13,6 +13,19 @@ export default defineContentScript({
   main(ctx) {
     const logger = createLogger('content');
 
+    // Component factory for creating reusable ParaCard instances
+    // Note: Each call still creates a new Vue app instance, but reuses the ParaCard component definition
+    const createParaCardApp = (state: ParaCardProps): App => {
+      return createApp({
+        components: {
+          ParaCard  // Same ParaCard definition reused across all instances
+        },
+        setup() {
+          return () => h(ParaCard, state);
+        }
+      });
+    };
+
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
         sourceText: initial.sourceText ?? '',
@@ -25,17 +38,17 @@ export default defineContentScript({
         name: 'para-card-ui',
         position: 'inline',
         anchor: container,
-        onMount: (container, shadow) => {
-          // Define how your UI will be mounted inside the container
-          const app = createApp({
-            // Render ParaCard with reactive state to ensure updates propagate
-            setup: () => () => h(ParaCard, state),
-          });
-          app.mount(container);
+        onMount: (mountContainer, shadow) => {
+          // Create a ParaCard app instance using the factory
+          const app = createParaCardApp(state);
+          app.mount(mountContainer);
+
+          // Store the app instance for later cleanup
+          uiAppMap.set(ui as ShadowRootContentScriptUi<App>, app);
 
           // Debug CSS injection
           logger.debug`mounted para card ${{
-            containerTag: container.tagName,
+            containerTag: mountContainer.tagName,
             shadowRoot: shadow,
             shadowStyleSheets: shadow.styleSheets?.length,
             shadowHead: shadow.querySelector('head'),
@@ -53,7 +66,9 @@ export default defineContentScript({
         },
         onRemove: (app) => {
           // Unmount the app when the UI is removed
-          app?.unmount();
+          if (app && typeof app.unmount === 'function') {
+            app.unmount();
+          }
         },
       });
 
@@ -70,6 +85,9 @@ export default defineContentScript({
       string,
       { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
     >();
+
+    // WeakMap to associate UI instances with their Vue app instances for cleanup
+    const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
 
     /**
      * Centralized cleanup function for translation cards to prevent race conditions
@@ -88,6 +106,14 @@ export default defineContentScript({
       // Remove UI if requested and available
       if (removeUI && ui && typeof ui.remove === 'function') {
         try {
+          // Get the app instance from WeakMap and unmount it properly
+          const app = uiAppMap.get(ui);
+          if (app && typeof app.unmount === 'function') {
+            app.unmount();
+            uiAppMap.delete(ui);
+            logger.debug`unmounted Vue app for ${paraKey}`;
+          }
+
           ui.remove();
           logger.debug`removed translation card UI for ${paraKey}`;
         } catch (error) {

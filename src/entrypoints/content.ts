@@ -1,9 +1,10 @@
+import type { AgentContext } from '@/agent/types';
 import '@/assets/base.css';
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
-import { createApp, type App } from 'vue';
+import { createApp, type App, shallowReactive, h } from 'vue';
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -12,14 +13,24 @@ export default defineContentScript({
   main(ctx) {
     const logger = createLogger('content');
 
-    const addParaCard = async (container: Element, props: ParaCardProps) => {
+    const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
+      const state = shallowReactive<ParaCardProps>({
+        sourceText: initial.sourceText ?? '',
+        loading: initial.loading ?? true,
+        translatedText: initial.translatedText ?? '',
+        error: initial.error ?? null,
+      });
+
       const ui = await createShadowRootUi(ctx, {
         name: 'para-card-ui',
         position: 'inline',
         anchor: container,
         onMount: (container, shadow) => {
           // Define how your UI will be mounted inside the container
-          const app = createApp(ParaCard, props);
+          const app = createApp({
+            // Render ParaCard with reactive state to ensure updates propagate
+            setup: () => () => h(ParaCard, state),
+          });
           app.mount(container);
 
           // Debug CSS injection
@@ -49,13 +60,16 @@ export default defineContentScript({
       // Mount the UI to make it visible
       ui.mount();
 
-      // Return the UI instance for later management
-      return ui;
+      // Return both UI and reactive state for later updates
+      return { ui, state };
     };
 
     // Feature: Hover paragraph + Shift to toggle translation card
     let currentHoveredElement: HTMLElement | null = null;
-    let cardUIs = new Map<string, { ui: ShadowRootContentScriptUi<App>; container: HTMLElement }>();
+    let cardUIs = new Map<
+      string,
+      { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
+    >();
 
     const toggleTranslateIfEligible = async () => {
       if (!currentHoveredElement) {
@@ -74,16 +88,16 @@ export default defineContentScript({
         containerId: container.id || null,
       }}`;
 
-      const text = extractReadableText(container);
-      logger.debug`extracted text meta ${{ length: text.length, preview: text.slice(0, 80) }}`;
+      const sourceText = extractReadableText(container);
+      logger.debug`extracted text meta ${{ length: sourceText.length, preview: sourceText.slice(0, 80) }}`;
 
-      if (!isParagraphLike(text)) {
+      if (!isParagraphLike(sourceText)) {
         logger.debug('skip: not paragraph-like');
         return;
       }
 
       // Generate unique key for this paragraph
-      const paraKey = container.dataset.paraId || text.slice(0, 100);
+      const paraKey = container.dataset.paraId || sourceText.slice(0, 100);
 
       // Check if card already exists - toggle logic
       if (cardUIs.has(paraKey)) {
@@ -107,37 +121,45 @@ export default defineContentScript({
         return;
       }
 
-      // Add new card
-      const result = await sendMessage('translate', {
-        sourceText: text,
-        targetLanguage: 'zh-CN',
-      });
-      logger.debug`translated result ${result}`;
-
-      // Mark container as translated
-      container.dataset.paraIsTranslated = 'true';
-      container.dataset.paraId = paraKey;
-
+      // Add new card (mount loading UI first)
       try {
-        const ui = await addParaCard(container, {
-          text,
-          loading: false,
-          result: result.data || '',
-          error: result.error || null,
-        });
+        const { ui, state } = await addParaCard(container, { sourceText, loading: true });
 
-        // Store the UI instance for later removal
+        // Store for later removal/updates
         if (ui && typeof ui.remove === 'function') {
-          cardUIs.set(paraKey, { ui, container });
+          cardUIs.set(paraKey, { ui, container, state });
           logger.debug`added translation card for ${paraKey}`;
         } else {
           logger.error`failed to create valid UI for ${paraKey}`;
-          // Clean up dataset if UI creation failed
-          delete container.dataset.paraIsTranslated;
-          delete container.dataset.paraId;
+          return;
+        }
+
+        // Fetch translation result and update reactive state
+        try {
+          const context: AgentContext = {
+            sourceText,
+            targetLanguage: 'zh-CN',
+            siteTitle: document.title,
+            siteUrl: document.location.href,
+          };
+          logger.debug`context ${{ context }}`;
+          const response = await sendMessage('translate', context);
+          logger.debug`translated result ${response}`;
+
+          state.translatedText = response.data || '';
+          state.error = response.error || null;
+
+          // Mark container as translated
+          container.dataset.paraIsTranslated = 'true';
+          container.dataset.paraId = paraKey;
+        } catch (err) {
+          // Ensure UI exits loading and shows error
+          state.error = err instanceof Error ? err.message : String(err);
+        } finally {
+          state.loading = false;
         }
       } catch (error) {
-        logger.error`failed to add translation card for ${paraKey}: ${error}`;
+        logger.error`failed to add/update translation card for ${paraKey}: ${error}`;
         // Clean up dataset if card creation failed
         delete container.dataset.paraIsTranslated;
         delete container.dataset.paraId;

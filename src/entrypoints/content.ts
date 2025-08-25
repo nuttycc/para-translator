@@ -71,6 +71,41 @@ export default defineContentScript({
       { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
     >();
 
+    /**
+     * Centralized cleanup function for translation cards to prevent race conditions
+     * @param paraKey - The unique identifier for the paragraph card
+     * @param removeUI - Whether to remove the UI component (default: true)
+     */
+    const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
+      const cardEntry = cardUIs.get(paraKey);
+      if (!cardEntry) {
+        logger.debug`no card found for cleanup: ${paraKey}`;
+        return;
+      }
+
+      const { ui, container } = cardEntry;
+
+      // Remove UI if requested and available
+      if (removeUI && ui && typeof ui.remove === 'function') {
+        try {
+          ui.remove();
+          logger.debug`removed translation card UI for ${paraKey}`;
+        } catch (error) {
+          logger.error`failed to remove translation card UI for ${paraKey}: ${error}`;
+        }
+      }
+
+      // Remove from map
+      cardUIs.delete(paraKey);
+
+      // Clean up dataset attributes
+      if (container) {
+        delete container.dataset.paraIsTranslated;
+        delete container.dataset.paraId;
+        logger.debug`cleaned up dataset for ${paraKey}`;
+      }
+    };
+
     const toggleTranslateIfEligible = async () => {
       if (!currentHoveredElement) {
         logger.debug('skip: no element currently hovered');
@@ -97,27 +132,12 @@ export default defineContentScript({
       }
 
       // Generate unique key for this paragraph
-      const paraKey = container.dataset.paraId || sourceText.slice(0, 100);
+      const paraKey = container.dataset.paraId || crypto.randomUUID();
 
       // Check if card already exists - toggle logic
       if (cardUIs.has(paraKey)) {
-        // Remove existing card
-        const existingCard = cardUIs.get(paraKey);
-        if (existingCard && existingCard.ui && typeof existingCard.ui.remove === 'function') {
-          try {
-            existingCard.ui.remove();
-            logger.debug`removed translation card for ${paraKey}`;
-          } catch (error) {
-            logger.error`failed to remove translation card for ${paraKey}: ${error}`;
-          }
-          cardUIs.delete(paraKey);
-          // Clean up dataset
-          delete container.dataset.paraIsTranslated;
-          delete container.dataset.paraId;
-        } else {
-          logger.warn`existing card for ${paraKey} is invalid, cleaning up`;
-          cardUIs.delete(paraKey);
-        }
+        // Remove existing card using centralized cleanup
+        cleanupTranslationCard(paraKey);
         return;
       }
 
@@ -146,6 +166,12 @@ export default defineContentScript({
           const response = await sendMessage('translate', context);
           logger.debug`translated result ${response}`;
 
+          // Check if card is still active before applying results to avoid stale data
+          if (!cardUIs.has(paraKey)) {
+            logger.debug`card for ${paraKey} was removed during async operation, skipping result application`;
+            return;
+          }
+
           state.translatedText = response.data || '';
           state.error = response.error || null;
 
@@ -160,9 +186,8 @@ export default defineContentScript({
         }
       } catch (error) {
         logger.error`failed to add/update translation card for ${paraKey}: ${error}`;
-        // Clean up dataset if card creation failed
-        delete container.dataset.paraIsTranslated;
-        delete container.dataset.paraId;
+        // Clean up using centralized function (without UI removal since UI wasn't created)
+        cleanupTranslationCard(paraKey, false);
       }
     };
 

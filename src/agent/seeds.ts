@@ -1,7 +1,7 @@
-import { type AIConfig, type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
+import { type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 
-const DEFAULT_AI_CONFIGS = [
-  {
+const DEFAULT_AI_CONFIGS = {
+  'deepseek-123': {
     id: 'deepseek-123',
     provider: 'deepseek',
     model: 'deepseek-chat',
@@ -11,7 +11,7 @@ const DEFAULT_AI_CONFIGS = [
     createdAt: 0,
     updatedAt: 0,
   },
-  {
+  'glm-123': {
     id: 'glm-123',
     provider: 'glm',
     model: 'glm-4.5-flash',
@@ -21,7 +21,7 @@ const DEFAULT_AI_CONFIGS = [
     createdAt: 0,
     updatedAt: 0,
   },
-  {
+  'groq-123': {
     id: 'groq-123',
     provider: 'groq',
     model: 'openai/gpt-oss-20b',
@@ -31,15 +31,7 @@ const DEFAULT_AI_CONFIGS = [
     createdAt: 0,
     updatedAt: 0,
   },
-] as const satisfies AIConfigs;
-
-const DEFAULT_AI_CONFIGS_BY_ID: Record<string, AIConfig> = DEFAULT_AI_CONFIGS.reduce(
-  (map, config) => {
-    map[config.id] = config;
-    return map;
-  },
-  {} as Record<string, AIConfig>
-);
+} as const satisfies AIConfigs;
 
 const DEFAULT_TASK_RUNTIME_CONFIGS = {
   translate: {
@@ -48,7 +40,10 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
     prompt: {
       system:
         'You are a professional translator. Your task is to translate the source text into the target language.',
-      user: 'Translate the following text into %{targetLanguage}: %{sourceText}',
+      user:
+        'Translate the following text into %{targetLanguage}: %{sourceText} ' +
+        '\nHere is some additional information about the source text: ' +
+        '\nThe source text is from %{siteTitle} at %{siteUrl}.',
     },
   },
   explain: {
@@ -64,6 +59,5 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
 
 export const AGENT_SEEDS = {
   AI_CONFIGS: DEFAULT_AI_CONFIGS,
-  AI_CONFIGS_BY_ID: DEFAULT_AI_CONFIGS_BY_ID,
   TASK_RUNTIME_CONFIGS: DEFAULT_TASK_RUNTIME_CONFIGS,
 };

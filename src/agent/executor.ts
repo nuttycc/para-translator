@@ -3,7 +3,6 @@ import type {
   TaskExecutor,
   TaskRuntimeConfigs,
   TaskType,
-  AIConfig,
   AIConfigs,
 } from '@/agent/types';
 import { AgentContext, AgentResponse } from '@/agent/types';
@@ -42,9 +41,7 @@ export class TranslateExecutor extends BaseTaskExecutor {
     const runtimeConfig = this.runtimeConfig;
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
-      .then((configs: AIConfigs) =>
-        configs.find((c: AIConfig) => c.id === runtimeConfig.aiConfigId)
-      );
+      .then((configs: AIConfigs) => configs[runtimeConfig.aiConfigId]);
 
     if (!aiConfig) {
       return { ok: false, error: 'AI config not found' };

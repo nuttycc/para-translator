@@ -45,7 +45,7 @@ export interface AIConfig {
 }
 
 // storage.local
-export type AIConfigs = AIConfig[];
+export type AIConfigs = Record<string, AIConfig>;
 
 export interface TaskExecutor {
   readonly taskType: TaskType;

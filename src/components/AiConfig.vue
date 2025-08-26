@@ -86,6 +86,14 @@ const fetchModes = async () => {
   }
 };
 
+// Keep local config in sync when parent replaces the object
+watch(
+  () => props.config,
+  (next) => {
+    Object.assign(config, structuredClone(next));
+  }
+);
+
 watch(
   config,
   (newConfig) => {

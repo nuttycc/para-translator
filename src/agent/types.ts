@@ -34,6 +34,7 @@ export interface AgentResponse {
 
 export interface AIConfig {
   id: string;
+  name: string;
   provider: string;
   model: string;
   localModels: string[];

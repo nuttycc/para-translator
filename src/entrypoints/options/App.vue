@@ -1,49 +1,58 @@
 <script setup lang="ts">
-import { agentStorage } from '@/agent/storage';
-import type { AIConfig, AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
-import AiConfig from '@/components/AiConfig.vue';
-import TaskConfig from '@/components/TaskConfig.vue';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('options');
 
-const aiConfigs = ref<AIConfigs>({});
-const taskRuntimeConfigs = ref<TaskRuntimeConfigs | null>(null);
-
-onMounted(async () => {
-  const configs = await agentStorage.aiConfigs.getValue();
-  const taskConfigs = await agentStorage.taskConfigs.getValue();
-  logger.debug`AI Configs: ${configs}`;
-  logger.debug`Task Configs: ${taskConfigs}`;
-
-  aiConfigs.value = configs;
-  taskRuntimeConfigs.value = taskConfigs;
-});
-
-const updateConfig = (config: AIConfig) => {
-  aiConfigs.value[config.id] = config;
-  agentStorage.aiConfigs
-    .setValue(aiConfigs.value)
-    .catch((err) => {
-      logger.error`Failed to update AI Configs: ${err}`;
-    })
-    .finally(() => {
-      logger.debug`Updated AI Configs: ${aiConfigs.value}`;
-    });
-};
+import { RouterLink, RouterView } from 'vue-router';
 </script>
 
 <template>
-  <div class="max-w-2xl mx-auto p-4 mb-16">
-    <h1 class="text-2xl font-bold mb-6">Options</h1>
+  <div class="w-fit mx-auto flex flex-col items-center">
+    <div class="navbar w-5xl flex justify-between">
+      <h1 class="text-xl font-bold">Options</h1>
 
-    <AiConfig
-      v-for="config in aiConfigs"
-      :key="config.id"
-      :config="config"
-      @update="updateConfig"
-    />
-    <div class="divider">NEXT</div>
-    <TaskConfig v-for="config in taskRuntimeConfigs" :key="config.aiConfigId" :config="config" />
+      <div class="flex gap-2">
+        <RouterLink to="/" class="btn btn-soft" exact-active-class="btn-active btn-accent"
+          >AI</RouterLink
+        >
+        <RouterLink to="/tasks" class="btn btn-soft" exact-active-class="btn-active btn-accent"
+          >Tasks</RouterLink
+        >
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="min-h-[600px] w-3xl mb-8">
+      <RouterView v-slot="{ Component, route }">
+        <transition :name="(route.meta?.transition as string) || 'fade'" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </transition>
+      </RouterView>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="w-5xl h-16 flex items-center justify-center">
+      <p class="text-sm text-gray-500">Some text here</p>
+    </div>
   </div>
 </template>
+
+<style scoped>
+/* 淡入淡出动画 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.1s ease-in-out;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave-from {
+  opacity: 1;
+}
+</style>

@@ -1,27 +1,39 @@
 <script setup lang="ts">
-import type { TaskRuntimeConfig } from '@/agent/types';
+import type { AIConfigs, TaskRuntimeConfig } from '@/agent/types';
+import { agentStorage } from '@/agent/storage';
+import { ref } from '#imports';
 
 const props = defineProps<{
   config: TaskRuntimeConfig;
+  taskType: string;
 }>();
+
+const aiConfigs = ref<AIConfigs>({});
+
+agentStorage.aiConfigs.getValue().then((configs) => {
+  aiConfigs.value = configs;
+});
+
 </script>
 
 <template>
-  <div class="card bg-base-100 shadow-xl">
+  <div class="card shadow-xl">
     <div class="card-body">
-      <h2 class="card-title text-2xl mb-6">Task Configuration</h2>
+      <h2 class="card-title text-2xl mb-6">
+        {{ taskType.charAt(0).toUpperCase() + taskType.slice(1) }} Task
+      </h2>
 
       <div class="space-y-4">
-        <div class="form-control">
+        <div class="form-control flex flex-col gap-2">
           <label class="label">
-            <span class="label-text font-semibold">AI Config ID</span>
+            <span class="label-text font-semibold">Select AI Config</span>
           </label>
-          <input
-            type="text"
-            v-model="config.aiConfigId"
-            class="input input-bordered input-primary w-full"
-            placeholder="Enter AI configuration ID"
-          />
+          <select class="select" v-model="config.aiConfigId">
+            <option disabled selected>Pick an AI Config</option>
+            <option v-for="config in aiConfigs" :key="config.id" :value="config.id">
+              {{ config.name }}
+            </option>
+          </select>
         </div>
 
         <div class="form-control">

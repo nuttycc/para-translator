@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { AIConfig } from '@/agent/types';
-import { throttle } from 'es-toolkit';
+import { debounce } from 'es-toolkit';
 import { createLogger } from '@/utils/logger';
-
-const logger = createLogger('AiConfig');
-
-const emit = defineEmits(['update']);
+import { PropType, reactive, watch, onBeforeUnmount, ref } from '#imports';
 
 const props = defineProps({
   config: {
@@ -14,11 +11,28 @@ const props = defineProps({
   },
 });
 
-const config = reactive<AIConfig>({ ...props.config });
+const emit = defineEmits<{
+  (e: 'update', config: AIConfig): void;
+  (e: 'delete', configId: string): void;
+}>();
 
-const updateConfig = throttle((newConfig: AIConfig) => {
+const logger = createLogger('AiConfig');
+const config = reactive<AIConfig>({ ...props.config });
+const newLocalModel = ref('');
+
+const updateConfig = debounce((newConfig: AIConfig) => {
   emit('update', newConfig);
 }, 1000);
+
+const deleteConfig = () => {
+  emit('delete', config.id);
+};
+
+const addLocalModel = () => {
+  logger.debug`Adding local model: localModels=${config.localModels}`;
+  config.localModels.push(newLocalModel.value);
+  newLocalModel.value = '';
+};
 
 watch(
   config,
@@ -29,71 +43,96 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  // Flush latest edits on navigation away
   emit('update', config);
 });
 </script>
 <template>
-  <div class="container mx-auto p-4">
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h1 class="card-title text-2xl font-bold mb-6">{{ config.provider }}</h1>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body flex flex-col">
+      <h1 class="card-title text-2xl font-bold mb-6">{{ config.name }}</h1>
+      <div class="space-y-4">
+        <!-- name -->
+        <div class="form-control w-full">
+          <label class="label" for="name">
+            <span class="label-text font-medium">Config Name</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            v-model="config.name"
+            class="input input-bordered w-full"
+            placeholder="Enter your name"
+          />
+        </div>
+        <!-- Base URL -->
+        <div class="form-control w-full">
+          <label class="label" for="baseurl">
+            <span class="label-text font-medium">Base URL</span>
+          </label>
+          <input
+            type="url"
+            id="baseurl"
+            v-model="config.baseUrl"
+            class="input input-bordered w-full"
+            placeholder="https://api.example.com"
+          />
+        </div>
 
-        <div class="space-y-4">
-          <!-- Base URL -->
-          <div class="form-control w-full">
-            <label class="label" for="baseurl">
-              <span class="label-text font-medium">Base URL</span>
-            </label>
-            <input
-              type="url"
-              id="baseurl"
-              v-model="config.baseUrl"
-              class="input input-bordered w-full"
-              placeholder="https://api.example.com"
-            />
-          </div>
+        <!-- API Key -->
+        <div class="form-control w-full">
+          <label class="label" for="apikey">
+            <span class="label-text font-medium">API Key</span>
+          </label>
+          <input
+            type="text"
+            id="apikey"
+            v-model="config.apiKey"
+            class="input input-bordered w-full"
+            placeholder="Enter your API key"
+          />
+        </div>
 
-          <!-- API Key -->
-          <div class="form-control w-full">
-            <label class="label" for="apikey">
-              <span class="label-text font-medium">API Key</span>
-            </label>
-            <input
-              type="text"
-              id="apikey"
-              v-model="config.apiKey"
-              class="input input-bordered w-full"
-              placeholder="Enter your API key"
-            />
-          </div>
+        <!-- Model -->
+        <div class="form-control w-full">
+          <label class="label" for="model">
+            <span class="label-text font-medium">Model</span>
+          </label>
+          <input
+            type="text"
+            id="model"
+            v-model="config.model"
+            class="input input-bordered w-full"
+            placeholder="e.g., gpt-4, gpt-3.5-turbo"
+          />
+        </div>
 
-          <!-- Model -->
-          <div class="form-control w-full">
-            <label class="label" for="model">
-              <span class="label-text font-medium">Model</span>
-            </label>
-            <input
-              type="text"
-              id="model"
-              v-model="config.model"
-              class="input input-bordered w-full"
-              placeholder="e.g., gpt-4, gpt-3.5-turbo"
-            />
-          </div>
-
-          <!-- Local Models -->
-          <div class="form-control w-full">
-            <label class="label" for="models">
-              <div class="label-text font-medium">Models List</div>
-            </label>
-            <div v-for="model in config.localModels" :key="model">
-              <div class="input input-bordered w-full">
-                {{ model }}
-              </div>
+        <!-- Local Models -->
+        <div class="form-control w-full">
+          <!-- <label class="label" for="models">
+            <div class="label-text font-medium">Models List</div>
+          </label>
+          <div v-for="model in config.localModels" :key="model">
+            <div class="input input-bordered w-full">
+              {{ model }}
             </div>
+          </div> -->
+
+          <fieldset class="fieldset">
+            <legend class="fieldset-legend">Local Models</legend>
+            <select class="select" v-model="config.model">
+              <option v-for="model in config.localModels" :key="model">
+                <span>{{ model }}</span>
+              </option>
+            </select>
+          </fieldset>
+          <div class="flex gap-2">
+            <input type="text" placeholder="Type here" class="input" v-model="newLocalModel" />
+            <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">Add Model</button>
           </div>
         </div>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button class="btn btn-soft btn-error w-fit" @click="deleteConfig">Delete Config</button>
       </div>
     </div>
   </div>

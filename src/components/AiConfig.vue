@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { AIConfig } from '@/agent/types';
-import { debounce } from 'es-toolkit';
 import { createLogger } from '@/utils/logger';
-import { PropType, reactive, watch, onBeforeUnmount, ref } from '#imports';
+import { PropType, reactive, watch, onBeforeUnmount, ref, toRaw } from 'vue';
+import { showToast } from '@/utils/toast';
 
 const props = defineProps({
   config: {
@@ -17,21 +17,55 @@ const emit = defineEmits<{
 }>();
 
 const logger = createLogger('AiConfig');
-const config = reactive<AIConfig>({ ...props.config });
+const config = reactive<AIConfig>(toRaw(props.config));
 const newLocalModel = ref('');
-
-const updateConfig = debounce((newConfig: AIConfig) => {
-  emit('update', newConfig);
-}, 1000);
-
-const deleteConfig = () => {
-  emit('delete', config.id);
-};
+const remoteModels = ref<string[]>([]);
+const showRemoteModels = ref(false);
+const isDeleting = ref(false);
 
 const addLocalModel = () => {
   logger.debug`Adding local model: localModels=${config.localModels}`;
   config.localModels.push(newLocalModel.value);
+  config.model = newLocalModel.value;
   newLocalModel.value = '';
+};
+
+const deleteLocalModel = () => {
+  config.localModels = config.localModels.filter((model) => model !== config.model);
+  config.model = config.localModels.at(-1) || '';
+};
+
+// Emit updates immediately; debounced persistence is handled in useAiConfigs
+const updateConfig = (newConfig: AIConfig) => {
+  emit('update', toRaw(newConfig));
+};
+
+const deleteConfig = () => {
+  isDeleting.value = true;
+  emit('delete', config.id);
+};
+
+const fetchModes = async () => {
+  if (!config.baseUrl) {
+    showToast({
+      message: 'No base URL found',
+      type: 'error',
+    });
+    return;
+  }
+
+  const endpoint = `${config.baseUrl}/models`;
+
+  logger.debug`Fetching models from ${endpoint}`;
+
+  const response = await fetch(endpoint, {
+    headers: {
+      Authorization: `Bearer ${config.apiKey}`,
+    },
+  });
+  const res = await response.json();
+
+  remoteModels.value = res.data.map((model: any) => model.id);
 };
 
 watch(
@@ -43,7 +77,9 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  emit('update', config);
+  if (!isDeleting.value) {
+    emit('update', toRaw(config));
+  }
 });
 </script>
 <template>
@@ -92,43 +128,63 @@ onBeforeUnmount(() => {
           />
         </div>
 
-        <!-- Model -->
+        <!-- Models -->
         <div class="form-control w-full">
-          <label class="label" for="model">
-            <span class="label-text font-medium">Model</span>
-          </label>
-          <input
-            type="text"
-            id="model"
-            v-model="config.model"
-            class="input input-bordered w-full"
-            placeholder="e.g., gpt-4, gpt-3.5-turbo"
-          />
-        </div>
+          <fieldset class="fieldset flex flex-col gap-2">
+            <legend class="label label-text font-medium flex gap-2">
+              Model
 
-        <!-- Local Models -->
-        <div class="form-control w-full">
-          <!-- <label class="label" for="models">
-            <div class="label-text font-medium">Models List</div>
-          </label>
-          <div v-for="model in config.localModels" :key="model">
-            <div class="input input-bordered w-full">
-              {{ model }}
+              <fieldset class="fieldset bg-base-100 border-base-300 rounded-box flex gap-2">
+                <label class="label">
+                  <input type="checkbox" v-model="showRemoteModels" class="checkbox checkbox-xs" />
+                  Show remote models list
+                </label>
+              </fieldset>
+            </legend>
+
+            <div v-if="!showRemoteModels" class="join join-vertical gap-2">
+              <div class="join-item flex gap-2 items-center-safe">
+                <select class="select" v-model="config.model">
+                  <option v-if="config.localModels.length === 0" disabled selected>
+                    Please add a custom model first
+                  </option>
+                  <option v-for="model in config.localModels" :key="model">
+                    {{ model }}
+                  </option>
+                </select>
+                <button class="btn btn-soft w-fit" @click="deleteLocalModel">Delete Model</button>
+              </div>
+
+              <!-- Add local model -->
+              <div class="join-item flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Input a model id"
+                  class="input"
+                  v-model="newLocalModel"
+                />
+                <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">
+                  Add custom model
+                </button>
+              </div>
             </div>
-          </div> -->
 
-          <fieldset class="fieldset">
-            <legend class="fieldset-legend">Local Models</legend>
-            <select class="select" v-model="config.model">
-              <option v-for="model in config.localModels" :key="model">
-                <span>{{ model }}</span>
-              </option>
-            </select>
+            <!-- Select remote model -->
+            <div class="flex gap-2" v-if="showRemoteModels">
+              <select class="select" v-model="config.model">
+                <option v-if="remoteModels.length === 0" disabled selected>
+                  Please fetch models first
+                </option>
+                <option v-for="model in remoteModels" :key="model">
+                  {{ model }}
+                </option>
+              </select>
+
+              <button type="button" class="btn btn-soft btn-primary w-fit" @click="fetchModes">
+                Fetch Models
+              </button>
+            </div>
           </fieldset>
-          <div class="flex gap-2">
-            <input type="text" placeholder="Type here" class="input" v-model="newLocalModel" />
-            <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">Add Model</button>
-          </div>
         </div>
       </div>
       <div class="flex justify-end mt-4">

@@ -1,15 +1,41 @@
 <script setup lang="ts">
+import { browser } from '#imports';
 import { createLogger } from '@/utils/logger';
+import { showToast, testToast } from '@/utils/toast';
+import { RouterLink, RouterView } from 'vue-router';
 
 const logger = createLogger('options');
 
-import { RouterLink, RouterView } from 'vue-router';
+const runToastTest = () => {
+  testToast();
+};
+
+const resetStorage = () => {
+  browser.storage.local.clear().catch((err) => {
+    logger.error`Failed to reset storage: ${err}`;
+    showToast({
+      message: 'Failed to reset storage',
+      type: 'error',
+      position: 'toast-bottom toast-center',
+    });
+  }).finally(() => {
+    showToast({
+      message: 'Storage reset',
+      type: 'success',
+      position: 'toast-bottom toast-center',
+    });
+  });
+};
 </script>
 
 <template>
   <div class="w-fit mx-auto flex flex-col items-center">
     <div class="navbar w-5xl flex justify-between">
       <h1 class="text-xl font-bold">Options</h1>
+      <div class="flex gap-2">
+        <button class="btn btn-outline btn-warning" @click="runToastTest">Test Toast</button>
+        <button class="btn btn-outline btn-error" @click="resetStorage">Reset Storage</button>
+      </div>
 
       <div class="flex gap-2">
         <RouterLink to="/" class="btn btn-soft" exact-active-class="btn-active btn-accent"

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AIConfigs, TaskRuntimeConfig } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { ref, watch } from '#imports';
+import { ref, watch, nextTick } from '#imports';
 
 const props = defineProps<{
   config: TaskRuntimeConfig;
@@ -16,15 +16,28 @@ const aiConfigs = ref<AIConfigs>({});
 
 // Local working copy of the config
 const local = ref<TaskRuntimeConfig>(structuredClone(props.config));
+// Internal flag to avoid echo loops when syncing from props
+const syncingFromProps = ref(false);
 
-// Emit changes upstream
-watch(local, (val) => emit('update', val), { deep: true });
+// Emit changes upstream (skip while we are syncing from props)
+watch(
+  local,
+  (val) => {
+    if (syncingFromProps.value) return;
+    emit('update', val);
+  },
+  { deep: true }
+);
 
 // Keep local in sync if parent replaces the config object
 watch(
   () => props.config,
   (next) => {
+    syncingFromProps.value = true;
     local.value = structuredClone(next);
+    nextTick(() => {
+      syncingFromProps.value = false;
+    });
   }
   // reference watch is sufficient; use { deep: true } only if parent mutates in-place
 );

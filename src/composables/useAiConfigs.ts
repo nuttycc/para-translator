@@ -38,12 +38,8 @@ async function ensureInit(): Promise<void> {
           merged[id] = cfg;
         }
       }
-      // Handle deletions (keys missing in incoming)
-      for (const id of Object.keys(merged)) {
-        if (!(id in incoming)) {
-          delete merged[id];
-        }
-      }
+      // Do not infer deletions from absence to avoid dropping local, unflushed entries.
+      // Deletions should be explicit (handled via `remove()` or tombstones).
       aiConfigsState.value = merged;
       logger.debug`Storage change merged. Items=${Object.keys(merged).length}`;
     });

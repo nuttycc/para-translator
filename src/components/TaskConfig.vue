@@ -17,7 +17,17 @@ const aiConfigs = ref<AIConfigs>({});
 // Local working copy of the config
 const local = ref<TaskRuntimeConfig>(structuredClone(props.config));
 
+// Emit changes upstream
 watch(local, (val) => emit('update', val), { deep: true });
+
+// Keep local in sync if parent replaces the config object
+watch(
+  () => props.config,
+  (next) => {
+    local.value = structuredClone(next);
+  }
+  // reference watch is sufficient; use { deep: true } only if parent mutates in-place
+);
 
 agentStorage.aiConfigs
   .getValue()

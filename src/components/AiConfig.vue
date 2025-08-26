@@ -58,14 +58,32 @@ const fetchModes = async () => {
 
   logger.debug`Fetching models from ${endpoint}`;
 
-  const response = await fetch(endpoint, {
-    headers: {
-      Authorization: `Bearer ${config.apiKey}`,
-    },
-  });
-  const res = await response.json();
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+    });
 
-  remoteModels.value = res.data.map((model: any) => model.id);
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const res = await response.json();
+
+    if (!Array.isArray(res?.data)) {
+      throw new Error('Invalid response format: "data" is not an array.');
+    }
+
+    remoteModels.value = res.data.map((model: any) => model.id);
+  } catch (err) {
+    logger.error`Failed to fetch models: ${err}`;
+    showToast({
+      message: `Error fetching models: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      type: 'error',
+    });
+    remoteModels.value = [];
+  }
 };
 
 watch(

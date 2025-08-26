@@ -1,3 +1,4 @@
+import { defineBackground } from '#imports';
 import { onMessage } from '@/messaging';
 import { handleTranslate } from '@/messaging/handlers';
 import { createLogger } from '@/utils/logger';

@@ -15,9 +15,14 @@ const taskIds = computed(() => Object.keys(taskRuntimeConfigs.value || {}));
 const activeTaskId = computed(() => String(route.params.taskId || ''));
 
 onMounted(async () => {
-  const taskConfigs = await agentStorage.taskConfigs.getValue();
-  logger.debug`Task Configs: ${taskConfigs}`;
-  taskRuntimeConfigs.value = taskConfigs;
+  try {
+    const taskConfigs = await agentStorage.taskConfigs.getValue();
+    logger.debug`Task Configs: ${taskConfigs}`;
+    taskRuntimeConfigs.value = taskConfigs;
+  } catch (err) {
+    logger.error`Failed to load task configs: ${err}`;
+    taskRuntimeConfigs.value = null;
+  }
 });
 
 </script>

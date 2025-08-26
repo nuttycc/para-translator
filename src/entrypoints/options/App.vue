@@ -11,17 +11,17 @@ const runToastTest = () => {
 };
 
 const resetStorage = () => {
-  browser.storage.local.clear().catch((err) => {
+  browser.storage.local.clear().then(() => {
+    showToast({
+      message: 'Storage reset',
+      type: 'success',
+      position: 'toast-bottom toast-center',
+    });
+  }).catch((err) => {
     logger.error`Failed to reset storage: ${err}`;
     showToast({
       message: 'Failed to reset storage',
       type: 'error',
-      position: 'toast-bottom toast-center',
-    });
-  }).finally(() => {
-    showToast({
-      message: 'Storage reset',
-      type: 'success',
       position: 'toast-bottom toast-center',
     });
   });

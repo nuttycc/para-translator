@@ -1,19 +1,32 @@
 <script setup lang="ts">
 import type { AIConfigs, TaskRuntimeConfig } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { ref } from '#imports';
+import { ref, watch } from '#imports';
 
 const props = defineProps<{
   config: TaskRuntimeConfig;
   taskType: string;
 }>();
 
+const emit = defineEmits<{
+  (e: 'update', value: TaskRuntimeConfig): void;
+}>();
+
 const aiConfigs = ref<AIConfigs>({});
 
-agentStorage.aiConfigs.getValue().then((configs) => {
-  aiConfigs.value = configs;
-});
+// Local working copy of the config
+const local = ref<TaskRuntimeConfig>(structuredClone(props.config));
 
+watch(local, (val) => emit('update', val), { deep: true });
+
+agentStorage.aiConfigs
+  .getValue()
+  .then((configs) => {
+    aiConfigs.value = configs;
+  })
+  .catch((err) => {
+    console.error('Failed to load AI configs:', err);
+  });
 </script>
 
 <template>
@@ -28,7 +41,7 @@ agentStorage.aiConfigs.getValue().then((configs) => {
           <label class="label">
             <span class="label-text font-semibold">Select AI Config</span>
           </label>
-          <select class="select" v-model="config.aiConfigId">
+          <select class="select" v-model="local.aiConfigId">
             <option disabled selected>Pick an AI Config</option>
             <option v-for="config in aiConfigs" :key="config.id" :value="config.id">
               {{ config.name }}
@@ -41,7 +54,7 @@ agentStorage.aiConfigs.getValue().then((configs) => {
             <span class="label-text font-semibold">System Prompt</span>
           </label>
           <textarea
-            v-model="config.prompt.system"
+            v-model="local.prompt.system"
             class="textarea textarea-bordered textarea-primary h-20 w-full resize-none"
             placeholder="Enter system prompt"
           ></textarea>
@@ -52,7 +65,7 @@ agentStorage.aiConfigs.getValue().then((configs) => {
             <span class="label-text font-semibold">User Prompt</span>
           </label>
           <textarea
-            v-model="config.prompt.user"
+            v-model="local.prompt.user"
             class="textarea textarea-bordered textarea-primary h-20 w-full resize-none"
             placeholder="Enter user prompt"
           ></textarea>
@@ -61,14 +74,14 @@ agentStorage.aiConfigs.getValue().then((configs) => {
         <div class="form-control">
           <label class="label">
             <span class="label-text font-semibold">Temperature</span>
-            <span class="label-text-alt text-base-content/70">{{ config.temperature || 0 }}</span>
+            <span class="label-text-alt text-base-content/70">{{ local.temperature || 0 }}</span>
           </label>
           <input
             type="range"
             min="0"
             max="2"
             step="0.1"
-            v-model="config.temperature"
+            v-model.number="local.temperature"
             class="range range-primary w-full"
           />
           <div class="flex justify-between text-xs text-base-content/60 mt-1 px-1">

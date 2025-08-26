@@ -17,7 +17,7 @@ const emit = defineEmits<{
 }>();
 
 const logger = createLogger('AiConfig');
-const config = reactive<AIConfig>(structuredClone(props.config));
+const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
 const showRemoteModels = ref(false);

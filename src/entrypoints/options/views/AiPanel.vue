@@ -38,7 +38,7 @@ const handleDelete = async (id: string) => {
   if (nextId) {
     router.replace({ name: 'ai.config', params: { configId: nextId } });
   } else {
-    router.replace({ name: 'ai.home' });
+    router.replace({ name: 'ai' });
   }
 };
 

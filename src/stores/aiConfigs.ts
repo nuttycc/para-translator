@@ -1,10 +1,9 @@
-import { defineStore } from 'pinia';
-import { readonly, ref, computed } from 'vue';
-import type { AIConfig, AIConfigs } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { isEqual } from 'es-toolkit';
+import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { toRaw } from '#imports';
+import { isEqual, omit } from 'es-toolkit';
+import { defineStore } from 'pinia';
+import { computed, readonly, ref, toRaw } from 'vue';
 
 const logger = createLogger('useAiConfigsStore');
 
@@ -84,13 +83,17 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     const next: AIConfig = {
       ...config,
       localModels: Array.isArray(config.localModels) ? config.localModels : [],
-      remoteModels: Array.isArray(config.remoteModels) ? config.remoteModels : undefined,
-      // updatedAt will be set only when there is a meaningful diff
-    };
+      remoteModels: Array.isArray(config.remoteModels) ? config.remoteModels : undefined,    };
     const prev = aiConfigsState.value[next.id];
-    if (prev && isEqual(prev, next)) {
-      logger.debug`Skipping write operation for ${next.id} because it is identical to the previous version`;
-      return; // Skip no-op write when objects are identical
+    if (prev) {
+      // Compare objects ignoring timestamp fields (createdAt and updatedAt)
+      const prevWithoutTimestamps = omit(prev, ['createdAt', 'updatedAt']);
+      const nextWithoutTimestamps = omit(next, ['createdAt', 'updatedAt']);
+
+      if (isEqual(prevWithoutTimestamps, nextWithoutTimestamps)) {
+        logger.debug`Skipping write operation for ${next.id} because it is identical to the previous version`;
+        return; // Skip no-op write when objects are identical
+      }
     }
 
     next.updatedAt = Date.now();

@@ -22,7 +22,7 @@ const activeTaskId = computed(() => {
 watch(
   () => route.params.taskId,
   (newTaskId) => {
-    if (!newTaskId) {
+    if (!newTaskId || !taskIds.value.includes(String(newTaskId))) {
       const fallback = lastActiveTaskId.value || firstTaskId.value;
       if (fallback) {
         router.replace({

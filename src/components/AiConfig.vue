@@ -26,8 +26,10 @@ const showRemoteModels = ref(false);
 
 const addLocalModel = () => {
   logger.debug`Adding local model: localModels=${config.localModels}`;
-  config.localModels.push(newLocalModel.value);
-  config.model = newLocalModel.value;
+  const newModel = newLocalModel.value.trim();
+  if (!newModel) return;
+  config.localModels.push(newModel);
+  config.model = newModel;
   newLocalModel.value = '';
 };
 

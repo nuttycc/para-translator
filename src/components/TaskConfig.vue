@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { AIConfigs, TaskRuntimeConfig } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { ref, watch, nextTick } from '#imports';
+import { ref, watch, nextTick, toRaw } from 'vue';
 
 const props = defineProps<{
   config: TaskRuntimeConfig;
@@ -15,7 +15,7 @@ const emit = defineEmits<{
 const aiConfigs = ref<AIConfigs>({});
 
 // Local working copy of the config
-const local = ref<TaskRuntimeConfig>(structuredClone(props.config));
+const local = ref<TaskRuntimeConfig>(structuredClone(toRaw(props.config)));
 // Internal flag to avoid echo loops when syncing from props
 const syncingFromProps = ref(false);
 
@@ -34,7 +34,7 @@ watch(
   () => props.config,
   (next) => {
     syncingFromProps.value = true;
-    local.value = structuredClone(next);
+    local.value = structuredClone(toRaw(next));
     nextTick(() => {
       syncingFromProps.value = false;
     });

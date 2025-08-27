@@ -59,7 +59,7 @@ const resetStorage = () => {
       </div>
 
       <div class="flex gap-2">
-        <RouterLink to="/" class="btn btn-soft" exact-active-class="btn-active btn-accent"
+        <RouterLink to="/ai" class="btn btn-soft" exact-active-class="btn-active btn-accent"
           >AI</RouterLink
         >
         <RouterLink to="/tasks" class="btn btn-soft" exact-active-class="btn-active btn-accent"

@@ -68,6 +68,17 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     }
   }
 
+  // Cleanup on store disposal
+  const cleanup = () => {
+    if (unwatchStorage) {
+      unwatchStorage();
+      unwatchStorage = null;
+    }
+    // Reset initialization state to allow re-initialization if needed
+    isInitialized = false;
+    initPromise = null;
+  };
+
   return {
     taskRuntimeConfigs: readonly(taskRuntimeConfigs),
     taskIds: readonly(taskIds),
@@ -78,5 +89,6 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     updateOne,
     setLastActiveTaskId,
     lastWriteError: readonly(lastWriteError),
+    $dispose: cleanup,
   };
 });

@@ -98,7 +98,7 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
 
     next.updatedAt = Date.now();
     aiConfigsState.value = { ...aiConfigsState.value, [next.id]: next };
-    writeThrough();
+    await writeThrough();
   }
 
   function setLastActiveConfigId(configId: string): void {
@@ -123,6 +123,17 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
   }
 
+  // Cleanup on store disposal
+  const cleanup = () => {
+    if (unwatchStorage) {
+      unwatchStorage();
+      unwatchStorage = null;
+    }
+    // Reset initialization state to allow re-initialization if needed
+    isInitialized = false;
+    initPromise = null;
+  };
+
   return {
     aiConfigs: readonly(aiConfigsState),
     configIds: readonly(configIds),
@@ -134,5 +145,6 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     remove,
     setLastActiveConfigId,
     lastWriteError: readonly(lastWriteError),
+    $dispose: cleanup,
   };
 });

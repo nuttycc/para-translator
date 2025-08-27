@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { readonly, ref, computed } from 'vue';
+import { readonly, ref, computed, toRaw } from 'vue';
 import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
 import { createLogger } from '@/utils/logger';
@@ -9,6 +9,7 @@ const logger = createLogger('useTaskConfigsStore');
 export const useTaskConfigsStore = defineStore('taskConfigs', () => {
   const taskRuntimeConfigs = ref<TaskRuntimeConfigs | null>(null);
   const lastWriteError = ref<unknown | null>(null);
+  const lastActiveTaskId = ref<string>('');
   let isInitialized = false;
   let unwatchStorage: (() => void) | null = null;
   let initPromise: Promise<void> | null = null;
@@ -30,6 +31,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
         });
       }
       isInitialized = true;
+
+      logger.debug`Task configs initialized. ${toRaw(taskRuntimeConfigs.value)}`;
     })();
     try {
       await initPromise;
@@ -45,11 +48,11 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
   async function updateOne(taskType: TaskType, config: TaskRuntimeConfig): Promise<void> {
     await ensureInit();
     const prev = taskRuntimeConfigs.value ?? {};
-    const next = { ...prev, [taskType]: config };
+    const next = { ...toRaw(prev), [taskType]: config } as TaskRuntimeConfigs;
     try {
       await agentStorage.taskConfigs.setValue(next);
       taskRuntimeConfigs.value = next;
-      logger.debug`Updated task config for ${taskType}`;
+      logger.debug`Updated task config for ${taskType}. prev: ${toRaw(prev)}, next: ${toRaw(next)}`;
     } catch (err) {
       lastWriteError.value = err;
       logger.error`Failed to update task config for ${taskType}: ${String(err)}`;
@@ -58,13 +61,22 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     }
   }
 
+  function setLastActiveTaskId(taskId: TaskType): void {
+    // Only accept ids that exist in current state to avoid dangling references
+    if (taskId && taskRuntimeConfigs.value && taskRuntimeConfigs.value[taskId]) {
+      lastActiveTaskId.value = taskId;
+    }
+  }
+
   return {
     taskRuntimeConfigs: readonly(taskRuntimeConfigs),
     taskIds: readonly(taskIds),
     firstTaskId: readonly(firstTaskId),
     hasTasks: readonly(hasTasks),
+    lastActiveTaskId: readonly(lastActiveTaskId),
     load,
     updateOne,
+    setLastActiveTaskId,
     lastWriteError: readonly(lastWriteError),
   };
 });

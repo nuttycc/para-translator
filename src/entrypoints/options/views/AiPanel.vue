@@ -5,18 +5,28 @@ import { storeToRefs } from 'pinia';
 import type { AIConfig } from '@/agent/types';
 import AiConfig from '@/components/AiConfig.vue';
 import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { createLogger } from '@/utils/logger';
 
 const route = useRoute();
 const router = useRouter();
-const configId = computed(() => String(route.params.configId || ''));
+const logger = createLogger('AiPanel');
 
 const aiConfigsStore = useAiConfigsStore();
 const { aiConfigs } = storeToRefs(aiConfigsStore);
+
+const props = defineProps<{
+  configId?: string;
+}>();
+
+const configId = computed(() => String(props.configId || aiConfigsStore.firstConfigId));
 
 const currentConfig = computed<AIConfig | null>(() => {
   const cfg = aiConfigs.value[configId.value];
   return cfg ? (toRaw(cfg) as AIConfig) : null;
 });
+
+
+logger.debug`Current config: ${configId.value}`;
 
 const handleUpdate = async (config: AIConfig) => {
   await aiConfigsStore.upsert(config);
@@ -31,7 +41,6 @@ const handleDelete = async (id: string) => {
     router.replace({ name: 'ai.home' });
   }
 };
-
 
 </script>
 

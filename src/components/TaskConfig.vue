@@ -1,55 +1,51 @@
 <script setup lang="ts">
-import type { AIConfigs, TaskRuntimeConfig } from '@/agent/types';
-import { agentStorage } from '@/agent/storage';
-import { ref, watch, nextTick, toRaw } from 'vue';
+import type { TaskRuntimeConfig, TaskType } from '@/agent/types';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { computed, ref, toRaw, watch } from 'vue';
+import { createLogger } from '@/utils/logger';
+import { useDebounceFn } from '@vueuse/core';
 
 const props = defineProps<{
-  config: TaskRuntimeConfig;
-  taskType: string;
+  taskType: TaskType;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update', value: TaskRuntimeConfig): void;
-}>();
+const logger = createLogger('TaskConfig');
+const taskConfigsStore = useTaskConfigsStore();
+const aiConfigsStore = useAiConfigsStore();
 
-const aiConfigs = ref<AIConfigs>({});
+const taskRuntimeConfigs = taskConfigsStore.taskRuntimeConfigs;
+const aiConfigs = aiConfigsStore.aiConfigs;
 
-// Local working copy of the config
-const local = ref<TaskRuntimeConfig>(structuredClone(toRaw(props.config)));
-// Internal flag to avoid echo loops when syncing from props
-const syncingFromProps = ref(false);
+const curTaskConfig = computed<TaskRuntimeConfig | null>(() => {
+  return taskRuntimeConfigs?.[props.taskType] ?? null;
+});
 
-// Emit changes upstream (skip while we are syncing from props)
+const local = ref<TaskRuntimeConfig | null>(structuredClone(toRaw(curTaskConfig.value ?? null)));
+
+const handleUpdate = useDebounceFn(async (updated: TaskRuntimeConfig) => {
+  await taskConfigsStore.updateOne(props.taskType, toRaw(updated));
+}, 500);
+
 watch(
-  local,
-  (val) => {
-    if (syncingFromProps.value) return;
-    emit('update', val);
+  curTaskConfig,
+  (newVal) => {
+    local.value = structuredClone(toRaw(newVal));
   },
   { deep: true }
 );
 
-// Keep local in sync if parent replaces the config object
 watch(
-  () => props.config,
-  (next) => {
-    syncingFromProps.value = true;
-    local.value = structuredClone(toRaw(next));
-    nextTick(() => {
-      syncingFromProps.value = false;
-    });
-  }
-  // reference watch is sufficient; use { deep: true } only if parent mutates in-place
+  local,
+  async (newVal) => {
+    if (!newVal) {
+      logger.debug`Task config for ${props.taskType} is null`;
+      return;
+    }
+    handleUpdate(newVal);
+  },
+  { deep: true }
 );
-
-agentStorage.aiConfigs
-  .getValue()
-  .then((configs) => {
-    aiConfigs.value = configs ?? {};
-  })
-  .catch((err) => {
-    console.error('Failed to load AI configs:', err);
-  });
 </script>
 
 <template>
@@ -59,7 +55,7 @@ agentStorage.aiConfigs
         {{ taskType.charAt(0).toUpperCase() + taskType.slice(1) }} Task
       </h2>
 
-      <div class="space-y-4">
+      <div class="space-y-4" v-if="local">
         <div class="form-control flex flex-col gap-2">
           <label class="label">
             <span class="label-text font-semibold">Select AI Config</span>

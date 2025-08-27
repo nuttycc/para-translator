@@ -1,51 +1,33 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
 import { browser } from '#imports';
 import { createLogger } from '@/utils/logger';
 import { showToast, testToast } from '@/utils/toast';
 import { RouterLink, RouterView } from 'vue-router';
-import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const logger = createLogger('options');
-
-// Global store initialization
-onMounted(async () => {
-  try {
-    // Initialize both stores globally to avoid scattered load calls
-    const aiConfigsStore = useAiConfigsStore();
-    const taskConfigsStore = useTaskConfigsStore();
-
-    await Promise.all([
-      aiConfigsStore.load(),
-      taskConfigsStore.load()
-    ]);
-
-    logger.debug`Global stores initialized successfully`;
-  } catch (err) {
-    logger.error`Failed to initialize global stores: ${err}`;
-  }
-});
 
 const runToastTest = () => {
   testToast();
 };
 
 const resetStorage = () => {
-  browser.storage.local.clear().then(() => {
-    showToast({
-      message: 'Storage reset',
-      type: 'success',
-      position: 'toast-bottom toast-center',
+  browser.storage.local
+    .clear()
+    .then(() => {
+      showToast({
+        message: 'Storage reset',
+        type: 'success',
+        position: 'toast-bottom toast-center',
+      });
+    })
+    .catch((err) => {
+      logger.error`Failed to reset storage: ${err}`;
+      showToast({
+        message: 'Failed to reset storage',
+        type: 'error',
+        position: 'toast-bottom toast-center',
+      });
     });
-  }).catch((err) => {
-    logger.error`Failed to reset storage: ${err}`;
-    showToast({
-      message: 'Failed to reset storage',
-      type: 'error',
-      position: 'toast-bottom toast-center',
-    });
-  });
 };
 </script>
 
@@ -59,11 +41,11 @@ const resetStorage = () => {
       </div>
 
       <div class="flex gap-2">
-        <RouterLink to="/ai" class="btn btn-soft" exact-active-class="btn-active btn-accent"
-          >AI</RouterLink
+        <RouterLink :to="{ name: 'ai.config' }" v-slot="{ isActive }" class="btn btn-soft">
+          {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
         >
-        <RouterLink to="/tasks" class="btn btn-soft" exact-active-class="btn-active btn-accent"
-          >Tasks</RouterLink
+        <RouterLink :to="{ name: 'tasks.detail' }" v-slot="{ isActive }" class="btn btn-soft"
+          >Tasks {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
         >
       </div>
     </div>
@@ -85,5 +67,3 @@ const resetStorage = () => {
     </div>
   </div>
 </template>
-
-

@@ -4,12 +4,14 @@ import type { AIConfig, AIConfigs } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
 import { isEqual } from 'es-toolkit';
 import { createLogger } from '@/utils/logger';
+import { toRaw } from '#imports';
 
 const logger = createLogger('useAiConfigsStore');
 
 export const useAiConfigsStore = defineStore('aiConfigs', () => {
   const aiConfigsState = ref<AIConfigs>({});
   const lastWriteError = ref<unknown | null>(null);
+  const lastActiveConfigId = ref<string>('');
   let isInitialized = false;
   let unwatchStorage: (() => void) | null = null;
   let initPromise: Promise<void> | null = null;
@@ -34,8 +36,15 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
   };
 
   async function ensureInit(): Promise<void> {
-    if (isInitialized) return;
-    if (initPromise) return initPromise;
+    if (isInitialized) {
+      logger.debug`AI Configs already initialized. Skipping init.`;
+      return;
+    }
+    if (initPromise) {
+      logger.debug`Waiting for AI Configs init promise...`;
+      return initPromise;
+    }
+    logger.debug`Initializing AI Configs...`;
     initPromise = (async () => {
       aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
       if (!unwatchStorage) {
@@ -56,6 +65,8 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
         });
       }
       isInitialized = true;
+
+      logger.debug`AI Configs initialized. ${toRaw(aiConfigsState.value)}`;
     })();
     try {
       await initPromise;
@@ -87,6 +98,13 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     writeThrough();
   }
 
+  function setLastActiveConfigId(configId: string): void {
+    // Only accept ids that exist in current state to avoid dangling references
+    if (configId && aiConfigsState.value[configId]) {
+      lastActiveConfigId.value = configId;
+    }
+  }
+
   async function remove(configId: string): Promise<void> {
     await ensureInit();
     const next = { ...aiConfigsState.value };
@@ -107,9 +125,11 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     configIds: readonly(configIds),
     firstConfigId: readonly(firstConfigId),
     hasConfigs: readonly(hasConfigs),
+    lastActiveConfigId: readonly(lastActiveConfigId),
     load,
     upsert,
     remove,
+    setLastActiveConfigId,
     lastWriteError: readonly(lastWriteError),
   };
 });

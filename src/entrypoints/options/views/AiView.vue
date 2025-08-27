@@ -7,12 +7,16 @@ import { useAiConfigsStore } from '@/stores/aiConfigs';
 const route = useRoute();
 const router = useRouter();
 const aiConfigsStore = useAiConfigsStore();
-const { aiConfigs, configIds } = storeToRefs(aiConfigsStore);
+const { aiConfigs, configIds, lastActiveConfigId, firstConfigId } = storeToRefs(aiConfigsStore);
 
 // Template ref for the scrollable container
 const scrollContainer = ref<HTMLElement>();
 
-const activeConfigId = computed(() => String(route.params.configId || ''));
+const activeConfigId = computed(() => {
+  return String(
+    route.params.configId || lastActiveConfigId.value || firstConfigId.value
+  );
+});
 
 // Function to scroll active config into view
 const scrollToActiveConfig = async () => {
@@ -30,22 +34,13 @@ const scrollToActiveConfig = async () => {
     activeElement.scrollIntoView({
       behavior: 'smooth',
       block: 'nearest',
-      inline: 'nearest'
+      inline: 'nearest',
     });
 
     // Programmatically focus the element for accessibility
     activeElement.focus({ preventScroll: true });
   }
 };
-
-// Watch for route changes to scroll to active config
-watch(
-  () => route.params.configId,
-  () => {
-    scrollToActiveConfig();
-  },
-  { immediate: true }
-);
 
 const addNewConfig = async () => {
   const newConfigId = `new-${Date.now()}`;
@@ -63,13 +58,36 @@ const addNewConfig = async () => {
   router.push({ name: 'ai.config', params: { configId: newConfigId } });
 };
 
+watch(
+  () => route.params.configId,
+  (newConfigId) => {
+    if (!newConfigId) {
+      const fallback = lastActiveConfigId.value || firstConfigId.value;
+      if (fallback) {
+        router.replace({ name: 'ai.config', params: { configId: fallback } });
+      }
+    }
+    scrollToActiveConfig();
+  },
+  { immediate: true }
+);
 
+watch(
+  () => activeConfigId.value,
+  (id) => {
+    aiConfigsStore.setLastActiveConfigId(id);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
   <div class="flex h-[600px] justify-start items-start gap-4">
     <div class="navbar w-60 min-w-56 flex flex-col gap-2">
-      <div ref="scrollContainer" class="w-full px-2 mt-6 h-[460px] overflow-y-auto flex flex-col gap-2">
+      <div
+        ref="scrollContainer"
+        class="w-full px-2 mt-6 h-[460px] overflow-y-auto flex flex-col gap-2"
+      >
         <router-link
           v-for="configId in configIds"
           :key="configId"
@@ -77,7 +95,7 @@ const addNewConfig = async () => {
           :to="{ name: 'ai.config', params: { configId } }"
           :class="[
             'btn btn-soft text-sm w-48 justify-start truncate',
-            { 'btn-active btn-accent': activeConfigId === String(configId) },
+            { 'btn-active btn-accent': false },
           ]"
           :title="aiConfigs[configId]?.name || String(configId)"
         >
@@ -89,7 +107,7 @@ const addNewConfig = async () => {
     <div class="flex-1 min-w-0 h-[560px] overflow-auto">
       <router-view v-slot="{ Component }">
         <keep-alive :max="5">
-          <component :is="Component" :key="$route.params.configId" />
+          <component :is="Component" :key="$route.params.configId" :config-id="activeConfigId" />
         </keep-alive>
       </router-view>
     </div>

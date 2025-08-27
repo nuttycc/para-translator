@@ -1,21 +1,47 @@
 <script setup lang="ts">
-import { computed } from '#imports';
-import { storeToRefs } from 'pinia';
-import type { TaskRuntimeConfigs } from '@/agent/types';
-import { createLogger } from '@/utils/logger';
-import { useRoute } from 'vue-router';
+import { computed, watch } from 'vue';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { createLogger } from '@/utils/logger';
+import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { TaskType } from '@/agent/types';
 
 const route = useRoute();
+const router = useRouter();
 
 const logger = createLogger('options');
 const taskConfigsStore = useTaskConfigsStore();
-const { taskRuntimeConfigs, taskIds } = storeToRefs(taskConfigsStore);
+const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
 
-const activeTaskId = computed(() => String(route.params.taskId || ''));
+const activeTaskId = computed(() => {
+  return String(
+    route.params.taskId || lastActiveTaskId.value || firstTaskId.value
+  ) as TaskType;
+});
 
-// Store is already initialized globally in App.vue
+watch(
+  () => route.params.taskId,
+  (newTaskId) => {
+    if (!newTaskId) {
+      const fallback = lastActiveTaskId.value || firstTaskId.value;
+      if (fallback) {
+        router.replace({
+          name: 'tasks.detail',
+          params: { taskId: fallback },
+        });
+      }
+    }
+  },
+  { immediate: true }
+);
 
+watch(
+  () => activeTaskId.value,
+  (id) => {
+    taskConfigsStore.setLastActiveTaskId(id);
+  },
+  { immediate: true }
+);
 </script>
 
 <template>
@@ -25,7 +51,7 @@ const activeTaskId = computed(() => String(route.params.taskId || ''));
         v-for="tid in taskIds"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
-        :class="['btn btn-soft', { 'btn-active btn-accent': activeTaskId === String(tid) }]"
+        :class="['btn btn-soft', { 'btn-active btn-accent': false }]"
       >
         {{ String(tid).charAt(0).toUpperCase() + String(tid).slice(1) }}
       </router-link>
@@ -35,11 +61,10 @@ const activeTaskId = computed(() => String(route.params.taskId || ''));
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <keep-alive>
-            <component :is="Component" />
+            <component :is="Component" :task-id="activeTaskId" />
           </keep-alive>
         </transition>
       </router-view>
     </div>
   </div>
 </template>
-

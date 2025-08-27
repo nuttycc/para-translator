@@ -52,7 +52,7 @@ load();
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <keep-alive>
-            <component :is="Component" />
+            <component :is="Component" :key="$route.params.configId" />
           </keep-alive>
         </transition>
       </router-view>

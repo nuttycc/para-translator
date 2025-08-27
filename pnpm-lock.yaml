@@ -26,6 +26,9 @@ importers:
       openai:
         specifier: ^5.15.0
         version: 5.15.0(ws@8.18.3)(zod@4.1.1)
+      p-debounce:
+        specifier: ^4.0.0
+        version: 4.0.0
       vue:
         specifier: ^3.5.19
         version: 3.5.19(typescript@5.9.2)
@@ -2159,6 +2162,10 @@ packages:
     resolution: {integrity: sha512-tBQ9aB00aYLlGXE21WJHnKQAI8xoi2V6Eiz/WvGV7FwU9YLYuNOurEEVbfoS5u0ODX8GLvGWj1fdHh5Rb74Kkw==}
     engines: {node: '>=8.*'}
     hasBin: true
+
+  p-debounce@4.0.0:
+    resolution: {integrity: sha512-4Ispi9I9qYGO4lueiLDhe4q4iK5ERK8reLsuzH6BPaXn53EGaua8H66PXIFGrW897hwjXp+pVLrm/DLxN0RF0A==}
+    engines: {node: '>=12'}
 
   package-json@10.0.1:
     resolution: {integrity: sha512-ua1L4OgXSBdsu1FPb7F3tYH0F48a6kxvod4pLUlGY9COeJAJQNX/sNH2IiEmsxw7lqYiAwrdHMjz1FctOsyDQg==}
@@ -4815,6 +4822,8 @@ snapshots:
       '@oxlint/win32-arm64': 1.12.0
       '@oxlint/win32-x64': 1.12.0
       oxlint-tsgolint: 0.0.4
+
+  p-debounce@4.0.0: {}
 
   package-json@10.0.1:
     dependencies:

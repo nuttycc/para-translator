@@ -8,6 +8,7 @@ const aiConfigsState = ref<AIConfigs>({});
 const lastWriteError = ref<unknown | null>(null);
 let isInitialized = false;
 let unwatchStorage: (() => void) | null = null;
+let initPromise: Promise<void> | null = null;
 const logger = createLogger('useAiConfigs');
 
 const writeThrough = pDebounce(async () => {
@@ -18,7 +19,7 @@ const writeThrough = pDebounce(async () => {
   } catch (err) {
     // Reload from storage to reconcile and expose error
     lastWriteError.value = err;
-    const fresh = await agentStorage.aiConfigs.getValue();
+    const fresh = (await agentStorage.aiConfigs.getValue()) ?? {};
     aiConfigsState.value = fresh;
     logger.error`Failed to persist aiConfigs: ${String(err)}`;
   }
@@ -26,25 +27,33 @@ const writeThrough = pDebounce(async () => {
 
 async function ensureInit(): Promise<void> {
   if (isInitialized) return;
-  aiConfigsState.value = await agentStorage.aiConfigs.getValue();
-  if (!unwatchStorage) {
-    unwatchStorage = agentStorage.aiConfigs.watch((newValue) => {
-      // Last-write-wins by updatedAt for each key
-      const incoming = newValue || {};
-      const merged: AIConfigs = { ...aiConfigsState.value };
-      for (const [id, cfg] of Object.entries(incoming)) {
-        const current = merged[id];
-        if (!current || (cfg.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
-          merged[id] = cfg;
+  if (initPromise) return initPromise;
+  initPromise = (async () => {
+    aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
+    if (!unwatchStorage) {
+      unwatchStorage = agentStorage.aiConfigs.watch((newValue) => {
+        // Last-write-wins by updatedAt for each key
+        const incoming = newValue || {};
+        const merged: AIConfigs = { ...aiConfigsState.value };
+        for (const [id, cfg] of Object.entries(incoming)) {
+          const current = merged[id];
+          if (!current || (cfg.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
+            merged[id] = cfg;
+          }
         }
-      }
-      // Do not infer deletions from absence to avoid dropping local, unflushed entries.
-      // Deletions should be explicit (handled via `remove()` or tombstones).
-      aiConfigsState.value = merged;
-      logger.debug`Storage change merged. Items=${Object.keys(merged).length}`;
-    });
+        // Do not infer deletions from absence to avoid dropping local, unflushed entries.
+        // Deletions should be explicit (handled via `remove()` or tombstones).
+        aiConfigsState.value = merged;
+        logger.debug`Storage change merged. Items=${Object.keys(merged).length}`;
+      });
+    }
+    isInitialized = true;
+  })();
+  try {
+    await initPromise;
+  } finally {
+    initPromise = null;
   }
-  isInitialized = true;
 }
 
 async function load(): Promise<void> {
@@ -74,7 +83,7 @@ async function remove(configId: string): Promise<void> {
   } catch (err) {
     lastWriteError.value = err;
     logger.error`Failed to remove config ${configId}: ${String(err)}`;
-    aiConfigsState.value = await agentStorage.aiConfigs.getValue();
+    aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
   }
 }
 

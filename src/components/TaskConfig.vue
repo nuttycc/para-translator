@@ -45,7 +45,7 @@ watch(
 agentStorage.aiConfigs
   .getValue()
   .then((configs) => {
-    aiConfigs.value = configs;
+    aiConfigs.value = configs ?? {};
   })
   .catch((err) => {
     console.error('Failed to load AI configs:', err);

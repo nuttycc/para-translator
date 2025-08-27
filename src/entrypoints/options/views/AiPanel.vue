@@ -1,42 +1,47 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import type { AIConfig } from '@/agent/types';
 import AiConfig from '@/components/AiConfig.vue';
-import { useAiConfigs } from '@/composables/useAiConfigs';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { createLogger } from '@/utils/logger';
 
 const route = useRoute();
 const router = useRouter();
-const configId = computed(() => String(route.params.configId || ''));
+const logger = createLogger('AiPanel');
 
-const { aiConfigs, load, upsert, remove } = useAiConfigs();
+const aiConfigsStore = useAiConfigsStore();
+const { aiConfigs } = storeToRefs(aiConfigsStore);
+
+const props = defineProps<{
+  configId?: string;
+}>();
+
+const configId = computed(() => String(props.configId || aiConfigsStore.firstConfigId));
+
 const currentConfig = computed<AIConfig | null>(() => {
   const cfg = aiConfigs.value[configId.value];
-  if (!cfg) return null;
-  const localModels = Array.isArray(cfg.localModels) ? [...cfg.localModels] : [];
-  const remoteModels = Array.isArray(cfg.remoteModels) ? [...cfg.remoteModels] : undefined;
-  return {
-    ...cfg,
-    localModels,
-    remoteModels,
-  } as AIConfig;
+  return cfg ? (toRaw(cfg) as AIConfig) : null;
 });
 
+
+logger.debug`Current config: ${configId.value}`;
+
 const handleUpdate = async (config: AIConfig) => {
-  await upsert(config);
+  await aiConfigsStore.upsert(config);
 };
 
 const handleDelete = async (id: string) => {
-  await remove(id);
-  const nextId = Object.keys(aiConfigs.value || {}).at(0);
+  await aiConfigsStore.remove(id);
+  const nextId = Object.keys(aiConfigs.value || {}).at(-1);
   if (nextId) {
     router.replace({ name: 'ai.config', params: { configId: nextId } });
   } else {
-    router.replace({ name: 'ai.home' });
+    router.replace({ name: 'ai' });
   }
 };
 
-load();
 </script>
 
 <template>

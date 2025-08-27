@@ -11,20 +11,23 @@ const runToastTest = () => {
 };
 
 const resetStorage = () => {
-  browser.storage.local.clear().then(() => {
-    showToast({
-      message: 'Storage reset',
-      type: 'success',
-      position: 'toast-bottom toast-center',
+  browser.storage.local
+    .clear()
+    .then(() => {
+      showToast({
+        message: 'Storage reset',
+        type: 'success',
+        position: 'toast-bottom toast-center',
+      });
+    })
+    .catch((err) => {
+      logger.error`Failed to reset storage: ${err}`;
+      showToast({
+        message: 'Failed to reset storage',
+        type: 'error',
+        position: 'toast-bottom toast-center',
+      });
     });
-  }).catch((err) => {
-    logger.error`Failed to reset storage: ${err}`;
-    showToast({
-      message: 'Failed to reset storage',
-      type: 'error',
-      position: 'toast-bottom toast-center',
-    });
-  });
 };
 </script>
 
@@ -38,11 +41,11 @@ const resetStorage = () => {
       </div>
 
       <div class="flex gap-2">
-        <RouterLink to="/" class="btn btn-soft" exact-active-class="btn-active btn-accent"
-          >AI</RouterLink
+        <RouterLink :to="{ name: 'ai.config' }" v-slot="{ isActive }" class="btn btn-soft">
+          {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
         >
-        <RouterLink to="/tasks" class="btn btn-soft" exact-active-class="btn-active btn-accent"
-          >Tasks</RouterLink
+        <RouterLink :to="{ name: 'tasks.detail' }" v-slot="{ isActive }" class="btn btn-soft"
+          >Tasks {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
         >
       </div>
     </div>
@@ -52,7 +55,7 @@ const resetStorage = () => {
     <div class="min-h-[600px] w-3xl mb-8">
       <RouterView v-slot="{ Component, route }">
         <transition :name="(route.meta?.transition as string) || 'fade'" mode="out-in">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" :key="route.matched[0]?.path" />
         </transition>
       </RouterView>
     </div>
@@ -64,21 +67,3 @@ const resetStorage = () => {
     </div>
   </div>
 </template>
-
-<style scoped>
-/* 淡入淡出动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.1s ease-in-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-.fade-enter-to,
-.fade-leave-from {
-  opacity: 1;
-}
-</style>

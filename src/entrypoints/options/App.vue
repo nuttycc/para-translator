@@ -1,10 +1,31 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { browser } from '#imports';
 import { createLogger } from '@/utils/logger';
 import { showToast, testToast } from '@/utils/toast';
 import { RouterLink, RouterView } from 'vue-router';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const logger = createLogger('options');
+
+// Global store initialization
+onMounted(async () => {
+  try {
+    // Initialize both stores globally to avoid scattered load calls
+    const aiConfigsStore = useAiConfigsStore();
+    const taskConfigsStore = useTaskConfigsStore();
+
+    await Promise.all([
+      aiConfigsStore.load(),
+      taskConfigsStore.load()
+    ]);
+
+    logger.debug`Global stores initialized successfully`;
+  } catch (err) {
+    logger.error`Failed to initialize global stores: ${err}`;
+  }
+});
 
 const runToastTest = () => {
   testToast();

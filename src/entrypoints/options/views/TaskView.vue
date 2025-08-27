@@ -1,29 +1,20 @@
 <script setup lang="ts">
-import { onMounted, ref, computed } from '#imports';
-import { agentStorage } from '@/agent/storage';
+import { computed } from '#imports';
+import { storeToRefs } from 'pinia';
 import type { TaskRuntimeConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { useRoute } from 'vue-router';
-
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const route = useRoute();
 
 const logger = createLogger('options');
+const taskConfigsStore = useTaskConfigsStore();
+const { taskRuntimeConfigs, taskIds } = storeToRefs(taskConfigsStore);
 
-const taskRuntimeConfigs = ref<TaskRuntimeConfigs | null>(null);
-const taskIds = computed(() => Object.keys(taskRuntimeConfigs.value || {}));
 const activeTaskId = computed(() => String(route.params.taskId || ''));
 
-onMounted(async () => {
-  try {
-    const taskConfigs = await agentStorage.taskConfigs.getValue();
-    logger.debug`Task Configs: ${taskConfigs}`;
-    taskRuntimeConfigs.value = taskConfigs;
-  } catch (err) {
-    logger.error`Failed to load task configs: ${err}`;
-    taskRuntimeConfigs.value = null;
-  }
-});
+// Store is already initialized globally in App.vue
 
 </script>
 

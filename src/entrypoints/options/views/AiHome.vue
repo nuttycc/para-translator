@@ -1,19 +1,20 @@
 <script setup lang="ts">
 import { onMounted } from '#imports';
 import { useRouter } from 'vue-router';
-import { agentStorage } from '@/agent/storage';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
 
 const router = useRouter();
+const aiConfigsStore = useAiConfigsStore();
 
 onMounted(async () => {
   try {
-    const configs = await agentStorage.aiConfigs.getValue();
-    const firstId = Object.keys(configs || {}).at(0);
+    // Store is already initialized globally, just navigate to first config
+    const firstId = aiConfigsStore.firstConfigId;
     if (firstId) {
       router.replace({ name: 'ai.config', params: { configId: firstId } });
     }
   } catch (err) {
-    console.error('Failed to load AI configs:', err);
+    console.error('Failed to navigate to first AI config:', err);
     // Optionally show an error toast to the user
   }
 });

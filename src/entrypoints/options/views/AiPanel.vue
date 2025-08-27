@@ -1,15 +1,17 @@
 <script setup lang="ts">
 import { computed, toRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
 import type { AIConfig } from '@/agent/types';
 import AiConfig from '@/components/AiConfig.vue';
-import { useAiConfigs } from '@/composables/useAiConfigs';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
 
 const route = useRoute();
 const router = useRouter();
 const configId = computed(() => String(route.params.configId || ''));
 
-const { aiConfigs, load, upsert, remove } = useAiConfigs();
+const aiConfigsStore = useAiConfigsStore();
+const { aiConfigs } = storeToRefs(aiConfigsStore);
 
 const currentConfig = computed<AIConfig | null>(() => {
   const cfg = aiConfigs.value[configId.value];
@@ -17,11 +19,11 @@ const currentConfig = computed<AIConfig | null>(() => {
 });
 
 const handleUpdate = async (config: AIConfig) => {
-  await upsert(config);
+  await aiConfigsStore.upsert(config);
 };
 
 const handleDelete = async (id: string) => {
-  await remove(id);
+  await aiConfigsStore.remove(id);
   const nextId = Object.keys(aiConfigs.value || {}).at(-1);
   if (nextId) {
     router.replace({ name: 'ai.config', params: { configId: nextId } });
@@ -30,7 +32,7 @@ const handleDelete = async (id: string) => {
   }
 };
 
-load();
+
 </script>
 
 <template>

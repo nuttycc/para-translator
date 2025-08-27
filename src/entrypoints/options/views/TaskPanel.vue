@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from '#imports';
+import { computed } from '#imports';
+import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { agentStorage } from '@/agent/storage';
-import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
+import type { TaskRuntimeConfig, TaskType } from '@/agent/types';
 import { TASK_TYPES } from '@/agent/types';
 import TaskConfig from '@/components/TaskConfig.vue';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const route = useRoute();
 const taskId = computed(() => String(route.params.taskId || ''));
 
-const taskRuntimeConfigs = ref<TaskRuntimeConfigs | null>(null);
+const taskConfigsStore = useTaskConfigsStore();
+const { taskRuntimeConfigs } = storeToRefs(taskConfigsStore);
+
 const currentTask = computed<TaskRuntimeConfig | null>(() => {
   const id = taskId.value;
   const configs = taskRuntimeConfigs.value || {};
@@ -17,21 +20,12 @@ const currentTask = computed<TaskRuntimeConfig | null>(() => {
   return configs[id] || null;
 });
 
-onMounted(async () => {
-  taskRuntimeConfigs.value = await agentStorage.taskConfigs.getValue();
-});
+// Store is already initialized globally in App.vue
 
 const handleUpdate = async (updated: TaskRuntimeConfig) => {
   const id = taskId.value as TaskType;
   if (!TASK_TYPES.includes(id)) return;
-  const prev = (taskRuntimeConfigs.value ?? {}) as TaskRuntimeConfigs;
-  const next = { ...prev, [id]: updated } as TaskRuntimeConfigs;
-  try {
-    await agentStorage.taskConfigs.setValue(next);
-    taskRuntimeConfigs.value = next;
-  } catch (err) {
-    console.error('Failed to save task config', err);
-  }
+  await taskConfigsStore.updateOne(id, updated);
 };
 </script>
 

@@ -1,17 +1,18 @@
 <script setup lang="ts">
 import { onMounted } from '#imports';
 import { useRouter } from 'vue-router';
-import { agentStorage } from '@/agent/storage';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const router = useRouter();
+const taskConfigsStore = useTaskConfigsStore();
 
 onMounted(async () => {
   try {
-    const taskConfigs = await agentStorage.taskConfigs.getValue();
-    const firstTask = Object.keys(taskConfigs || {}).at(0) || 'translate';
+    // Store is already initialized globally, just navigate to first task
+    const firstTask = taskConfigsStore.firstTaskId;
     router.replace({ name: 'tasks.detail', params: { taskId: firstTask } });
   } catch (err) {
-    console.error('Failed to load task configs:', err);
+    console.error('Failed to navigate to first task:', err);
     // Optionally show an error toast to the user
   }
 });

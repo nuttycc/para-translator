@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { AIConfig } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { PropType, reactive, watch, onBeforeUnmount, ref, toRaw } from 'vue';
+import { PropType, reactive, watch, onBeforeUnmount, ref, toRaw, nextTick } from 'vue';
 import { showToast } from '@/utils/toast';
 
 const props = defineProps({
@@ -17,6 +17,8 @@ const emit = defineEmits<{
 }>();
 
 const logger = createLogger('AiConfig');
+// Local working copy to avoid echo loop; parent is source of truth
+const syncingFromProps = ref(false);
 const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
@@ -35,8 +37,9 @@ const deleteLocalModel = () => {
   config.model = config.localModels.at(-1) || '';
 };
 
-// Emit updates immediately; debounced persistence is handled in useAiConfigs
+// Emit updates, but skip when syncing from props to avoid echo loop
 const updateConfig = (newConfig: AIConfig) => {
+  if (syncingFromProps.value) return;
   emit('update', toRaw(newConfig));
 };
 
@@ -86,11 +89,15 @@ const fetchModes = async () => {
   }
 };
 
-// Keep local config in sync when parent replaces the object
+// Keep local config in sync when parent replaces the object, without emitting
 watch(
   () => props.config,
   (next) => {
+    syncingFromProps.value = true;
     Object.assign(config, structuredClone(next));
+    nextTick(() => {
+      syncingFromProps.value = false;
+    });
   }
 );
 

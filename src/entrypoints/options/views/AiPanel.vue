@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, toRaw } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import type { AIConfig } from '@/agent/types';
 import AiConfig from '@/components/AiConfig.vue';
@@ -12,14 +12,7 @@ const configId = computed(() => String(route.params.configId || ''));
 const { aiConfigs, load, upsert, remove } = useAiConfigs();
 const currentConfig = computed<AIConfig | null>(() => {
   const cfg = aiConfigs.value[configId.value];
-  if (!cfg) return null;
-  const localModels = Array.isArray(cfg.localModels) ? [...cfg.localModels] : [];
-  const remoteModels = Array.isArray(cfg.remoteModels) ? [...cfg.remoteModels] : undefined;
-  return {
-    ...cfg,
-    localModels,
-    remoteModels,
-  } as AIConfig;
+  return cfg ? (toRaw(cfg) as AIConfig) : null;
 });
 
 const handleUpdate = async (config: AIConfig) => {

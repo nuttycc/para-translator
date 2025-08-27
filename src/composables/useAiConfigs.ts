@@ -1,6 +1,7 @@
 import { readonly, ref } from 'vue';
 import type { AIConfig, AIConfigs } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
+import { isEqual } from 'es-toolkit';
 import pDebounce from 'p-debounce';
 import { createLogger } from '@/utils/logger';
 
@@ -66,8 +67,15 @@ async function upsert(config: AIConfig): Promise<void> {
     ...config,
     localModels: Array.isArray(config.localModels) ? config.localModels : [],
     remoteModels: Array.isArray(config.remoteModels) ? config.remoteModels : undefined,
-    updatedAt: Date.now(),
+    // updatedAt will be set only when there is a meaningful diff
   };
+  const prev = aiConfigsState.value[next.id];
+  if (prev && isEqual(prev, next)) {
+    logger.debug`Skipping write operation for ${next.id} because it is identical to the previous version`;
+    return; // Skip no-op write when objects are identical
+  }
+
+  next.updatedAt = Date.now();
   aiConfigsState.value = { ...aiConfigsState.value, [next.id]: next };
   await writeThrough();
 }

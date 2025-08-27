@@ -32,7 +32,7 @@ load();
 <template>
   <div class="flex h-[600px] justify-start items-start gap-4">
     <div class="navbar w-60 min-w-56 flex flex-col gap-2">
-      <div class="w-full px-2 mt-6 h-[460px]  overflow-y-auto flex flex-col gap-2">
+      <div class="w-full px-2 mt-6 h-[460px] overflow-y-auto flex flex-col gap-2">
         <router-link
           v-for="configId in configIds"
           :key="configId"
@@ -50,11 +50,9 @@ load();
     </div>
     <div class="flex-1 min-w-0 h-[560px] overflow-auto">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <keep-alive>
-            <component :is="Component" :key="$route.params.configId" />
-          </keep-alive>
-        </transition>
+        <keep-alive :max="5">
+          <component :is="Component" :key="$route.params.configId" />
+        </keep-alive>
       </router-view>
     </div>
   </div>

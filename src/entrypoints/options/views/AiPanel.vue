@@ -10,6 +10,7 @@ const router = useRouter();
 const configId = computed(() => String(route.params.configId || ''));
 
 const { aiConfigs, load, upsert, remove } = useAiConfigs();
+
 const currentConfig = computed<AIConfig | null>(() => {
   const cfg = aiConfigs.value[configId.value];
   return cfg ? (toRaw(cfg) as AIConfig) : null;
@@ -21,7 +22,7 @@ const handleUpdate = async (config: AIConfig) => {
 
 const handleDelete = async (id: string) => {
   await remove(id);
-  const nextId = Object.keys(aiConfigs.value || {}).at(0);
+  const nextId = Object.keys(aiConfigs.value || {}).at(-1);
   if (nextId) {
     router.replace({ name: 'ai.config', params: { configId: nextId } });
   } else {

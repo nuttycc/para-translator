@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { AIConfig } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { PropType, reactive, watch, onBeforeUnmount, ref, toRaw, nextTick } from 'vue';
 import { showToast } from '@/utils/toast';
+import { nextTick, PropType, reactive, ref, toRaw, watch } from 'vue';
 
 const props = defineProps({
   config: {
@@ -23,7 +23,6 @@ const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
 const showRemoteModels = ref(false);
-const isDeleting = ref(false);
 
 const addLocalModel = () => {
   logger.debug`Adding local model: localModels=${config.localModels}`;
@@ -34,7 +33,7 @@ const addLocalModel = () => {
 
 const deleteLocalModel = () => {
   config.localModels = config.localModels.filter((model) => model !== config.model);
-  config.model = config.localModels.at(-1) || '';
+  config.model = config.localModels.at(-1) ?? '';
 };
 
 // Emit updates, but skip when syncing from props to avoid echo loop
@@ -44,7 +43,6 @@ const updateConfig = (newConfig: AIConfig) => {
 };
 
 const deleteConfig = () => {
-  isDeleting.value = true;
   emit('delete', config.id);
 };
 
@@ -108,12 +106,6 @@ watch(
   },
   { deep: true }
 );
-
-onBeforeUnmount(() => {
-  if (!isDeleting.value) {
-    emit('update', toRaw(config));
-  }
-});
 </script>
 <template>
   <div class="card bg-base-100 shadow-xl">

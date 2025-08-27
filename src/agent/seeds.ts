@@ -3,6 +3,7 @@ import { type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 const DEFAULT_AI_CONFIGS = {
   'deepseek-123': {
     id: 'deepseek-123',
+    name: 'DeepSeek',
     provider: 'deepseek',
     model: 'deepseek-chat',
     localModels: ['deepseek-chat', 'deepseek-reasoner'],
@@ -13,6 +14,7 @@ const DEFAULT_AI_CONFIGS = {
   },
   'glm-123': {
     id: 'glm-123',
+    name: 'GLM',
     provider: 'glm',
     model: 'glm-4.5-flash',
     localModels: ['glm-4.5-flash'],
@@ -23,6 +25,7 @@ const DEFAULT_AI_CONFIGS = {
   },
   'groq-123': {
     id: 'groq-123',
+    name: 'Groq',
     provider: 'groq',
     model: 'openai/gpt-oss-20b',
     localModels: ['openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],

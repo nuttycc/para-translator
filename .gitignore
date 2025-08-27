@@ -5,6 +5,9 @@
 .qoder
 .claude
 
+
+test.js
+
 # test
 src/agent/__tests__/vite-env.d.ts
 

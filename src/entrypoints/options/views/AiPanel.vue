@@ -1,0 +1,53 @@
+<script setup lang="ts">
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import type { AIConfig } from '@/agent/types';
+import AiConfig from '@/components/AiConfig.vue';
+import { useAiConfigs } from '@/composables/useAiConfigs';
+
+const route = useRoute();
+const router = useRouter();
+const configId = computed(() => String(route.params.configId || ''));
+
+const { aiConfigs, load, upsert, remove } = useAiConfigs();
+const currentConfig = computed<AIConfig | null>(() => {
+  const cfg = aiConfigs.value[configId.value];
+  if (!cfg) return null;
+  const localModels = Array.isArray(cfg.localModels) ? [...cfg.localModels] : [];
+  const remoteModels = Array.isArray(cfg.remoteModels) ? [...cfg.remoteModels] : undefined;
+  return {
+    ...cfg,
+    localModels,
+    remoteModels,
+  } as AIConfig;
+});
+
+const handleUpdate = async (config: AIConfig) => {
+  await upsert(config);
+};
+
+const handleDelete = async (id: string) => {
+  await remove(id);
+  const nextId = Object.keys(aiConfigs.value || {}).at(0);
+  if (nextId) {
+    router.replace({ name: 'ai.config', params: { configId: nextId } });
+  } else {
+    router.replace({ name: 'ai.home' });
+  }
+};
+
+load();
+</script>
+
+<template>
+  <div class="h-full">
+    <div v-if="currentConfig">
+      <AiConfig :config="currentConfig" @update="handleUpdate" @delete="handleDelete" />
+    </div>
+    <div v-else class="h-full flex items-center justify-center text-base-content/60">
+      No AI config selected.
+    </div>
+  </div>
+</template>
+
+

@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { AIConfig } from '@/agent/types';
-import { throttle } from 'es-toolkit';
 import { createLogger } from '@/utils/logger';
-
-const logger = createLogger('AiConfig');
-
-const emit = defineEmits(['update']);
+import { PropType, reactive, watch, onBeforeUnmount, ref, toRaw } from 'vue';
+import { showToast } from '@/utils/toast';
 
 const props = defineProps({
   config: {
@@ -14,11 +11,88 @@ const props = defineProps({
   },
 });
 
-const config = reactive<AIConfig>({ ...props.config });
+const emit = defineEmits<{
+  (e: 'update', config: AIConfig): void;
+  (e: 'delete', configId: string): void;
+}>();
 
-const updateConfig = throttle((newConfig: AIConfig) => {
-  emit('update', newConfig);
-}, 1000);
+const logger = createLogger('AiConfig');
+const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
+const newLocalModel = ref('');
+const remoteModels = ref<string[]>([]);
+const showRemoteModels = ref(false);
+const isDeleting = ref(false);
+
+const addLocalModel = () => {
+  logger.debug`Adding local model: localModels=${config.localModels}`;
+  config.localModels.push(newLocalModel.value);
+  config.model = newLocalModel.value;
+  newLocalModel.value = '';
+};
+
+const deleteLocalModel = () => {
+  config.localModels = config.localModels.filter((model) => model !== config.model);
+  config.model = config.localModels.at(-1) || '';
+};
+
+// Emit updates immediately; debounced persistence is handled in useAiConfigs
+const updateConfig = (newConfig: AIConfig) => {
+  emit('update', toRaw(newConfig));
+};
+
+const deleteConfig = () => {
+  isDeleting.value = true;
+  emit('delete', config.id);
+};
+
+const fetchModes = async () => {
+  if (!config.baseUrl) {
+    showToast({
+      message: 'No base URL found',
+      type: 'error',
+    });
+    return;
+  }
+
+  const endpoint = `${config.baseUrl}/models`;
+
+  logger.debug`Fetching models from ${endpoint}`;
+
+  try {
+    const response = await fetch(endpoint, {
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`API request failed with status ${response.status}`);
+    }
+
+    const res = await response.json();
+
+    if (!Array.isArray(res?.data)) {
+      throw new Error('Invalid response format: "data" is not an array.');
+    }
+
+    remoteModels.value = res.data.map((model: any) => model.id);
+  } catch (err) {
+    logger.error`Failed to fetch models: ${err}`;
+    showToast({
+      message: `Error fetching models: ${err instanceof Error ? err.message : 'Unknown error'}`,
+      type: 'error',
+    });
+    remoteModels.value = [];
+  }
+};
+
+// Keep local config in sync when parent replaces the object
+watch(
+  () => props.config,
+  (next) => {
+    Object.assign(config, structuredClone(next));
+  }
+);
 
 watch(
   config,
@@ -29,71 +103,118 @@ watch(
 );
 
 onBeforeUnmount(() => {
-  // Flush latest edits on navigation away
-  emit('update', config);
+  if (!isDeleting.value) {
+    emit('update', toRaw(config));
+  }
 });
 </script>
 <template>
-  <div class="container mx-auto p-4">
-    <div class="card bg-base-100 shadow-xl">
-      <div class="card-body">
-        <h1 class="card-title text-2xl font-bold mb-6">{{ config.provider }}</h1>
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body flex flex-col">
+      <h1 class="card-title text-2xl font-bold mb-6">{{ config.name }}</h1>
+      <div class="space-y-4">
+        <!-- name -->
+        <div class="form-control w-full">
+          <label class="label" for="name">
+            <span class="label-text font-medium">Config Name</span>
+          </label>
+          <input
+            type="text"
+            id="name"
+            v-model="config.name"
+            class="input input-bordered w-full"
+            placeholder="Enter your name"
+          />
+        </div>
+        <!-- Base URL -->
+        <div class="form-control w-full">
+          <label class="label" for="baseurl">
+            <span class="label-text font-medium">Base URL</span>
+          </label>
+          <input
+            type="url"
+            id="baseurl"
+            v-model="config.baseUrl"
+            class="input input-bordered w-full"
+            placeholder="https://api.example.com"
+          />
+        </div>
 
-        <div class="space-y-4">
-          <!-- Base URL -->
-          <div class="form-control w-full">
-            <label class="label" for="baseurl">
-              <span class="label-text font-medium">Base URL</span>
-            </label>
-            <input
-              type="url"
-              id="baseurl"
-              v-model="config.baseUrl"
-              class="input input-bordered w-full"
-              placeholder="https://api.example.com"
-            />
-          </div>
+        <!-- API Key -->
+        <div class="form-control w-full">
+          <label class="label" for="apikey">
+            <span class="label-text font-medium">API Key</span>
+          </label>
+          <input
+            type="text"
+            id="apikey"
+            v-model="config.apiKey"
+            class="input input-bordered w-full"
+            placeholder="Enter your API key"
+          />
+        </div>
 
-          <!-- API Key -->
-          <div class="form-control w-full">
-            <label class="label" for="apikey">
-              <span class="label-text font-medium">API Key</span>
-            </label>
-            <input
-              type="text"
-              id="apikey"
-              v-model="config.apiKey"
-              class="input input-bordered w-full"
-              placeholder="Enter your API key"
-            />
-          </div>
+        <!-- Models -->
+        <div class="form-control w-full">
+          <fieldset class="fieldset flex flex-col gap-2">
+            <legend class="label label-text font-medium flex gap-2">
+              Model
 
-          <!-- Model -->
-          <div class="form-control w-full">
-            <label class="label" for="model">
-              <span class="label-text font-medium">Model</span>
-            </label>
-            <input
-              type="text"
-              id="model"
-              v-model="config.model"
-              class="input input-bordered w-full"
-              placeholder="e.g., gpt-4, gpt-3.5-turbo"
-            />
-          </div>
+              <fieldset class="fieldset bg-base-100 border-base-300 rounded-box flex gap-2">
+                <label class="label">
+                  <input type="checkbox" v-model="showRemoteModels" class="checkbox checkbox-xs" />
+                  Show remote models list
+                </label>
+              </fieldset>
+            </legend>
 
-          <!-- Local Models -->
-          <div class="form-control w-full">
-            <label class="label" for="models">
-              <div class="label-text font-medium">Models List</div>
-            </label>
-            <div v-for="model in config.localModels" :key="model">
-              <div class="input input-bordered w-full">
-                {{ model }}
+            <div v-if="!showRemoteModels" class="join join-vertical gap-2">
+              <div class="join-item flex gap-2 items-center-safe">
+                <select class="select" v-model="config.model">
+                  <option v-if="config.localModels.length === 0" disabled selected>
+                    Please add a custom model first
+                  </option>
+                  <option v-for="model in config.localModels" :key="model">
+                    {{ model }}
+                  </option>
+                </select>
+                <button class="btn btn-soft w-fit" @click="deleteLocalModel">Delete Model</button>
+              </div>
+
+              <!-- Add local model -->
+              <div class="join-item flex gap-2">
+                <input
+                  type="text"
+                  placeholder="Input a model id"
+                  class="input"
+                  v-model="newLocalModel"
+                />
+                <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">
+                  Add custom model
+                </button>
               </div>
             </div>
-          </div>
+
+            <!-- Select remote model -->
+            <div class="flex gap-2" v-if="showRemoteModels">
+              <select class="select" v-model="config.model">
+                <option v-if="remoteModels.length === 0" disabled selected>
+                  Please fetch models first
+                </option>
+                <option v-for="model in remoteModels" :key="model">
+                  {{ model }}
+                </option>
+              </select>
+
+              <button type="button" class="btn btn-soft btn-primary w-fit" @click="fetchModes">
+                Fetch Models
+              </button>
+            </div>
+          </fieldset>
         </div>
+      </div>
+      <div class="flex justify-end mt-4">
+        <button class="btn btn-soft btn-error w-fit" @click="deleteConfig">Delete Config</button>
       </div>
     </div>
   </div>

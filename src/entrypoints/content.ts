@@ -1,10 +1,11 @@
+import { createShadowRootUi, defineContentScript, type ShadowRootContentScriptUi } from '#imports';
 import type { AgentContext } from '@/agent/types';
 import '@/assets/base.css';
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
-import { createApp, type App, shallowReactive, h } from 'vue';
+import { createApp, h, shallowReactive, type App } from 'vue';
 
 export default defineContentScript({
   matches: ['<all_urls>'],
@@ -18,11 +19,11 @@ export default defineContentScript({
     const createParaCardApp = (state: ParaCardProps): App => {
       return createApp({
         components: {
-          ParaCard  // Same ParaCard definition reused across all instances
+          ParaCard, // Same ParaCard definition reused across all instances
         },
         setup() {
           return () => h(ParaCard, state);
-        }
+        },
       });
     };
 

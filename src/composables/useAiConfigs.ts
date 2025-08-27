@@ -1,7 +1,7 @@
 import { readonly, ref } from 'vue';
 import type { AIConfig, AIConfigs } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { debounce } from 'es-toolkit';
+import pDebounce from 'p-debounce';
 import { createLogger } from '@/utils/logger';
 
 const aiConfigsState = ref<AIConfigs>({});
@@ -10,7 +10,7 @@ let isInitialized = false;
 let unwatchStorage: (() => void) | null = null;
 const logger = createLogger('useAiConfigs');
 
-const writeThrough = debounce(async () => {
+const writeThrough = pDebounce(async () => {
   try {
     lastWriteError.value = null;
     await agentStorage.aiConfigs.setValue({ ...aiConfigsState.value });

@@ -3,7 +3,7 @@ import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { isEqual, omit } from 'es-toolkit';
 import { defineStore } from 'pinia';
-import { computed, readonly, ref, toRaw } from 'vue';
+import { computed, readonly, ref, toRaw, onScopeDispose } from 'vue';
 
 const logger = createLogger('useAiConfigsStore');
 
@@ -123,8 +123,8 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
   }
 
-  // Cleanup on store disposal
-  const cleanup = () => {
+  // Register cleanup with onScopeDispose to avoid overriding Pinia's built-in $dispose
+  onScopeDispose(() => {
     if (unwatchStorage) {
       unwatchStorage();
       unwatchStorage = null;
@@ -132,7 +132,7 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     // Reset initialization state to allow re-initialization if needed
     isInitialized = false;
     initPromise = null;
-  };
+  });
 
   return {
     aiConfigs: readonly(aiConfigsState),
@@ -145,6 +145,5 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     remove,
     setLastActiveConfigId,
     lastWriteError: readonly(lastWriteError),
-    $dispose: cleanup,
   };
 });

@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { readonly, ref, computed, toRaw } from 'vue';
+import { readonly, ref, computed, toRaw, onScopeDispose } from 'vue';
 import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
 import { createLogger } from '@/utils/logger';
@@ -68,8 +68,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     }
   }
 
-  // Cleanup on store disposal
-  const cleanup = () => {
+  // Register cleanup with onScopeDispose to avoid overriding Pinia's built-in $dispose
+  onScopeDispose(() => {
     if (unwatchStorage) {
       unwatchStorage();
       unwatchStorage = null;
@@ -77,7 +77,7 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     // Reset initialization state to allow re-initialization if needed
     isInitialized = false;
     initPromise = null;
-  };
+  });
 
   return {
     taskRuntimeConfigs: readonly(taskRuntimeConfigs),
@@ -89,6 +89,5 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     updateOne,
     setLastActiveTaskId,
     lastWriteError: readonly(lastWriteError),
-    $dispose: cleanup,
   };
 });

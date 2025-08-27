@@ -52,7 +52,7 @@ const resetStorage = () => {
     <div class="min-h-[600px] w-3xl mb-8">
       <RouterView v-slot="{ Component, route }">
         <transition :name="(route.meta?.transition as string) || 'fade'" mode="out-in">
-          <component :is="Component" :key="route.path" />
+          <component :is="Component" :key="route.matched[0]?.path" />
         </transition>
       </RouterView>
     </div>

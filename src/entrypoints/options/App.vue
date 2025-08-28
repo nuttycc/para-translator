@@ -32,7 +32,7 @@ const resetStorage = () => {
 </script>
 
 <template>
-  <div class="w-fit mx-auto flex flex-col items-center">
+  <div class="w-fit mx-auto flex flex-col items-center font-sans">
     <div class="navbar h-4 max-h-[22vh] w-5xl flex justify-between">
       <h1 class="text-xl font-bold">Options</h1>
       <div class="flex gap-2">
@@ -48,7 +48,7 @@ const resetStorage = () => {
 
     <div class="divider mt-0"></div>
 
-    <div class="min-h-[66vh] w-3xl">
+    <div class="min-h-[80dvh] w-3xl">
       <RouterView v-slot="{ Component, route }">
         <transition :name="(route.meta?.transition as string) || 'fade'" mode="out-in">
           <component :is="Component" :key="route.matched[0]?.path" />

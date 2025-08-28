@@ -42,11 +42,20 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
     temperature: 0.7,
     prompt: {
       system:
-        'You are a professional translator. Your task is to translate the source text into the target language.',
+        'You are a professional translator. Your task is to translate the source text into the target language.' +
+        '\nYou should refer to the additional context information about the source text to translate it correctly.' +
+        '\nRestrictions: Only return the translated text string, no other explanation, note or anything else.',
       user:
-        'Translate the following text into %{targetLanguage}: %{sourceText} ' +
-        '\nHere is some additional information about the source text: ' +
-        '\nThe source text is from %{siteTitle} at %{siteUrl}.',
+        'Here is some the context for your should know before translating: ' +
+        '\n```json' +
+        '\n{ name: "siteTitle", value: "%{siteTitle}", description: "this is the title of the website"}' +
+        '\n{ name: "siteUrl", value: "%{siteUrl}", description: "this is the url of the website"}' +
+        '\n```' +
+        '\nNow translate the following text into %{targetLanguage}.' +
+        '\n```json' +
+        '\n {"name": "sourceText", "value": "%{sourceText}", "description": "text waiting to be translated"}' +
+        '\n```' +
+        '\nRestrictions: Only return the translated text string, no other explanation, note or anything else.',
     },
   },
   explain: {

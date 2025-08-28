@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<ParaCardProps>(), {
 <template>
   <div class="card bg-base-100 shadow-lg">
     <div class="card-body">
-      <h2 class="card-title text-primary">Para-Translator</h2>
+      <!-- <h2 class="card-title text-primary">Para-Translator</h2> -->
 
       <div v-if="props.loading" class="flex items-center gap-2">
         <span class="loading loading-spinner loading-sm"></span>

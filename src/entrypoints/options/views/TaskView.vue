@@ -45,7 +45,7 @@ watch(
 
 <template>
   <div>
-    <div class="navbar flex gap-2 justify-end-safe">
+    <div class="navbar flex gap-2">
       <router-link
         v-for="tid in taskIds"
         :key="tid"
@@ -56,13 +56,11 @@ watch(
       </router-link>
     </div>
 
-    <div class="flex-1 min-w-0 mt-4">
+    <div class="mt-2">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <keep-alive>
-            <component :is="Component" :key="activeTaskId" />
-          </keep-alive>
-        </transition>
+        <keep-alive>
+          <component :is="Component" :key="activeTaskId" />
+        </keep-alive>
       </router-view>
     </div>
   </div>

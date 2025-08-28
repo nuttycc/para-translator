@@ -13,7 +13,15 @@ const { aiConfigs, configIds, lastActiveConfigId, firstConfigId } = storeToRefs(
 const scrollContainer = ref<HTMLElement>();
 
 const activeConfigId = computed(() => {
-  return String(route.params.configId || lastActiveConfigId.value || firstConfigId.value);
+  if (
+    route.params.configId &&
+    typeof route.params.configId === 'string' &&
+    configIds.value.includes(route.params.configId)
+  ) {
+    return route.params.configId;
+  }
+
+  return lastActiveConfigId.value || firstConfigId.value;
 });
 
 // Function to scroll active config into view
@@ -74,6 +82,7 @@ watch(
   () => activeConfigId.value,
   (id) => {
     aiConfigsStore.setLastActiveConfigId(id);
+    router.replace({ name: 'ai.config', params: { configId: id } });
   },
   { immediate: true }
 );
@@ -113,4 +122,3 @@ watch(
     </div>
   </div>
 </template>
-

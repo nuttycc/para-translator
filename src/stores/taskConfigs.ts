@@ -1,23 +1,37 @@
 import { defineStore } from 'pinia';
-import { readonly, ref, computed, toRaw, onScopeDispose } from 'vue';
+import { readonly, ref, computed, toRaw, onScopeDispose, watch } from 'vue';
 import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
 import { createLogger } from '@/utils/logger';
+import { AGENT_SEEDS } from '@/agent/seeds';
 
 const logger = createLogger('useTaskConfigsStore');
 
 export const useTaskConfigsStore = defineStore('taskConfigs', () => {
-  const taskRuntimeConfigs = ref<TaskRuntimeConfigs | null>(null);
+  const taskRuntimeConfigs = ref<TaskRuntimeConfigs>(AGENT_SEEDS.TASK_RUNTIME_CONFIGS);
+  const lastActiveTaskId = ref<TaskType>('translate');
   const lastWriteError = ref<unknown | null>(null);
-  const lastActiveTaskId = ref<string>('');
+
   let isInitialized = false;
-  let unwatchStorage: (() => void) | null = null;
   let initPromise: Promise<void> | null = null;
+
+  const suppressWrite = ref(false);
+  let unwatchStorage: (() => void) | null = null;
+  let unwatchState: (() => void) | null = null;
 
   // Getters to reduce repetitive computations in views
   const taskIds = computed(() => Object.keys(taskRuntimeConfigs.value || {}));
   const firstTaskId = computed(() => taskIds.value.at(0) || 'translate');
   const hasTasks = computed(() => taskIds.value.length > 0);
+
+  const withSuppressWrite = async <T>(fn: () => Promise<T> | T): Promise<T> => {
+    suppressWrite.value = true;
+    try {
+      return await fn();
+    } finally {
+      suppressWrite.value = false;
+    }
+  };
 
   async function ensureInit(): Promise<void> {
     if (isInitialized) return;
@@ -26,10 +40,23 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
       taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? null;
       if (!unwatchStorage) {
         unwatchStorage = agentStorage.taskConfigs.watch((newValue) => {
-          taskRuntimeConfigs.value = newValue ?? null;
-          logger.debug`Task configs storage change merged`;
+          return withSuppressWrite(() => {
+            taskRuntimeConfigs.value = newValue ?? null;
+            logger.debug`Task configs storage change merged`;
+          });
         });
       }
+      if (!unwatchState) {
+        unwatchState = watch(
+          taskRuntimeConfigs,
+          async () => {
+            if (suppressWrite.value || !taskRuntimeConfigs.value) return;
+            await agentStorage.taskConfigs.setValue(taskRuntimeConfigs.value);
+          },
+          { deep: true }
+        );
+      }
+
       isInitialized = true;
 
       logger.debug`Task configs initialized. ${toRaw(taskRuntimeConfigs.value)}`;
@@ -80,14 +107,14 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
   });
 
   return {
-    taskRuntimeConfigs: readonly(taskRuntimeConfigs),
-    taskIds: readonly(taskIds),
-    firstTaskId: readonly(firstTaskId),
-    hasTasks: readonly(hasTasks),
-    lastActiveTaskId: readonly(lastActiveTaskId),
+    taskRuntimeConfigs,
+    taskIds,
+    firstTaskId,
+    hasTasks,
+    lastActiveTaskId,
     load,
     updateOne,
     setLastActiveTaskId,
-    lastWriteError: readonly(lastWriteError),
+    lastWriteError,
   };
 });

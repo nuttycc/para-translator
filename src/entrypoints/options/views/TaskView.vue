@@ -14,9 +14,7 @@ const taskConfigsStore = useTaskConfigsStore();
 const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
 
 const activeTaskId = computed(() => {
-  return String(
-    route.params.taskId || lastActiveTaskId.value || firstTaskId.value
-  ) as TaskType;
+  return String(route.params.taskId || lastActiveTaskId.value || firstTaskId.value) as TaskType;
 });
 
 watch(
@@ -39,6 +37,7 @@ watch(
   () => activeTaskId.value,
   (id) => {
     taskConfigsStore.setLastActiveTaskId(id);
+    router.replace({ name: 'tasks.detail', params: { taskId: id } });
   },
   { immediate: true }
 );
@@ -61,7 +60,7 @@ watch(
       <router-view v-slot="{ Component }">
         <transition name="fade" mode="out-in">
           <keep-alive>
-            <component :is="Component" :task-id="activeTaskId" />
+            <component :is="Component" :key="activeTaskId" />
           </keep-alive>
         </transition>
       </router-view>

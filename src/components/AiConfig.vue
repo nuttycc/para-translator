@@ -2,55 +2,48 @@
 import { AIConfig } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
-import { nextTick, PropType, reactive, ref, toRaw, watch } from 'vue';
+import { computed, ref } from 'vue';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { storeToRefs } from 'pinia';
+import router from '@/entrypoints/options/router';
 
-const props = defineProps({
-  config: {
-    type: Object as PropType<AIConfig>,
-    required: true,
-  },
-});
+const aiConfigsStore = useAiConfigsStore();
 
-const emit = defineEmits<{
-  (e: 'update', config: AIConfig): void;
-  (e: 'delete', configId: string): void;
-}>();
+const { firstConfigId, lastActiveConfigId, aiConfigs } = storeToRefs(aiConfigsStore);
+
+const configId = computed(() => String(lastActiveConfigId.value || firstConfigId.value));
+
+const config = computed<AIConfig>(() => aiConfigs.value[configId.value]);
 
 const logger = createLogger('AiConfig');
-// Local working copy to avoid echo loop; parent is source of truth
-const syncingFromProps = ref(false);
-const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
+
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
 const showRemoteModels = ref(false);
 const showApiKey = ref(false);
 
 const addLocalModel = () => {
-  logger.debug`Adding local model: localModels=${config.localModels}`;
+  if (!config.value) return;
+  logger.debug`Adding local model: localModels=${config.value.localModels}`;
   const newModel = newLocalModel.value.trim();
   if (!newModel) return;
-  config.localModels.push(newModel);
-  config.model = newModel;
+  config.value.localModels.push(newModel);
+  config.value.model = newModel;
   newLocalModel.value = '';
 };
 
 const deleteLocalModel = () => {
-  config.localModels = config.localModels.filter((model) => model !== config.model);
-  config.model = config.localModels.at(-1) ?? '';
-};
-
-// Emit updates, but skip when syncing from props to avoid echo loop
-const updateConfig = (newConfig: AIConfig) => {
-  if (syncingFromProps.value) return;
-  emit('update', toRaw(newConfig));
+  if (!config.value) return;
+  config.value.localModels = config.value.localModels.filter((model) => model !== config.value.model);
+  config.value.model = config.value.localModels.at(-1) ?? '';
 };
 
 const deleteConfig = () => {
-  emit('delete', config.id);
+  aiConfigsStore.remove(configId.value);
 };
 
 const fetchModes = async () => {
-  if (!config.baseUrl) {
+  if (!config.value?.baseUrl) {
     showToast({
       message: 'No base URL found',
       type: 'error',
@@ -58,14 +51,14 @@ const fetchModes = async () => {
     return;
   }
 
-  const endpoint = `${config.baseUrl}/models`;
+  const endpoint = `${config.value.baseUrl}/models`;
 
   logger.debug`Fetching models from ${endpoint}`;
 
   try {
     const response = await fetch(endpoint, {
       headers: {
-        Authorization: `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.value.apiKey}`,
       },
     });
 
@@ -90,25 +83,6 @@ const fetchModes = async () => {
   }
 };
 
-// Keep local config in sync when parent replaces the object, without emitting
-watch(
-  () => props.config,
-  (next) => {
-    syncingFromProps.value = true;
-    Object.assign(config, structuredClone(next));
-    nextTick(() => {
-      syncingFromProps.value = false;
-    });
-  }
-);
-
-watch(
-  config,
-  (newConfig) => {
-    updateConfig(newConfig);
-  },
-  { deep: true }
-);
 </script>
 <template>
   <div class="card card-lg px-16 shadow-xl">

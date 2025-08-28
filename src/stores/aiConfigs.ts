@@ -3,7 +3,7 @@ import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { isEqual, omit } from 'es-toolkit';
 import { defineStore } from 'pinia';
-import { computed, readonly, ref, toRaw, onScopeDispose } from 'vue';
+import { computed, readonly, ref, toRaw, onScopeDispose, watch } from 'vue';
 
 const logger = createLogger('useAiConfigsStore');
 
@@ -11,15 +11,29 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
   const aiConfigsState = ref<AIConfigs>({});
   const lastWriteError = ref<unknown | null>(null);
   const lastActiveConfigId = ref<string>('');
-  let isInitialized = false;
-  let unwatchStorage: (() => void) | null = null;
-  let initPromise: Promise<void> | null = null;
 
-  // Getters to reduce repetitive computations in views
+  let unwatchStorage: (() => void) | null = null;
+  let unwatchState: (() => void) | null = null;
+
+  let isInitialized = false;
+  let initPromise: Promise<void> | null = null;
+  let suppressWrite = false;
+
+  const withSuppressWrite = async <T>(fn: () => Promise<T> | T): Promise<T> => {
+    suppressWrite = true;
+    try {
+      return await fn();
+    } finally {
+      suppressWrite = false;
+    }
+  };
+
+  // Getters
   const configIds = computed(() => Object.keys(aiConfigsState.value));
   const firstConfigId = computed(() => configIds.value.at(0) || '');
   const hasConfigs = computed(() => configIds.value.length > 0);
 
+  // state -> storage
   const writeThrough = async () => {
     try {
       lastWriteError.value = null;
@@ -45,26 +59,42 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
     logger.debug`Initializing AI Configs...`;
     initPromise = (async () => {
-      aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
+      await withSuppressWrite(async () => {
+        aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
+      });
       if (!unwatchStorage) {
+        // storage -> state (read)
         unwatchStorage = agentStorage.aiConfigs.watch((newValue) => {
-          // Last-write-wins by updatedAt for each key
-          const incoming = newValue || {};
-          const merged: AIConfigs = { ...aiConfigsState.value };
-          for (const [id, cfg] of Object.entries(incoming)) {
-            const current = merged[id];
-            if (!current || (cfg.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
-              merged[id] = cfg;
+          return withSuppressWrite(() => {
+            // Last-write-wins by updatedAt for each key
+            const incoming = newValue || {};
+            const merged: AIConfigs = { ...aiConfigsState.value };
+            for (const [id, cfg] of Object.entries(incoming)) {
+              const current = merged[id];
+              if (!current || (cfg.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
+                merged[id] = cfg;
+              }
             }
-          }
-          // Do not infer deletions from absence to avoid dropping local, unflushed entries.
-          // Deletions should be explicit (handled via `remove()` or tombstones).
-          aiConfigsState.value = merged;
-          logger.debug`Storage change merged. Items=${Object.keys(merged).length}`;
+            aiConfigsState.value = merged;
+            logger.debug`Read storage change, merged into state. Items=${Object.keys(merged).length}`;
+            return undefined;
+          });
         });
       }
-      isInitialized = true;
 
+      //  state -> storage (write)
+      if (!unwatchState) {
+        unwatchState = watch(
+          aiConfigsState,
+          async () => {
+            if (suppressWrite) return;
+            await writeThrough();
+          },
+          { deep: true }
+        );
+      }
+
+      isInitialized = true;
       logger.debug`AI Configs initialized. ${toRaw(aiConfigsState.value)}`;
     })();
     try {
@@ -78,27 +108,26 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     await ensureInit();
   }
 
+  // add or update a config
   async function upsert(config: AIConfig): Promise<void> {
     await ensureInit();
     const next: AIConfig = {
       ...config,
       localModels: Array.isArray(config.localModels) ? config.localModels : [],
-      remoteModels: Array.isArray(config.remoteModels) ? config.remoteModels : undefined,    };
+      remoteModels: Array.isArray(config.remoteModels) ? config.remoteModels : undefined,
+    };
     const prev = aiConfigsState.value[next.id];
     if (prev) {
       // Compare objects ignoring timestamp fields (createdAt and updatedAt)
       const prevWithoutTimestamps = omit(prev, ['createdAt', 'updatedAt']);
       const nextWithoutTimestamps = omit(next, ['createdAt', 'updatedAt']);
-
       if (isEqual(prevWithoutTimestamps, nextWithoutTimestamps)) {
         logger.debug`Skipping write operation for ${next.id} because it is identical to the previous version`;
         return; // Skip no-op write when objects are identical
       }
     }
-
     next.updatedAt = Date.now();
     aiConfigsState.value = { ...aiConfigsState.value, [next.id]: next };
-    await writeThrough();
   }
 
   function setLastActiveConfigId(configId: string): void {
@@ -113,13 +142,9 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     const next = { ...aiConfigsState.value };
     delete next[configId];
     aiConfigsState.value = next;
-    try {
-      await agentStorage.aiConfigs.setValue({ ...next });
-      logger.debug`Removed config ${configId}. Items=${Object.keys(next).length}`;
-    } catch (err) {
-      lastWriteError.value = err;
-      logger.error`Failed to remove config ${configId}: ${String(err)}`;
-      aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
+
+    if (lastActiveConfigId.value === configId) {
+      lastActiveConfigId.value = Object.keys(next).at(-1) ?? '';
     }
   }
 
@@ -129,21 +154,25 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
       unwatchStorage();
       unwatchStorage = null;
     }
+    if (unwatchState) {
+      unwatchState();
+      unwatchState = null;
+    }
     // Reset initialization state to allow re-initialization if needed
     isInitialized = false;
     initPromise = null;
   });
 
   return {
-    aiConfigs: readonly(aiConfigsState),
+    aiConfigs: aiConfigsState,
     configIds: readonly(configIds),
     firstConfigId: readonly(firstConfigId),
     hasConfigs: readonly(hasConfigs),
     lastActiveConfigId: readonly(lastActiveConfigId),
     load,
-    upsert,
     remove,
     setLastActiveConfigId,
+    upsert,
     lastWriteError: readonly(lastWriteError),
   };
 });

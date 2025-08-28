@@ -59,6 +59,19 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
   };
 
+  /**
+   * Ensure the aiConfigs store is initialized.
+   *
+   * Loads initial AI configs from persistent storage into the in-memory map and sets up two-way synchronization:
+   * - storage -> state: watches storage changes and merges them into the reactive `aiConfigsState` (last-write-wins by `updatedAt`).
+   * - state -> storage: watches the in-memory state and writes changes back to storage (writes are suppressed during internal merges).
+   *
+   * This function is idempotent and concurrent-safe: if initialization is already complete it returns immediately; if an initialization
+   * is in progress it returns the in-flight promise. On completion it marks the store as initialized and registers cleanup hooks
+   * (unwatch functions) for the installed watchers.
+   *
+   * @returns A promise that resolves when initialization has completed.
+   */
   async function ensureInit(): Promise<void> {
     if (isInitialized) {
       logger.debug`AI Configs already initialized. Skipping init.`;
@@ -123,11 +136,26 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
   }
 
+  /**
+   * Ensure the aiConfigs store is initialized and synchronized with persistent storage.
+   *
+   * Awaits initialization (loading initial configs, setting up storage ↔ state watchers, and establishing suppression behavior).
+   * Safe to call multiple times; returns immediately if initialization is already complete or in progress.
+   */
   async function load(): Promise<void> {
     await ensureInit();
   }
 
-  // add or update a config
+  /**
+   * Adds or updates an AI configuration in the store.
+   *
+   * Ensures the store is initialized, normalizes `localModels` and `remoteModels`, and merges the config into the in-memory `aiConfigsState`.
+   * If an existing config with the same `id` exists and the only differences are `createdAt`/`updatedAt`, the update is skipped to avoid a no-op write.
+   * When applied, `updatedAt` is set to the current timestamp and the config is merged into the state map.
+   *
+   * @param config - The AI configuration to add or update. Must include an `id`.
+   * @returns A promise that resolves once the in-memory state has been updated.
+   */
   async function upsert(config: AIConfig): Promise<void> {
     await ensureInit();
     const next: AIConfig = {
@@ -149,6 +177,14 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     aiConfigsState.value = { ...aiConfigsState.value, [next.id]: next };
   }
 
+  /**
+   * Sets the last-active AI config ID if it exists in the current store.
+   *
+   * If `configId` is empty or does not match a key in the in-memory `aiConfigsState`,
+   * no change is made (prevents dangling references).
+   *
+   * @param configId - The ID of the config to mark as last active.
+   */
   function setLastActiveConfigId(configId: string): void {
     // Only accept ids that exist in current state to avoid dangling references
     if (configId && aiConfigsState.value[configId]) {
@@ -156,6 +192,16 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
     }
   }
 
+  /**
+   * Remove an AI configuration from the in-memory store.
+   *
+   * Ensures the store is initialized, deletes the config with the given id from the reactive
+   * aiConfigsState, and if the removed id was the lastActiveConfigId updates lastActiveConfigId
+   * to the last remaining config id (or to an empty string when none remain).
+   *
+   * This function mutates only the in-memory state; persistence to storage is handled by the
+   * store's state->storage synchronization watcher and is not performed directly here.
+   */
   async function remove(configId: string): Promise<void> {
     await ensureInit();
     const next = { ...aiConfigsState.value };

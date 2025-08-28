@@ -38,6 +38,17 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     }
   };
 
+  /**
+   * Lazily initializes the task runtime configs from persistent storage and wires up bidirectional syncing.
+   *
+   * Loads task runtime configs from agentStorage (falling back to AGENT_SEEDS.TASK_RUNTIME_CONFIGS when absent),
+   * establishes a storage watcher to merge external storage changes into the in-memory state (updates occur
+   * inside a write-suppressed block), and establishes a Vue watcher to persist in-memory changes back to storage
+   * (skipped while suppression is active). Initialization is deduplicated so concurrent callers share a single
+   * in-flight initialization. Marks the store as initialized and sets up cleanup handles for the watchers.
+   *
+   * @returns A promise that resolves when initialization completes.
+   */
   async function ensureInit(): Promise<void> {
     if (isInitialized) return;
     if (initPromise) return initPromise;
@@ -78,6 +89,15 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     await ensureInit();
   }
 
+  /**
+   * Update and persist the runtime config for a single task type.
+   *
+   * Ensures the store is initialized, writes the provided config into persistent storage, and updates the in-memory configs. If the storage write fails, the error is recorded in `lastWriteError` and the in-memory configs are reloaded from storage (falling back to seeded defaults).
+   *
+   * @param taskType - The task type to update
+   * @param config - The new runtime configuration for the task
+   * @returns A promise that resolves when the update and in-memory synchronization complete
+   */
   async function updateOne(taskType: TaskType, config: TaskRuntimeConfig): Promise<void> {
     await ensureInit();
     const prev = taskRuntimeConfigs.value ?? {};

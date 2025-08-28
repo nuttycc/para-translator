@@ -1,55 +1,48 @@
 <script setup lang="ts">
-import { AIConfig } from '@/agent/types';
+import type { AIConfig } from '@/agent/types';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
-import { nextTick, PropType, reactive, ref, toRaw, watch } from 'vue';
+import { storeToRefs } from 'pinia';
+import { computed, ref } from 'vue';
 
-const props = defineProps({
-  config: {
-    type: Object as PropType<AIConfig>,
-    required: true,
-  },
-});
+const aiConfigsStore = useAiConfigsStore();
 
-const emit = defineEmits<{
-  (e: 'update', config: AIConfig): void;
-  (e: 'delete', configId: string): void;
-}>();
+const { firstConfigId, lastActiveConfigId, aiConfigs } = storeToRefs(aiConfigsStore);
+
+const configId = computed(() => String(lastActiveConfigId.value || firstConfigId.value));
+
+const config = computed<AIConfig>(() => aiConfigs.value[configId.value]);
 
 const logger = createLogger('AiConfig');
-// Local working copy to avoid echo loop; parent is source of truth
-const syncingFromProps = ref(false);
-const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
+
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
 const showRemoteModels = ref(false);
+const showApiKey = ref(false);
 
 const addLocalModel = () => {
-  logger.debug`Adding local model: localModels=${config.localModels}`;
+  if (!config.value) return;
+  logger.debug`Adding local model: localModels=${config.value.localModels}`;
   const newModel = newLocalModel.value.trim();
   if (!newModel) return;
-  config.localModels.push(newModel);
-  config.model = newModel;
+  config.value.localModels.push(newModel);
+  config.value.model = newModel;
   newLocalModel.value = '';
 };
 
 const deleteLocalModel = () => {
-  config.localModels = config.localModels.filter((model) => model !== config.model);
-  config.model = config.localModels.at(-1) ?? '';
-};
-
-// Emit updates, but skip when syncing from props to avoid echo loop
-const updateConfig = (newConfig: AIConfig) => {
-  if (syncingFromProps.value) return;
-  emit('update', toRaw(newConfig));
+  if (!config.value) return;
+  config.value.localModels = config.value.localModels.filter((model) => model !== config.value.model);
+  config.value.model = config.value.localModels.at(-1) ?? '';
 };
 
 const deleteConfig = () => {
-  emit('delete', config.id);
+  aiConfigsStore.remove(configId.value);
 };
 
 const fetchModes = async () => {
-  if (!config.baseUrl) {
+  if (!config.value?.baseUrl) {
     showToast({
       message: 'No base URL found',
       type: 'error',
@@ -57,14 +50,14 @@ const fetchModes = async () => {
     return;
   }
 
-  const endpoint = `${config.baseUrl}/models`;
+  const endpoint = `${config.value.baseUrl}/models`;
 
   logger.debug`Fetching models from ${endpoint}`;
 
   try {
     const response = await fetch(endpoint, {
       headers: {
-        Authorization: `Bearer ${config.apiKey}`,
+        Authorization: `Bearer ${config.value.apiKey}`,
       },
     });
 
@@ -89,28 +82,9 @@ const fetchModes = async () => {
   }
 };
 
-// Keep local config in sync when parent replaces the object, without emitting
-watch(
-  () => props.config,
-  (next) => {
-    syncingFromProps.value = true;
-    Object.assign(config, structuredClone(next));
-    nextTick(() => {
-      syncingFromProps.value = false;
-    });
-  }
-);
-
-watch(
-  config,
-  (newConfig) => {
-    updateConfig(newConfig);
-  },
-  { deep: true }
-);
 </script>
 <template>
-  <div class="card bg-base-100 shadow-xl">
+  <div class="card card-lg px-16 shadow-xl">
     <div class="card-body flex flex-col">
       <h1 class="card-title text-2xl font-bold mb-6">{{ config.name }}</h1>
       <div class="space-y-4">
@@ -146,13 +120,19 @@ watch(
           <label class="label" for="apikey">
             <span class="label-text font-medium">API Key</span>
           </label>
-          <input
-            type="text"
-            id="apikey"
-            v-model="config.apiKey"
-            class="input input-bordered w-full"
-            placeholder="Enter your API key"
-          />
+
+          <div class="flex gap-2">
+            <input
+              :type="showApiKey ? 'text' : 'password'"
+              id="apikey"
+              v-model="config.apiKey"
+              class="input input-bordered w-full"
+              placeholder="Enter your API key"
+            />
+            <button class="btn btn-soft btn-primary w-fit" @click="showApiKey = !showApiKey">
+              {{ showApiKey ? 'Hide' : 'Show' }}
+            </button>
+          </div>
         </div>
 
         <!-- Models -->

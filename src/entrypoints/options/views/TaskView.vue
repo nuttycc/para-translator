@@ -14,9 +14,11 @@ const taskConfigsStore = useTaskConfigsStore();
 const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
 
 const activeTaskId = computed(() => {
-  return String(
-    route.params.taskId || lastActiveTaskId.value || firstTaskId.value
-  ) as TaskType;
+  if (route.params.taskId && typeof route.params.taskId === 'string') {
+    return route.params.taskId as TaskType;
+  }
+
+  return lastActiveTaskId.value || firstTaskId.value as TaskType;
 });
 
 watch(
@@ -38,7 +40,12 @@ watch(
 watch(
   () => activeTaskId.value,
   (id) => {
+    if (!id || !taskIds.value.includes(id)) {
+      return;
+    }
     taskConfigsStore.setLastActiveTaskId(id);
+
+    router.replace({ name: 'tasks.detail', params: { taskId: id } });
   },
   { immediate: true }
 );
@@ -46,24 +53,22 @@ watch(
 
 <template>
   <div>
-    <div class="navbar flex gap-2 justify-end-safe">
+    <div class="navbar flex gap-2">
       <router-link
         v-for="tid in taskIds"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
-        :class="['btn btn-soft', { 'btn-active btn-accent': false }]"
+        :class="['btn btn-soft']"
       >
         {{ String(tid).charAt(0).toUpperCase() + String(tid).slice(1) }}
       </router-link>
     </div>
 
-    <div class="flex-1 min-w-0 mt-4">
+    <div class="mt-2">
       <router-view v-slot="{ Component }">
-        <transition name="fade" mode="out-in">
-          <keep-alive>
-            <component :is="Component" :task-id="activeTaskId" />
-          </keep-alive>
-        </transition>
+        <keep-alive>
+          <component :is="Component" :key="activeTaskId" />
+        </keep-alive>
       </router-view>
     </div>
   </div>

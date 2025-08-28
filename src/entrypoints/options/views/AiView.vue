@@ -13,9 +13,15 @@ const { aiConfigs, configIds, lastActiveConfigId, firstConfigId } = storeToRefs(
 const scrollContainer = ref<HTMLElement>();
 
 const activeConfigId = computed(() => {
-  return String(
-    route.params.configId || lastActiveConfigId.value || firstConfigId.value
-  );
+  if (
+    route.params.configId &&
+    typeof route.params.configId === 'string' &&
+    configIds.value.includes(route.params.configId)
+  ) {
+    return route.params.configId;
+  }
+
+  return lastActiveConfigId.value || firstConfigId.value;
 });
 
 // Function to scroll active config into view
@@ -60,13 +66,7 @@ const addNewConfig = async () => {
 
 watch(
   () => route.params.configId,
-  (newConfigId) => {
-    if (!newConfigId || !configIds.value.includes(String(newConfigId))) {
-      const fallback = lastActiveConfigId.value || firstConfigId.value;
-      if (fallback) {
-        router.replace({ name: 'ai.config', params: { configId: fallback } });
-      }
-    }
+  () => {
     scrollToActiveConfig();
   },
   { immediate: true }
@@ -76,46 +76,43 @@ watch(
   () => activeConfigId.value,
   (id) => {
     aiConfigsStore.setLastActiveConfigId(id);
+    router.replace({ name: 'ai.config', params: { configId: id } });
   },
   { immediate: true }
 );
 </script>
 
 <template>
-  <div class="flex h-[600px] justify-start items-start gap-4">
-    <div class="navbar w-60 min-w-56 flex flex-col gap-2">
+  <div class="flex gap-9 justify-center items-start">
+    <div class="navbar basis-1/4 self-start flex flex-col items-start gap-2">
+      <div>
+        <button class="btn btn-soft btn-primary" @click="addNewConfig">+ New Config</button>
+      </div>
+
       <div
         ref="scrollContainer"
-        class="w-full px-2 mt-6 h-[460px] overflow-y-auto flex flex-col gap-2"
+        class="h-[68vh] pr-3 overflow-y-auto flex flex-col justify-start items-start gap-2"
       >
         <router-link
           v-for="configId in configIds"
           :key="configId"
           :data-config-id="configId"
           :to="{ name: 'ai.config', params: { configId } }"
-          :class="[
-            'btn btn-soft text-sm w-48 justify-start truncate',
-            { 'btn-active btn-accent': false },
-          ]"
+          :class="['btn btn-soft text-sm w-36 focus:outline-0']"
           :title="aiConfigs[configId]?.name || String(configId)"
         >
-          {{ aiConfigs[configId]?.name || configId }}
+          <p class="truncate">
+            {{ aiConfigs[configId]?.name || configId }}
+          </p>
         </router-link>
       </div>
-      <button class="btn btn-soft btn-primary w-full" @click="addNewConfig">+ New</button>
     </div>
-    <div class="flex-1 min-w-0 h-[560px] overflow-auto">
+    <div class="flex-auto">
       <router-view v-slot="{ Component }">
-        <keep-alive :max="5">
+        <keep-alive :max="10">
           <component :is="Component" :key="$route.params.configId" :config-id="activeConfigId" />
         </keep-alive>
       </router-view>
     </div>
   </div>
 </template>
-
-<style scoped>
-* {
-  scrollbar-width: none;
-}
-</style>

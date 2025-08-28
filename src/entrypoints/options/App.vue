@@ -32,8 +32,8 @@ const resetStorage = () => {
 </script>
 
 <template>
-  <div class="w-fit mx-auto flex flex-col items-center">
-    <div class="navbar w-5xl flex justify-between">
+  <div class="w-fit mx-auto flex flex-col items-center font-sans">
+    <div class="navbar h-4 max-h-[22vh] w-5xl flex justify-between">
       <h1 class="text-xl font-bold">Options</h1>
       <div class="flex gap-2">
         <button class="btn btn-outline btn-warning" @click="runToastTest">Test Toast</button>
@@ -41,18 +41,14 @@ const resetStorage = () => {
       </div>
 
       <div class="flex gap-2">
-        <RouterLink :to="{ name: 'ai.config' }" v-slot="{ isActive }" class="btn btn-soft">
-          {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
-        >
-        <RouterLink :to="{ name: 'tasks.detail' }" v-slot="{ isActive }" class="btn btn-soft"
-          >Tasks {{ isActive ? 'Active' : 'Inactive' }}</RouterLink
-        >
+        <RouterLink :to="{ name: 'ai.config' }" class="btn btn-soft"> AI</RouterLink>
+        <RouterLink :to="{ name: 'tasks.detail' }" class="btn btn-soft">Tasks</RouterLink>
       </div>
     </div>
 
-    <div class="divider"></div>
+    <div class="divider mt-0"></div>
 
-    <div class="min-h-[600px] w-3xl mb-8">
+    <div class="min-h-[80dvh] w-3xl">
       <RouterView v-slot="{ Component, route }">
         <transition :name="(route.meta?.transition as string) || 'fade'" mode="out-in">
           <component :is="Component" :key="route.matched[0]?.path" />
@@ -61,9 +57,5 @@ const resetStorage = () => {
     </div>
 
     <div class="divider"></div>
-
-    <div class="w-5xl h-16 flex items-center justify-center">
-      <p class="text-sm text-gray-500">Some text here</p>
-    </div>
   </div>
 </template>

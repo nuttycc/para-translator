@@ -1,10 +1,9 @@
-import '@/assets/base.css';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 import App from './App.vue';
 import router from './router';
-import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -17,18 +16,14 @@ const initializeStores = async () => {
   const aiConfigsStore = useAiConfigsStore();
   const taskConfigsStore = useTaskConfigsStore();
 
-  await Promise.all([
-    aiConfigsStore.load(),
-    taskConfigsStore.load()
-  ]);
+  await Promise.all([aiConfigsStore.load(), taskConfigsStore.load()]);
 };
 
-// Initialize stores and then mount the app
-initializeStores().then(() => {
-  app.mount('#app');
-}).catch((err) => {
-  console.error('Failed to initialize stores:', err);
-  // Still mount the app even if store initialization fails
-  app.mount('#app');
-});
-
+initializeStores()
+  .then(() => {
+    app.mount('#app');
+  })
+  .catch((err) => {
+    console.error('Failed to initialize stores:', err);
+    app.mount('#app');
+  });

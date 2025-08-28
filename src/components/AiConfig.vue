@@ -23,6 +23,7 @@ const config = reactive<AIConfig>(structuredClone(toRaw(props.config)));
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
 const showRemoteModels = ref(false);
+const showApiKey = ref(false);
 
 const addLocalModel = () => {
   logger.debug`Adding local model: localModels=${config.localModels}`;
@@ -146,13 +147,19 @@ watch(
           <label class="label" for="apikey">
             <span class="label-text font-medium">API Key</span>
           </label>
-          <input
-            type="text"
-            id="apikey"
-            v-model="config.apiKey"
-            class="input input-bordered w-full"
-            placeholder="Enter your API key"
-          />
+
+          <div class="flex gap-2">
+            <input
+              :type="showApiKey ? 'text' : 'password'"
+              id="apikey"
+              v-model="config.apiKey"
+              class="input input-bordered w-full"
+              placeholder="Enter your API key"
+            />
+            <button class="btn btn-soft btn-primary w-fit" @click="showApiKey = !showApiKey">
+              {{ showApiKey ? 'Hide' : 'Show' }}
+            </button>
+          </div>
         </div>
 
         <!-- Models -->

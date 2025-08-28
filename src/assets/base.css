@@ -7,16 +7,31 @@
     opacity: 1;
     transform: translateY(0);
   }
+
   to {
     opacity: 0;
     transform: translateY(-10px);
   }
 }
 
+
+* {
+  scrollbar-width: thin;
+}
+
+
+.bb {
+  border: 1px solid gray;
+}
+
+.bb2 {
+  border: 1px solid yellow;
+}
+
 /* Global transition animations */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.2s ease-in-out;
+  transition: opacity 0.1s ease-in-out;
 }
 
 .fade-enter-from,

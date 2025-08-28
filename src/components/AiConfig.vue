@@ -110,7 +110,7 @@ watch(
 );
 </script>
 <template>
-  <div class="card bg-base-100 shadow-xl">
+  <div class="card card-lg px-16 shadow-xl">
     <div class="card-body flex flex-col">
       <h1 class="card-title text-2xl font-bold mb-6">{{ config.name }}</h1>
       <div class="space-y-4">

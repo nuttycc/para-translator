@@ -45,11 +45,11 @@ const handleDelete = async (id: string) => {
 </script>
 
 <template>
-  <div class="h-full">
+  <div>
     <div v-if="currentConfig">
       <AiConfig :config="currentConfig" @update="handleUpdate" @delete="handleDelete" />
     </div>
-    <div v-else class="h-full flex items-center justify-center text-base-content/60">
+    <div v-else class="flex items-center justify-center text-base-content/60">
       No AI config selected.
     </div>
   </div>

@@ -14,7 +14,11 @@ const taskConfigsStore = useTaskConfigsStore();
 const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
 
 const activeTaskId = computed(() => {
-  return String(route.params.taskId || lastActiveTaskId.value || firstTaskId.value) as TaskType;
+  if (route.params.taskId && typeof route.params.taskId === 'string') {
+    return route.params.taskId as TaskType;
+  }
+
+  return lastActiveTaskId.value || firstTaskId.value as TaskType;
 });
 
 watch(
@@ -36,7 +40,11 @@ watch(
 watch(
   () => activeTaskId.value,
   (id) => {
+    if (!id || !taskIds.value.includes(id)) {
+      return;
+    }
     taskConfigsStore.setLastActiveTaskId(id);
+
     router.replace({ name: 'tasks.detail', params: { taskId: id } });
   },
   { immediate: true }
@@ -50,7 +58,7 @@ watch(
         v-for="tid in taskIds"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
-        :class="['btn btn-soft', { 'btn-active btn-accent': false }]"
+        :class="['btn btn-soft']"
       >
         {{ String(tid).charAt(0).toUpperCase() + String(tid).slice(1) }}
       </router-link>

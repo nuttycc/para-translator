@@ -1,14 +1,15 @@
+import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
 import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { isEqual, omit } from 'es-toolkit';
 import { defineStore } from 'pinia';
-import { computed, readonly, ref, toRaw, onScopeDispose, watch } from 'vue';
+import { computed, onScopeDispose, readonly, ref, toRaw, watch } from 'vue';
 
 const logger = createLogger('useAiConfigsStore');
 
 export const useAiConfigsStore = defineStore('aiConfigs', () => {
-  const aiConfigsState = ref<AIConfigs>({});
+  const aiConfigsState = ref<AIConfigs>(AGENT_SEEDS.AI_CONFIGS);
   const lastWriteError = ref<unknown | null>(null);
   const lastActiveConfigId = ref<string>('');
 
@@ -17,14 +18,19 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
 
   let isInitialized = false;
   let initPromise: Promise<void> | null = null;
-  let suppressWrite = false;
+  let suppressWriteDepth = 0;
 
+  /**
+   * Executes a function with write suppression, allowing for reentrant (nested) calls.
+   * Uses a depth counter instead of a boolean flag to prevent premature clearing
+   * when multiple nested operations are in progress.
+   */
   const withSuppressWrite = async <T>(fn: () => Promise<T> | T): Promise<T> => {
-    suppressWrite = true;
+    suppressWriteDepth++;
     try {
       return await fn();
     } finally {
-      suppressWrite = false;
+      suppressWriteDepth--;
     }
   };
 
@@ -34,7 +40,7 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
   const hasConfigs = computed(() => configIds.value.length > 0);
 
   // state -> storage
-  const writeThrough = async () => {
+  const writeToStorage = async () => {
     try {
       lastWriteError.value = null;
       await agentStorage.aiConfigs.setValue({ ...aiConfigsState.value });
@@ -43,7 +49,12 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
       // Reload from storage to reconcile and expose error
       lastWriteError.value = err;
       const fresh = (await agentStorage.aiConfigs.getValue()) ?? {};
-      aiConfigsState.value = fresh;
+      await withSuppressWrite(() => {
+        if (!isEqual(aiConfigsState.value, fresh)) {
+          aiConfigsState.value = fresh;
+        }
+        return undefined;
+      });
       logger.error`Failed to persist aiConfigs: ${String(err)}`;
     }
   };
@@ -68,15 +79,22 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
           return withSuppressWrite(() => {
             // Last-write-wins by updatedAt for each key
             const incoming = newValue || {};
-            const merged: AIConfigs = { ...aiConfigsState.value };
+            const current = aiConfigsState.value;
+            const next: AIConfigs = {};
+            // add/update
             for (const [id, cfg] of Object.entries(incoming)) {
-              const current = merged[id];
-              if (!current || (cfg.updatedAt ?? 0) >= (current.updatedAt ?? 0)) {
-                merged[id] = cfg;
+              const cur = current[id];
+              next[id] = !cur || (cfg.updatedAt ?? 0) >= (cur.updatedAt ?? 0) ? cfg : cur;
+            }
+            // deletions (present locally but missing in storage)
+            for (const id of Object.keys(current)) {
+              if (!(id in incoming)) {
+                // treat as removed in storage
+                // no-op: simply don't copy it into `next`
               }
             }
-            aiConfigsState.value = merged;
-            logger.debug`Read storage change, merged into state. Items=${Object.keys(merged).length}`;
+            aiConfigsState.value = next;
+            logger.debug`Read storage change, merged into state. Items=${Object.keys(next).length}`;
             return undefined;
           });
         });
@@ -87,8 +105,9 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
         unwatchState = watch(
           aiConfigsState,
           async () => {
-            if (suppressWrite) return;
-            await writeThrough();
+            // Only allow writes when no suppression is active (depth === 0)
+            if (suppressWriteDepth > 0) return;
+            await writeToStorage();
           },
           { deep: true }
         );

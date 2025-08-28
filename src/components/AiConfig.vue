@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { AIConfig } from '@/agent/types';
+import type { AIConfig } from '@/agent/types';
+import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
-import { computed, ref } from 'vue';
-import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { storeToRefs } from 'pinia';
-import router from '@/entrypoints/options/router';
+import { computed, ref } from 'vue';
 
 const aiConfigsStore = useAiConfigsStore();
 

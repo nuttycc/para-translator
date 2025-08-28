@@ -66,13 +66,7 @@ const addNewConfig = async () => {
 
 watch(
   () => route.params.configId,
-  (newConfigId) => {
-    if (!newConfigId || !configIds.value.includes(String(newConfigId))) {
-      const fallback = lastActiveConfigId.value || firstConfigId.value;
-      if (fallback) {
-        router.replace({ name: 'ai.config', params: { configId: fallback } });
-      }
-    }
+  () => {
     scrollToActiveConfig();
   },
   { immediate: true }

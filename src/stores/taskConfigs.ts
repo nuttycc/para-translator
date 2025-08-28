@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { readonly, ref, computed, toRaw, onScopeDispose, watch } from 'vue';
+import { ref, computed, toRaw, onScopeDispose, watch } from 'vue';
 import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
 import { createLogger } from '@/utils/logger';
@@ -15,21 +15,26 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
   let isInitialized = false;
   let initPromise: Promise<void> | null = null;
 
-  const suppressWrite = ref(false);
+  const suppressWriteDepth = ref(0); // Reentrant write suppression using depth counter
   let unwatchStorage: (() => void) | null = null;
   let unwatchState: (() => void) | null = null;
 
   // Getters to reduce repetitive computations in views
-  const taskIds = computed(() => Object.keys(taskRuntimeConfigs.value || {}));
+  const taskIds = computed(() => Object.keys(taskRuntimeConfigs.value));
   const firstTaskId = computed(() => taskIds.value.at(0) || 'translate');
   const hasTasks = computed(() => taskIds.value.length > 0);
 
+  /**
+   * Executes a function with write suppression, allowing for reentrant (nested) calls.
+   * Uses a depth counter instead of a boolean flag to prevent premature clearing
+   * when multiple nested operations are in progress.
+   */
   const withSuppressWrite = async <T>(fn: () => Promise<T> | T): Promise<T> => {
-    suppressWrite.value = true;
+    suppressWriteDepth.value++;
     try {
       return await fn();
     } finally {
-      suppressWrite.value = false;
+      suppressWriteDepth.value--;
     }
   };
 
@@ -37,11 +42,11 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     if (isInitialized) return;
     if (initPromise) return initPromise;
     initPromise = (async () => {
-      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? null;
+      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
       if (!unwatchStorage) {
         unwatchStorage = agentStorage.taskConfigs.watch((newValue) => {
           return withSuppressWrite(() => {
-            taskRuntimeConfigs.value = newValue ?? null;
+            taskRuntimeConfigs.value = newValue ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
             logger.debug`Task configs storage change merged`;
           });
         });
@@ -50,7 +55,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
         unwatchState = watch(
           taskRuntimeConfigs,
           async () => {
-            if (suppressWrite.value || !taskRuntimeConfigs.value) return;
+            // Only allow writes when no suppression is active (depth === 0)
+            if (suppressWriteDepth.value > 0 || !taskRuntimeConfigs.value) return;
             await agentStorage.taskConfigs.setValue(taskRuntimeConfigs.value);
           },
           { deep: true }
@@ -84,7 +90,7 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
       lastWriteError.value = err;
       logger.error`Failed to update task config for ${taskType}: ${String(err)}`;
       // Reload from storage to reconcile
-      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? null;
+      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
     }
   }
 

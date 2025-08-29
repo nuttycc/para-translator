@@ -5,7 +5,7 @@ import AiConfig from '@/components/AiConfig.vue';
 <template>
   <div>
     <div>
-      <AiConfig  />
+      <AiConfig />
     </div>
   </div>
 </template>

@@ -1,22 +1,38 @@
 <script setup lang="ts">
+import { computed, ref } from 'vue';
+import { createLogger } from '@/utils/logger';
+import type { ResponseFormatType } from '@/agent/executor';
+import VueMarkdown from 'vue-markdown-render';
+
 export interface ParaCardProps {
-  sourceText: string;
+  sourceText?: string;
   loading: boolean;
-  translatedText: string;
+  result: string;
   error: string | null;
-  [key: string]: any;
 }
 
 const props = withDefaults(defineProps<ParaCardProps>(), {
   loading: false,
-  translatedText: '',
+  result: '',
   error: null,
+});
+
+const logger = createLogger('ParaCard');
+const isTab = ref('translation');
+
+const parsedResult = computed<ResponseFormatType>(() => {
+  try {
+    return JSON.parse(props.result);
+  } catch (error) {
+    logger.error`failed to parse result: ${error}`;
+    return props.result;
+  }
 });
 </script>
 
 <template>
   <div class="card bg-base-100 shadow-lg">
-    <div class="card-body">
+    <div class="card-body py-2">
       <!-- <h2 class="card-title text-primary">Para-Translator</h2> -->
 
       <div v-if="props.loading" class="flex items-center gap-2">
@@ -41,8 +57,23 @@ const props = withDefaults(defineProps<ParaCardProps>(), {
         <span>{{ props.error }}</span>
       </div>
 
-      <div v-else class="text-base-content">
-        {{ props.translatedText }}
+      <div v-else class="grid text-base-content">
+        <ul class="row-span-1 menu menu-sm menu-horizontal place-self-end">
+          <li><button @click="isTab = 'translation'">Translation</button></li>
+          <li><button @click="isTab = 'grammar'">Grammar</button></li>
+          <li><button @click="isTab = 'vocabulary'">Vocabulary</button></li>
+        </ul>
+        <ul class="row-auto">
+          <li v-if="isTab === 'translation'">
+            {{ parsedResult.translatedText }}
+          </li>
+          <li v-if="isTab === 'grammar'">
+            <vue-markdown :source="parsedResult.grammar" />
+          </li>
+          <li v-if="isTab === 'vocabulary'">
+            <vue-markdown :source="parsedResult.vocabulary" />
+          </li>
+        </ul>
       </div>
     </div>
   </div>

@@ -27,8 +27,8 @@ const DEFAULT_AI_CONFIGS = {
     id: 'groq-123',
     name: 'Groq',
     provider: 'groq',
-    model: 'openai/gpt-oss-20b',
-    localModels: ['openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
+    model: 'qwen/qwen3-32b',
+    localModels: ['qwen/qwen3-32b', 'openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
     apiKey: '',
     baseUrl: 'https://api.groq.com/openai/v1',
     createdAt: 0,
@@ -63,7 +63,21 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
     temperature: 0.3,
     prompt: {
       system:
-        'You are a professional Language teacher. Your task is to explain the source text in a way that is easy to understand for language learners.',
+        'You are a professional Language teacher. Your task is to explain the source text in a way that is easy to understand for language learners.' +
+        '\nYou should refer to the additional context information about the source text to explain it correctly.' +
+        '\nYou should provide the grammar, vocabulary, sentence structure, sentence variation, and sentence meaning of the source text.' +
+        '\nRestrictions-Response-Format: json format.' +
+        'Response-Format-Example:' +
+        '\n```json' +
+        '\n{ "translatedText": "translated text of the source text"}' +
+        '\n{ "grammar": "explanation of the grammar of the source text, formatted in markdown"}' +
+        '\n{ "vocabulary": "explanation of the vocabulary at or above the intermediate level of the source text, act as a dictionary(dictionary.cambridge.org,), formatted in markdown."}' +
+        '\n```' +
+        'Here is the context for your should know before explaining: ' +
+        '\n```json' +
+        '\n{ name: "siteTitle", value: "%{siteTitle}", description: "this is the title of the website"}' +
+        '\n{ name: "siteUrl", value: "%{siteUrl}", description: "this is the url of the website"}' +
+        '\n```',
       user: 'Explain the following text in %{targetLanguage}: %{sourceText}',
     },
   },

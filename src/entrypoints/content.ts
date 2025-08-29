@@ -31,7 +31,7 @@ export default defineContentScript({
       const state = shallowReactive<ParaCardProps>({
         sourceText: initial.sourceText ?? '',
         loading: initial.loading ?? true,
-        translatedText: initial.translatedText ?? '',
+        result: initial.result ?? '',
         error: initial.error ?? null,
       });
 
@@ -199,7 +199,7 @@ export default defineContentScript({
             return;
           }
 
-          state.translatedText = response.data || '';
+          state.result = response.data || '';
           state.error = response.error || null;
 
           // Mark container as translated

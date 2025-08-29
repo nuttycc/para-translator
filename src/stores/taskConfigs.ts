@@ -53,7 +53,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
     if (isInitialized) return;
     if (initPromise) return initPromise;
     initPromise = (async () => {
-      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
+      taskRuntimeConfigs.value =
+        (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
       if (!unwatchStorage) {
         unwatchStorage = agentStorage.taskConfigs.watch((newValue) => {
           return withSuppressWrite(() => {
@@ -110,7 +111,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
       lastWriteError.value = err;
       logger.error`Failed to update task config for ${taskType}: ${String(err)}`;
       // Reload from storage to reconcile
-      taskRuntimeConfigs.value = (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
+      taskRuntimeConfigs.value =
+        (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
     }
   }
 

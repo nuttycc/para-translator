@@ -101,7 +101,7 @@ export function testToast(): void {
   showToast({
     message: 'Test toast - basic',
     type: 'info',
-    duration: 5000
+    duration: 5000,
   });
 
   // Test success toast
@@ -109,7 +109,7 @@ export function testToast(): void {
     showToast({
       message: 'Test toast - success',
       type: 'success',
-      duration: 4000
+      duration: 4000,
     });
   }, 1000);
 
@@ -118,7 +118,7 @@ export function testToast(): void {
     showToast({
       message: 'Test toast - error',
       type: 'error',
-      duration: 3000
+      duration: 3000,
     });
   }, 2000);
 }

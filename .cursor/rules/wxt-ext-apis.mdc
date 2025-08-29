@@ -1,0 +1,95 @@
+---
+description: Best Practices for Unified `browser` API and Type Definitions in WXT
+alwaysApply: false
+---
+# Best Practices for Unified `browser` API and Type Definitions in WXT
+
+***
+
+## 1. Unified `browser` API Usage
+
+**What it is:**
+WXT provides a unified `browser` API that abstracts differences between browsers (e.g., Chrome exposes `chrome`, Firefox exposes `browser`). With WXT, you always access extension APIs via the `browser` variable, ensuring cross-browser compatibility.
+
+**When to use:**
+Whenever you need to interact with browser extension APIs, regardless of the target browser (Chromium, Firefox, Safari, etc.).
+
+**Correct Usage Example:**
+
+```typescript
+// Auto-import enabled: just use `browser` directly
+browser.action.onClicked.addListener(() => {
+  // Your extension logic here
+});
+```
+Or, if manual import is needed:
+
+```typescript
+import { browser } from 'wxt/browser';
+
+browser.action.onClicked.addListener(() => {
+  // Your extension logic here
+});
+```
+
+**Wrong Usage Example:**
+
+```typescript
+// ✗ Avoid using global `chrome` or browser-specific objects directly
+chrome.action.onClicked.addListener(function() {
+  // This is not portable across browsers
+});
+```
+Or:
+
+```typescript
+// ✗ Do NOT manually detect and reference different globals
+const api = window.chrome || window.browser;
+// This defeats the purpose of WXT's abstraction
+```
+
+***
+
+## 2. Accessing WXT Type Definitions
+
+**What it is:**
+WXT exposes all extension API type definitions under the `Browser` namespace, greatly improving TypeScript support and ensuring type safety during development.
+
+**When to use:**
+Any time you want to explicitly type arguments or context using extension API types, such as for message sender types or event payloads.
+
+**Correct Usage Example:**
+
+```typescript
+import { type Browser } from 'wxt/browser';
+
+function handleMessage(message: any, sender: Browser.runtime.MessageSender) {
+  // Properly typed, IDE-autocomplete friendly
+}
+```
+
+**Wrong Usage Example:**
+
+```typescript
+// ✗ Avoid using untyped or loosely typed function parameters
+function handleMessage(message, sender) {
+  // No type safety or code hints
+}
+```
+Or:
+
+```typescript
+// ✗ Do NOT manually define or guess complex extension API types
+function handleMessage(message: any, sender: { tab?: any }) {
+  // This undermines WXT-provided type safety
+}
+```
+
+***
+
+**Summary Table**
+
+| Topic                    | Correct Example                                              | Wrong Example                     |
+|--------------------------|-------------------------------------------------------------|------------------------------------|
+| Unified browser API      | `browser.action.onClicked.addListener(...)`                 | `chrome.action.onClicked...`, manually handle globals |
+| Type definitions         | `function fn(msg, sender: Browser.runtime.MessageSender)`    | Untyped or makeshift types         |

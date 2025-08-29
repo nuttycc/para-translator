@@ -1,0 +1,100 @@
+---
+alwaysApply: true
+---
+
+# General Rules
+
+## 1. Use English Language
+
+Rule: You should always use English when you are coding, investigating, reasoning. But respond user in Chinese.
+Scope:
+
+- **UI**: [`interface` | `popup page` | `options page`]
+- **Logging**: [`log` | `console.log`]
+- **Comments**: [`comments` | `tsdoc` | `inline_documentation`]
+- **Research**: [`web search` | `code search` | `grep` | `code retrieval`]
+
+## 2.TypeScript Rules
+
+- **Strict Mode:** ✅ Required
+- **Any Type:** ❌ Forbidden
+
+## 3.Write tsdoc
+
+- **tsdoc:** ✅ Required
+- **style:** English, concise and clear, follow TSDoc specifications
+- **scope:** Complex functions
+
+## 4.Organize Directory & Code
+
+- **Rule:** Organize the code in a way that is easy to understand and maintain. and follow the existing code structure.
+- **Scope**: directory structure, file structure, code order, etc.
+
+## 5.Restrictions
+
+### NO TESTS & COMPILATION & BUILD
+
+- **Status:** ❌ FORBIDDEN
+- **Scope:** All test creation and execution, compilation, and other build related tasks
+- **Forbidden List:** [`test` | `compile` | `build` | `tsc`, `start`]
+
+### NO DOCS
+
+- **Status:** ❌ FORBIDDEN
+- **Scope:** All documentation, e.g. `.md` files, etc.
+
+### Avoid CODE COMMENTS
+
+- **Status:** ✅ ALLOWED But should be less than 20% of the code
+- **Scope:** All code comments, e.g. `//` or `/* */`
+
+## 6.Tool Call Rules
+
+Reminder: You should always use English in the tool calls.
+
+### Deepwiki
+
+- **Match:** `when the user requests code examples, setup or configuration steps, or library/API documentation`
+- **Question Style:** [`Prefer English`, `structured question`, `Focused and specific`, `Rich context with user's code snippets and description`]
+- **Restrictions:** [`one topic or scope per call`]
+- **Examples:**
+  - `What is the signature of the function? Give me the type signatures, parameters, return types.`
+  - `How the function works? Give me the implementation details, comments, and other relevant information.`
+  - `Are there any apis to do x? Give me the related apis options`
+  - `why my function x are not working? I use it with the context [rich code context] and get issue [issue description], give me explanation and solution.`
+
+### Context7
+
+- **Match:** `when the user requests code examples, setup or configuration steps, or library/API documentation`
+
+### Perplexity
+
+- **Required Roles:** [`system`, `user`]
+
+## 7.Follow Design Principles
+
+### KISS
+
+- **Full Name:** Keep It Simple, Stupid
+- **Application:** Favor simple, readable solutions over complex ones
+- **Priority:** Prefer best solution over the simplest solution. Not just simple, but more should be the best.
+
+### YAGNI
+
+- **Full Name:** You Aren't Gonna Need It
+- **Application:** Don't implement features until they're actually needed
+
+### SOLID
+
+- **Full Name:** SOLID Principles
+- **Components:**
+  1. **SRP:** Single Responsibility Principle
+  2. **OCP:** Open-Closed Principle
+  3. **LSP:** Liskov Substitution Principle
+  4. **ISP:** Interface Segregation Principle
+  5. **DIP:** Dependency Inversion Principle
+
+## 8.Referrence Github Repos
+
+- [toss/es-toolkit](https://github.com/toss/es-toolkit)
+- [vuejs/core](https://github.com/vuejs/core)

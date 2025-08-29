@@ -33,7 +33,9 @@ const addLocalModel = () => {
 
 const deleteLocalModel = () => {
   if (!config.value) return;
-  config.value.localModels = config.value.localModels.filter((model) => model !== config.value.model);
+  config.value.localModels = config.value.localModels.filter(
+    (model) => model !== config.value.model
+  );
   config.value.model = config.value.localModels.at(-1) ?? '';
 };
 
@@ -81,7 +83,6 @@ const fetchModes = async () => {
     remoteModels.value = [];
   }
 };
-
 </script>
 <template>
   <div class="card card-lg px-16 shadow-xl">

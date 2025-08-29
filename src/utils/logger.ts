@@ -9,7 +9,8 @@ configureSync({
   sinks: { console: getConsoleSink({ formatter: defaultConsoleFormatter }) },
   loggers: [
     { category: ['logtape', 'meta'], lowestLevel: 'warning', sinks: ['console'] },
-    { category: 'my-app', lowestLevel: 'debug', sinks: ['console'] }],
+    { category: 'my-app', lowestLevel: 'debug', sinks: ['console'] },
+  ],
 });
 
 export const createLogger = (...categoryParts: string[]) => getLogger(['my-app', ...categoryParts]);

@@ -4,32 +4,46 @@ import type {
   TaskRuntimeConfigs,
   TaskType,
   AIConfigs,
+  AgentContext,
 } from '@/agent/types';
-import { AgentContext, AgentResponse } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate } from '@/utils/template';
 import { OpenAI } from 'openai';
 import { AGENT_SEEDS } from './seeds';
 import { agentStorage } from './storage';
+import { z } from 'zod';
+import { zodResponseFormat } from 'openai/helpers/zod';
+
+const ResponseFormat = z.object({
+  translatedText: z.string(),
+  grammar: z.string(),
+  vocabulary: z.string(),
+});
+
+export type ResponseFormatType = z.infer<typeof ResponseFormat>;
 
 abstract class BaseTaskExecutor implements TaskExecutor {
   abstract readonly taskType: TaskType;
   abstract runtimeConfig: TaskRuntimeConfig;
 
-  abstract execute(context: AgentContext): Promise<AgentResponse>;
+  abstract execute(context: AgentContext): Promise<string>;
 }
 
 export class TranslateExecutor extends BaseTaskExecutor {
   readonly log = createLogger('TranslateExecutor');
 
-  readonly taskType = 'translate';
-  runtimeConfig: TaskRuntimeConfig = AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
+  // readonly taskType = 'translate';
+
+  // test explain type
+  readonly taskType = 'explain';
+
+  runtimeConfig: TaskRuntimeConfig = AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
   async init() {
     const loaded = await agentStorage.taskConfigs
       .getValue()
       .catch(() => undefined as unknown as TaskRuntimeConfigs | undefined);
-    this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS.translate;
+    this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
     agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
       const nextCfg = newConfigs?.[this.taskType];
@@ -37,18 +51,18 @@ export class TranslateExecutor extends BaseTaskExecutor {
     });
   }
 
-  async execute(context: AgentContext): Promise<AgentResponse> {
+  async execute(context: AgentContext): Promise<string> {
     const runtimeConfig = this.runtimeConfig;
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
       .then((configs: AIConfigs) => configs[runtimeConfig.aiConfigId]);
 
     if (!aiConfig) {
-      return { ok: false, error: 'AI config not found' };
+      throw new Error(`AI config not found for ${this.taskType}`);
     }
 
     if (!aiConfig.apiKey) {
-      return { ok: false, error: 'API key is not set' };
+      throw new Error(`API key is not set for ${this.taskType}`);
     }
 
     const openai = new OpenAI({
@@ -69,15 +83,23 @@ export class TranslateExecutor extends BaseTaskExecutor {
           { role: 'user', content: userPrompt },
         ],
         temperature: runtimeConfig.temperature,
+        response_format: {
+          type: 'json_schema',
+          json_schema: {
+            name: 'sentence_analysis',
+            schema: z.toJSONSchema(ResponseFormat),
+          },
+        },
       });
+      this.log.info`execute ${this.taskType} with response: ${response}`;
       const content = response.choices?.[0]?.message?.content ?? '';
       if (!content.trim()) {
-        return { ok: false, error: 'empty response' };
+        throw new Error(`Empty response for ${this.taskType}`);
       }
-      return { ok: true, data: content };
+      return content;
     } catch (error) {
-      this.log.error('execute', { error });
-      return { ok: false, error: (error as Error).message };
+      this.log.error`execute ${this.taskType} with error: ${error}`;
+      throw error;
     }
   }
 }

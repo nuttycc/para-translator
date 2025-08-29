@@ -1,13 +1,25 @@
 // Types are now self-contained to avoid circular dependencies
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📝 TASK TYPES & CONSTANTS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export const TASK_TYPES = ['translate', 'explain'] as const;
 
 export type TaskType = (typeof TASK_TYPES)[number];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🧩 PROMPT UNIT
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface PromptUnit {
   system: string;
   user: string;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ⚙️ TASK RUNTIME CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface TaskRuntimeConfig {
   aiConfigId: string;
@@ -17,6 +29,10 @@ export interface TaskRuntimeConfig {
 
 // storage.local
 export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🤖 AGENT CONTEXT & RESPONSE
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface AgentContext {
   sourceText: string;
@@ -31,6 +47,10 @@ export interface AgentResponse {
   data?: string;
   error?: string;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🔧 AI CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface AIConfig {
   id: string;
@@ -48,23 +68,60 @@ export interface AIConfig {
 // storage.local
 export type AIConfigs = Record<string, AIConfig>;
 
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🏃 TASK EXECUTORS
+// ═══════════════════════════════════════════════════════════════════════════════
+
 export interface TaskExecutor {
   readonly taskType: TaskType;
-  execute(context: AgentContext): Promise<AgentResponse>;
+  runtimeConfig: TaskRuntimeConfig;
+  execute(context: AgentContext): Promise<string>;
 }
 
 export interface TranslatorTaskExecutor extends TaskExecutor {
   readonly taskType: 'translate';
-  execute(context: AgentContext): Promise<AgentResponse>;
 }
 
 export interface ExplainTaskExecutor extends TaskExecutor {
   readonly taskType: 'explain';
-  execute(context: AgentContext): Promise<AgentResponse>;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 🎯 LANGUAGE AGENT SPECIFICATION
+// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface LangAgentSpec {
   readonly taskTypes: typeof TASK_TYPES;
 
   perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse>;
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// 📊 EXECUTION RESULTS & HISTORY
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export interface AgentExecutionResult {
+  id: string;
+
+  timestamp: number;
+
+  taskType: TaskType;
+
+  context: AgentContext;
+
+  result: string;
+
+  aiConfigId: string;
+
+  duration?: number;
+
+  metadata?: {
+    provider?: string;
+    model?: string;
+    temperature?: number;
+    resultLength?: number;
+  };
+}
+
+// storage.local
+export type AgentExecutionResults = AgentExecutionResult[];

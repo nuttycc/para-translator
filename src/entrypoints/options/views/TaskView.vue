@@ -18,7 +18,7 @@ const activeTaskId = computed(() => {
     return route.params.taskId as TaskType;
   }
 
-  return lastActiveTaskId.value || firstTaskId.value as TaskType;
+  return lastActiveTaskId.value || (firstTaskId.value as TaskType);
 });
 
 watch(

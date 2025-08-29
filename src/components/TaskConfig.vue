@@ -67,7 +67,9 @@ const runtimeConfig = computed<TaskRuntimeConfig>(() => {
         <div class="form-control">
           <label class="label">
             <span class="label-text font-semibold">Temperature</span>
-            <span class="label-text-alt text-base-content/70">{{ runtimeConfig.temperature || 0 }}</span>
+            <span class="label-text-alt text-base-content/70">{{
+              runtimeConfig.temperature || 0
+            }}</span>
           </label>
           <input
             type="range"

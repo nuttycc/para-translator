@@ -1,5 +1,5 @@
 import { storage } from '#imports';
-import { type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
+import { type AgentExecutionResults, type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 import { AGENT_SEEDS } from '@/agent/seeds';
 
 /**
@@ -20,8 +20,21 @@ const taskConfigsStorage = storage.defineItem<TaskRuntimeConfigs>('local:taskCon
   version: 1,
 });
 
+/**
+ * Agent execution results storage item
+ * Stores the list of agent execution results
+ */
+const agentExecutionResultsStorage = storage.defineItem<AgentExecutionResults>(
+  'local:agentExecutionResults',
+  {
+    fallback: [],
+    version: 1,
+  }
+);
+
 // export all storage items
 export const agentStorage = {
   aiConfigs: aiConfigsStorage,
   taskConfigs: taskConfigsStorage,
+  agentExecutionResults: agentExecutionResultsStorage,
 };

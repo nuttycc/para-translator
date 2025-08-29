@@ -8,6 +8,7 @@ import {
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { TranslateExecutor } from './executor';
+import { agentStorage } from './storage';
 
 /**
  * The LangAgent class is a singleton that manages the task executors for the LangAgent.
@@ -25,16 +26,28 @@ export class LangAgent implements LangAgentSpec {
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
-    this.log.info('perform', { taskType });
+    this.log.info`Start perform, ${taskType}`;
     const executor = this.taskExecutors.get(taskType);
     if (!executor) {
       return { ok: false, error: `Executor for task type ${taskType} not found` };
     }
     try {
-      return await executor.execute(context);
+      const result = await executor.execute(context);
+      const history = await agentStorage.agentExecutionResults.getValue();
+      history.unshift({
+        id: crypto.randomUUID(),
+        timestamp: Date.now(),
+        taskType,
+        context,
+        result,
+        aiConfigId: executor.runtimeConfig.aiConfigId,
+      });
+      await agentStorage.agentExecutionResults.setValue(history);
+      this.log.info`perform success, ${taskType}, ${result} New History: ${history}`;
+      return { ok: true, data: result };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
-      this.log.error('perform failed', { taskType, error: message });
+      this.log.error`perform failed, ${taskType}, ${message}`;
       return { ok: false, error: message };
     }
   }

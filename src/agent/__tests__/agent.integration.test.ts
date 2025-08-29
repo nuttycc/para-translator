@@ -4,7 +4,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { getLangAgent } from '@/agent/agent';
-import type { AgentContext, AIConfig, AIConfigs } from '@/agent/types';
+import type { AgentContext, AIConfigs } from '@/agent/types';
 import { agentStorage } from '../storage';
 
 const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY as string) || undefined;

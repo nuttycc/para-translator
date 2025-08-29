@@ -1,0 +1,173 @@
+{
+  // Oxlint 配置 - 适合 Vue 3 + TypeScript + WXT 浏览器扩展项目
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+
+  // 启用插件支持
+  "plugins": [
+    "typescript", // TypeScript 支持
+    "unicorn", // 有用的实用规则
+    "oxc" // Oxc 特定规则
+  ],
+
+  // 全局环境设置 - 浏览器扩展环境
+  "env": {
+    "browser": true, // 浏览器 API
+    "webextensions": true // 浏览器扩展 API
+  },
+
+  // 全局变量定义
+  "globals": {
+    // 浏览器扩展全局变量
+    "chrome": "readonly",
+    "browser": "readonly",
+
+    // WXT 导入系统
+    "defineContentScript": "readonly",
+    "createShadowRootUi": "readonly",
+
+    // Vue 相关
+    "h": "readonly",
+
+    // Node.js (用于配置文件)
+    "process": "readonly",
+    "Buffer": "readonly",
+
+    // 测试环境全局变量
+    "describe": "readonly",
+    "it": "readonly",
+    "test": "readonly",
+    "expect": "readonly",
+    "beforeEach": "readonly",
+    "afterEach": "readonly"
+  },
+
+  // 设置 - 为插件提供配置支持
+  "settings": {
+    // TypeScript 相关设置（未来可能需要）
+    // React 设置（如果需要支持 JSX）
+    // Next.js 设置（如果使用 Next.js）
+    // JSDoc 设置（如果需要 JSDoc 规则）
+  },
+
+  // 规则分类配置
+  "categories": {
+    "correctness": "error", // 代码正确性错误
+    "suspicious": "warn", // 可疑代码警告
+    "pedantic": "off", // 过于严格的规则（关闭）
+    "perf": "warn", // 性能相关警告
+    "style": "warn", // 代码风格警告
+    "restriction": "off", // 限制性规则（按需启用）
+    "nursery": "off" // 实验性规则（关闭）
+  },
+
+  // 规则配置
+  "rules": {
+    // TypeScript 相关规则
+    "typescript/no-explicit-any": "warn",
+    "typescript/no-non-null-assertion": "warn",
+    "typescript/no-unused-vars": "warn",
+
+    // Vue 相关规则（通过插件支持）
+    "vue/no-unused-vars": "warn",
+    "vue/no-unused-components": "warn",
+
+    // 实用规则 - 调整为更宽松的配置以匹配项目风格
+    "unicorn/prefer-dom-node-text-content": "warn",
+    "unicorn/prefer-modern-dom-apis": "warn",
+
+    // 根据项目代码风格调整的规则
+    "no-console": "off", // 开发时需要 console
+    "no-debugger": "off", // 开发时可能需要 debugger
+    "func-style": "off", // 项目使用函数声明，关闭此规则
+    "sort-imports": "off", // 项目有自己的导入排序方式
+    "sort-keys": "off", // 项目不强制对象键排序
+    "curly": "off", // 项目在某些情况下使用单行 if
+    "no-ternary": "off", // 项目使用三元运算符
+    "no-magic-numbers": "off", // 项目在合理范围内使用魔法数字
+    "unicorn/catch-error-name": "off", // 项目使用 err 作为错误参数名
+    "unicorn/no-null": "off", // 项目在某些地方使用 null
+    "unicorn/filename-case": "off", // 项目使用 PascalCase 文件名
+    "unicorn/no-empty-file": "off", // 允许空文件（开发中常见）
+    "id-length": "off", // 项目使用短变量名（如 fn）
+
+    // 自定义规则配置
+    "oxc/no-barrel-file": "off", // 项目结构允许 barrel exports
+    "unicorn/prefer-at": "warn" // 建议使用 Array.at()
+  },
+
+  // 文件覆盖配置
+  "overrides": [
+    {
+      // Vue 单文件组件配置
+      "files": ["**/*.vue"],
+      "rules": {
+        "typescript/no-unused-vars": "off", // Vue 文件中可能有模板使用的变量
+        "vue/no-unused-vars": "warn"
+      }
+    },
+    {
+      // 内容脚本配置
+      "files": ["src/entrypoints/content.ts"],
+      "rules": {
+        "no-console": "off", // 内容脚本需要调试日志
+        "typescript/no-non-null-assertion": "off" // 浏览器 API 可能需要断言
+      }
+    },
+    {
+      // 配置文件
+      "files": ["*.config.*", "wxt.config.ts", "vite.config.*", "vitest.config.*"],
+      "rules": {
+        "no-console": "off",
+        "typescript/no-var-requires": "off"
+      }
+    },
+    {
+      // 测试文件
+      "files": ["**/__tests__/**", "**/*.test.*", "**/*.spec.*"],
+      "env": {
+        "jest": true
+      },
+      "rules": {
+        "no-console": "off",
+        "typescript/no-explicit-any": "off" // 测试中可能需要 any
+      }
+    }
+  ],
+
+  // 忽略文件模式
+  "ignorePatterns": [
+    // 依赖目录
+    "node_modules/**",
+    "dist/**",
+    ".wxt/**",
+
+    // 构建产物
+    "web-ext-artifacts/**",
+
+    // 缓存文件
+    ".cache/**",
+    ".temp/**",
+
+    // IDE 和编辑器文件
+    ".vscode/**",
+    ".idea/**",
+    "*.swp",
+    "*.swo",
+
+    // 日志和调试文件
+    "*.log",
+    "logs/**",
+
+    // 包管理文件
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    "package-lock.json",
+
+    // 其他配置文件
+    ".prettierrc*",
+    ".editorconfig",
+    ".gitignore",
+    "README.md",
+    "AGENTS.md"
+  ]
+}

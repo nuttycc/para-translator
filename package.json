@@ -29,15 +29,20 @@
     "p-debounce": "^4.0.0",
     "pinia": "^3.0.3",
     "vue": "^3.5.19",
+    "vue-markdown-render": "^2.2.1",
     "vue-router": "^4.5.1",
     "zod": "^4.1.1"
   },
   "devDependencies": {
+    "@eslint/js": "^9.34.0",
     "@fontsource-variable/inter": "^5.2.6",
     "@prettier/plugin-oxc": "^0.0.4",
     "@tailwindcss/vite": "^4.1.12",
     "@wxt-dev/module-vue": "^1.0.2",
     "daisyui": "^5.0.50",
+    "eslint": "^9.34.0",
+    "eslint-plugin-vue": "^10.4.0",
+    "globals": "^16.3.0",
     "happy-dom": "^18.0.1",
     "jsdom": "^26.1.0",
     "oxlint": "^1.12.0",
@@ -45,6 +50,7 @@
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.12",
     "typescript": "5.9.2",
+    "typescript-eslint": "^8.41.0",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.6",
     "wxt": "^0.20.8"

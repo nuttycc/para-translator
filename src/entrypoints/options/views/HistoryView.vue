@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { AgentExecutionResult } from '@/agent/types';
 import { agentStorage } from '@/agent/storage';
-import { ref } from 'vue';
+import type { AgentExecutionResult } from '@/agent/types';
+import ParaCard from '@/components/ParaCard.vue';
 import { createLogger } from '@/utils/logger';
+import { ref } from 'vue';
 
 const logger = createLogger('HistoryView');
 const history = ref<AgentExecutionResult[]>([]);
@@ -124,9 +125,9 @@ agentStorage.agentExecutionResults
               <div>
                 <div class="font-medium mb-2">Result:</div>
                 <div
-                  class="bg-base-100 p-3 rounded text-sm whitespace-pre-wrap max-h-32 overflow-y-auto"
+                  class="p-3 rounded text-sm"
                 >
-                  {{ item.result }}
+                  <ParaCard :result="item.result" />
                 </div>
               </div>
             </div>

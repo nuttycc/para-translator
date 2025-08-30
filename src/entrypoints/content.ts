@@ -29,10 +29,10 @@ export default defineContentScript({
 
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
-        sourceText: initial.sourceText ?? '',
+        sourceText: initial.sourceText,
         loading: initial.loading ?? true,
-        result: initial.result ?? '',
-        error: initial.error ?? null,
+        result: initial.result,
+        error: initial.error,
       });
 
       const ui = await createShadowRootUi(ctx, {
@@ -190,7 +190,7 @@ export default defineContentScript({
             siteUrl: document.location.href,
           };
           logger.debug`context ${{ context }}`;
-          const response = await sendMessage('translate', context);
+          const response = await sendMessage('agent', {context, taskType: 'explain'});
           logger.debug`translated result ${response}`;
 
           // Check if card is still active before applying results to avoid stale data
@@ -199,8 +199,8 @@ export default defineContentScript({
             return;
           }
 
-          state.result = response.data || '';
-          state.error = response.error || null;
+          state.result = response.data;
+          state.error = response.error;
 
           // Mark container as translated
           container.dataset.paraIsTranslated = 'true';

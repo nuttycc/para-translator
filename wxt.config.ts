@@ -9,7 +9,7 @@ export default defineConfig({
   webExt: {
     disabled: true,
   },
-  modules: ['@wxt-dev/module-vue'],
+  modules: ['@wxt-dev/module-vue' ,'@wxt-dev/auto-icons'],
   manifest: {
     permissions: ['storage'],
   },

@@ -7,7 +7,7 @@ import {
   type TaskType,
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { TranslateExecutor } from './executor';
+import { ExplainExecutor } from './executor';
 import { agentStorage } from './storage';
 
 /**
@@ -17,12 +17,12 @@ import { agentStorage } from './storage';
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
-  private taskExecutors: Map<TaskType, TaskExecutor> = new Map();
+  private taskExecutors = new Map<TaskType, TaskExecutor>();
 
   async init() {
-    const translateExecutor = new TranslateExecutor();
-    await translateExecutor.init();
-    this.taskExecutors.set('translate', translateExecutor);
+    const explainExecutor = new ExplainExecutor();
+    await explainExecutor.init();
+    this.taskExecutors.set('explain', explainExecutor);
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {

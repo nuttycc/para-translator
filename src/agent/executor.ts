@@ -38,7 +38,7 @@ export class ExplainExecutor extends BaseTaskExecutor {
   async init() {
     const loaded = await agentStorage.taskConfigs
       .getValue()
-      .catch(() => undefined as unknown as TaskRuntimeConfigs | undefined);
+      .catch(() => undefined);
     this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
     agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
@@ -48,7 +48,7 @@ export class ExplainExecutor extends BaseTaskExecutor {
   }
 
   async execute(context: AgentContext): Promise<string> {
-    const runtimeConfig = this.runtimeConfig;
+    const { runtimeConfig } = this;
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
       .then((configs: AIConfigs) => configs[runtimeConfig.aiConfigId]);

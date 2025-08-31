@@ -16,7 +16,7 @@ const PARAGRAPH_SELECTOR = 'p, a, li, blockquote, dd, dt, pre, article, section,
 export function findClosestTextContainer(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Node)) return null;
   const element =
-    target.nodeType === Node.ELEMENT_NODE ? (target as Element) : target.parentElement;
+    target instanceof Element ? target : target.parentElement;
   if (!element) return null;
   const closest = element.closest(PARAGRAPH_SELECTOR);
   return closest instanceof HTMLElement ? closest : null;
@@ -25,7 +25,7 @@ export function findClosestTextContainer(target: EventTarget | null): HTMLElemen
 /** Extract readable text from an element. Trims and normalizes whitespace. */
 export function extractReadableText(el: HTMLElement | null): string {
   if (!el) return '';
-  const text = el.innerText || el.textContent || '';
+  const text = el.textContent || '';
   return text.replace(/\s+/g, ' ').trim();
 }
 

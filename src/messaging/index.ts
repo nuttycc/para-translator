@@ -1,8 +1,9 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
-import type { MessagingProtocol } from './protocol';
+import type { ProtocolMap } from './protocol';
 
 // Single source of truth for sendMessage/onMessage used across the extension
-export const { sendMessage, onMessage } = defineExtensionMessaging<MessagingProtocol>({});
+const messaging = defineExtensionMessaging<ProtocolMap>({});
 
-export type { MessagingProtocol } from './protocol';
-export * from './protocol';
+// Bind methods to avoid unbound-method ESLint warnings
+export const sendMessage = messaging.sendMessage.bind(messaging);
+export const onMessage = messaging.onMessage.bind(messaging);

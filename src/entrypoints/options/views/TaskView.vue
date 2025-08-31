@@ -4,7 +4,7 @@ import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createLogger } from '@/utils/logger';
 import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import { TaskType } from '@/agent/types';
+import type { TaskType } from '@/agent/types';
 
 const route = useRoute();
 const router = useRouter();

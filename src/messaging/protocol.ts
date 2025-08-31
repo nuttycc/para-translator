@@ -4,6 +4,6 @@
 import type { AgentContext, AgentResponse, TaskType } from '@/agent/types';
 
 // Protocol map consumed by defineExtensionMessaging
-export interface MessagingProtocol {
-  agent(data: {context: AgentContext, taskType: TaskType}): Promise<AgentResponse>;
+export interface ProtocolMap {
+  agent(data: { context: AgentContext; taskType: TaskType }): AgentResponse;
 }

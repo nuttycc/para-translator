@@ -16,8 +16,8 @@ export default defineContentScript({
 
     // Component factory for creating reusable ParaCard instances
     // Note: Each call still creates a new Vue app instance, but reuses the ParaCard component definition
-    const createParaCardApp = (state: ParaCardProps): App => {
-      return createApp({
+    const createParaCardApp = (state: ParaCardProps): App =>
+      createApp({
         components: {
           ParaCard, // Same ParaCard definition reused across all instances
         },
@@ -25,7 +25,6 @@ export default defineContentScript({
           return () => h(ParaCard, state);
         },
       });
-    };
 
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
@@ -45,7 +44,7 @@ export default defineContentScript({
           app.mount(mountContainer);
 
           // Store the app instance for later cleanup
-          uiAppMap.set(ui as ShadowRootContentScriptUi<App>, app);
+          uiAppMap.set(ui, app);
 
           // Debug CSS injection
           logger.debug`mounted para card ${{
@@ -58,7 +57,7 @@ export default defineContentScript({
 
           // Check if CSS is injected
           if (shadow.styleSheets) {
-            Array.from(shadow.styleSheets).forEach((sheet, index) => {
+            [...shadow.styleSheets].forEach((sheet, index) => {
               logger.debug`shadow stylesheet ${index}: ${sheet.href || 'inline'}`;
             });
           }
@@ -220,8 +219,8 @@ export default defineContentScript({
 
     const handleMouseOver = (ev: MouseEvent) => {
       const container = findClosestTextContainer(ev.target);
-      if (container && isParagraphLike(extractReadableText(container))) {
-        currentHoveredElement = ev.target as HTMLElement;
+      if (container && isParagraphLike(extractReadableText(container)) && ev.target instanceof HTMLElement) {
+        currentHoveredElement = ev.target;
         // logger.debug`hovering over paragraph-like element`;
       }
     };
@@ -247,6 +246,6 @@ export default defineContentScript({
     // Add hover event listeners to document
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseout', handleMouseOut, { passive: true });
-    window.addEventListener('keydown', handleKeyDown, { passive: true });
+    globalThis.addEventListener('keydown', handleKeyDown, { passive: true });
   },
 });

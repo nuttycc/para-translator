@@ -10,16 +10,12 @@ const logger = createLogger('TaskConfig');
 const taskConfigsStore = useTaskConfigsStore();
 const aiConfigsStore = useAiConfigsStore();
 
-const taskRuntimeConfigs = taskConfigsStore.taskRuntimeConfigs;
-const aiConfigs = aiConfigsStore.aiConfigs;
+const { taskRuntimeConfigs } = taskConfigsStore;
+const { aiConfigs } = aiConfigsStore;
 
-const activeTaskId = computed(() => {
-  return taskConfigsStore.lastActiveTaskId;
-});
+const activeTaskId = computed(() => taskConfigsStore.lastActiveTaskId);
 
-const runtimeConfig = computed<TaskRuntimeConfig>(() => {
-  return taskRuntimeConfigs[activeTaskId.value];
-});
+const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activeTaskId.value]);
 </script>
 
 <template>

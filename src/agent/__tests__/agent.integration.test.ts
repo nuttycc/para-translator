@@ -7,7 +7,7 @@ import { getLangAgent } from '@/agent/agent';
 import type { AgentContext, AIConfigs } from '@/agent/types';
 import { agentStorage } from '../storage';
 
-const GROQ_API_KEY = (import.meta.env.VITE_GROQ_API_KEY as string) || undefined;
+const GROQ_API_KEY = import.meta.env.VITE_GROQ_API_KEY || undefined;
 
 describe('LangAgent Integration Tests', () => {
   beforeAll(() => {
@@ -28,8 +28,8 @@ describe('LangAgent Integration Tests', () => {
         console.log('[integration test] groqConfig', groqConfig);
         expect(groqConfig).toBeDefined();
 
-        if (!groqConfig) return;
-        const apiKey = GROQ_API_KEY as string;
+        if (!groqConfig || !GROQ_API_KEY) return;
+        const apiKey = GROQ_API_KEY;
         const updated = { ...aiConfigs, 'groq-123': { ...aiConfigs['groq-123'], apiKey } };
 
         await agentStorage.aiConfigs.setValue(updated);
@@ -52,13 +52,15 @@ describe('LangAgent Integration Tests', () => {
       const langAgent = await getLangAgent();
 
       // update the API key in the config(in storage)
-      await agentStorage.aiConfigs
-        .getValue()
-        .then((configs: AIConfigs) => ({
-          ...configs,
-          'groq-123': { ...configs['groq-123'], apiKey: GROQ_API_KEY as string },
-        }))
-        .then((configs: AIConfigs) => agentStorage.aiConfigs.setValue(configs));
+      if (GROQ_API_KEY) {
+        await agentStorage.aiConfigs
+          .getValue()
+          .then((configs: AIConfigs) => ({
+            ...configs,
+            'groq-123': { ...configs['groq-123'], apiKey: GROQ_API_KEY },
+          }))
+          .then((configs: AIConfigs) => agentStorage.aiConfigs.setValue(configs));
+      }
 
       const context: AgentContext = {
         sourceText,

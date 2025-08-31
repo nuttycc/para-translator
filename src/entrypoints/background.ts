@@ -8,7 +8,5 @@ export default defineBackground(() => {
   logger.debug`Hello background!`;
 
   // Register message handlers
-  onMessage('agent', async ({ data }) => {
-    return handleAgent(data);
-  });
+  onMessage('agent', async ({ data }) => handleAgent(data));
 });

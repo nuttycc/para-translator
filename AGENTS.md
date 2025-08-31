@@ -38,6 +38,8 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 - Use English By Default: use English for logging, comments, ui copywriting by default
 - Functional Patterns: Use functional patterns where possible
 
+- Use `@/` alias imports instead of relative imports
+
 - Use `#imports` module to import WXT APIs
 - Use wxt unified `browser` API directly instead of `chrome`
 - use `@wxt-dev/storage` to store extension data

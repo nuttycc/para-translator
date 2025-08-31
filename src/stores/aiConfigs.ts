@@ -10,7 +10,7 @@ const logger = createLogger('useAiConfigsStore');
 
 export const useAiConfigsStore = defineStore('aiConfigs', () => {
   const aiConfigsState = ref<AIConfigs>(AGENT_SEEDS.AI_CONFIGS);
-  const lastWriteError = ref<unknown | null>(null);
+  const lastWriteError = ref<unknown>(null);
   const lastActiveConfigId = ref<string>('');
 
   let unwatchStorage: (() => void) | null = null;
@@ -88,8 +88,8 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
       });
       if (!unwatchStorage) {
         // storage -> state (read)
-        unwatchStorage = agentStorage.aiConfigs.watch((newValue) => {
-          return withSuppressWrite(() => {
+        unwatchStorage = agentStorage.aiConfigs.watch((newValue) =>
+          withSuppressWrite(() => {
             // Last-write-wins by updatedAt for each key
             const incoming = newValue || {};
             const current = aiConfigsState.value;
@@ -109,8 +109,8 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
             aiConfigsState.value = next;
             logger.debug`Read storage change, merged into state. Items=${Object.keys(next).length}`;
             return undefined;
-          });
-        });
+          })
+        );
       }
 
       //  state -> storage (write)

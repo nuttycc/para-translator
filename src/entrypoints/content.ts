@@ -16,8 +16,8 @@ export default defineContentScript({
 
     // Component factory for creating reusable ParaCard instances
     // Note: Each call still creates a new Vue app instance, but reuses the ParaCard component definition
-    const createParaCardApp = (state: ParaCardProps): App => {
-      return createApp({
+    const createParaCardApp = (state: ParaCardProps): App =>
+      createApp({
         components: {
           ParaCard, // Same ParaCard definition reused across all instances
         },
@@ -25,14 +25,13 @@ export default defineContentScript({
           return () => h(ParaCard, state);
         },
       });
-    };
 
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
-        sourceText: initial.sourceText ?? '',
+        sourceText: initial.sourceText,
         loading: initial.loading ?? true,
-        result: initial.result ?? '',
-        error: initial.error ?? null,
+        result: initial.result,
+        error: initial.error,
       });
 
       const ui = await createShadowRootUi(ctx, {
@@ -45,7 +44,7 @@ export default defineContentScript({
           app.mount(mountContainer);
 
           // Store the app instance for later cleanup
-          uiAppMap.set(ui as ShadowRootContentScriptUi<App>, app);
+          uiAppMap.set(ui, app);
 
           // Debug CSS injection
           logger.debug`mounted para card ${{
@@ -58,7 +57,7 @@ export default defineContentScript({
 
           // Check if CSS is injected
           if (shadow.styleSheets) {
-            Array.from(shadow.styleSheets).forEach((sheet, index) => {
+            [...shadow.styleSheets].forEach((sheet, index) => {
               logger.debug`shadow stylesheet ${index}: ${sheet.href || 'inline'}`;
             });
           }
@@ -190,7 +189,7 @@ export default defineContentScript({
             siteUrl: document.location.href,
           };
           logger.debug`context ${{ context }}`;
-          const response = await sendMessage('translate', context);
+          const response = await sendMessage('agent', {context, taskType: 'explain'});
           logger.debug`translated result ${response}`;
 
           // Check if card is still active before applying results to avoid stale data
@@ -199,8 +198,8 @@ export default defineContentScript({
             return;
           }
 
-          state.result = response.data || '';
-          state.error = response.error || null;
+          state.result = response.data;
+          state.error = response.error;
 
           // Mark container as translated
           container.dataset.paraIsTranslated = 'true';
@@ -220,8 +219,8 @@ export default defineContentScript({
 
     const handleMouseOver = (ev: MouseEvent) => {
       const container = findClosestTextContainer(ev.target);
-      if (container && isParagraphLike(extractReadableText(container))) {
-        currentHoveredElement = ev.target as HTMLElement;
+      if (container && isParagraphLike(extractReadableText(container)) && ev.target instanceof HTMLElement) {
+        currentHoveredElement = ev.target;
         // logger.debug`hovering over paragraph-like element`;
       }
     };
@@ -247,6 +246,6 @@ export default defineContentScript({
     // Add hover event listeners to document
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseout', handleMouseOut, { passive: true });
-    window.addEventListener('keydown', handleKeyDown, { passive: true });
+    globalThis.addEventListener('keydown', handleKeyDown, { passive: true });
   },
 });

@@ -1,18 +1,17 @@
 import type {
-  TaskRuntimeConfig,
-  TaskExecutor,
-  TaskRuntimeConfigs,
-  TaskType,
   AIConfigs,
   AgentContext,
+  TaskExecutor,
+  TaskRuntimeConfig,
+  TaskRuntimeConfigs,
+  TaskType,
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate } from '@/utils/template';
 import { OpenAI } from 'openai';
+import { z } from 'zod';
 import { AGENT_SEEDS } from './seeds';
 import { agentStorage } from './storage';
-import { z } from 'zod';
-import { zodResponseFormat } from 'openai/helpers/zod';
 
 const ResponseFormat = z.object({
   translatedText: z.string(),
@@ -29,12 +28,9 @@ abstract class BaseTaskExecutor implements TaskExecutor {
   abstract execute(context: AgentContext): Promise<string>;
 }
 
-export class TranslateExecutor extends BaseTaskExecutor {
+export class ExplainExecutor extends BaseTaskExecutor {
   readonly log = createLogger('TranslateExecutor');
 
-  // readonly taskType = 'translate';
-
-  // test explain type
   readonly taskType = 'explain';
 
   runtimeConfig: TaskRuntimeConfig = AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
@@ -42,7 +38,7 @@ export class TranslateExecutor extends BaseTaskExecutor {
   async init() {
     const loaded = await agentStorage.taskConfigs
       .getValue()
-      .catch(() => undefined as unknown as TaskRuntimeConfigs | undefined);
+      .catch(() => undefined);
     this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
     agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
@@ -52,7 +48,7 @@ export class TranslateExecutor extends BaseTaskExecutor {
   }
 
   async execute(context: AgentContext): Promise<string> {
-    const runtimeConfig = this.runtimeConfig;
+    const { runtimeConfig } = this;
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
       .then((configs: AIConfigs) => configs[runtimeConfig.aiConfigId]);

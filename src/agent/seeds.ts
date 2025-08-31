@@ -27,8 +27,8 @@ const DEFAULT_AI_CONFIGS = {
     id: 'groq-123',
     name: 'Groq',
     provider: 'groq',
-    model: 'qwen/qwen3-32b',
-    localModels: ['qwen/qwen3-32b', 'openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
+    model: 'openai/gpt-oss-120b',
+    localModels: ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
     apiKey: '',
     baseUrl: 'https://api.groq.com/openai/v1',
     createdAt: 0,
@@ -60,25 +60,35 @@ const DEFAULT_TASK_RUNTIME_CONFIGS = {
   },
   explain: {
     aiConfigId: 'groq-123',
-    temperature: 0.3,
+    temperature: 0.7,
     prompt: {
       system:
-        'You are a professional Language teacher. Your task is to explain the source text in a way that is easy to understand for language learners.' +
-        '\nYou should refer to the additional context information about the source text to explain it correctly.' +
-        '\nYou should provide the grammar, vocabulary, sentence structure, sentence variation, and sentence meaning of the source text.' +
-        '\nRestrictions-Response-Format: json format.' +
-        'Response-Format-Example:' +
+        '#You are Elizabeth Davis, a professional Language teacher. Your task is to explain the source text in a way that is easy to understand for user.' +
+        '\n##Restrictions: ' +
+        '\n1.Response-Style: ["respond in the user native language %{targetLanguage}", "respond in concise", "explain with concrete examples", "easily readable in markdown"]' +
+        '\n2.Response-Format: json format.' +
+        '\nResponse-Format-Example:' +
         '\n```json' +
-        '\n{ "translatedText": "translated text of the source text"}' +
-        '\n{ "grammar": "explanation of the grammar of the source text, formatted in markdown"}' +
-        '\n{ "vocabulary": "explanation of the vocabulary at or above the intermediate level of the source text, act as a dictionary(dictionary.cambridge.org,), formatted in markdown."}' +
+        '{' +
+        '"translatedText": "contextual %{targetLanguage} translation of the source text, should be natural and fluent. only the translated text, no other explanation, note or anything else."},' +
+        '"grammar": "contextual explanation of the 3 key grammars(syntaxes) of the source text. should be structured and written in markdown"},' +
+        '"vocabulary": "contextual explanation of 3 key vocabularies at or above the intermediate level, like a dictionary(dictionary.cambridge.org). should be structured and written in markdown."}' +
+        '}' +
         '\n```' +
-        'Here is the context for your should know before explaining: ' +
+        '##Context of the source text: ' +
         '\n```json' +
-        '\n{ name: "siteTitle", value: "%{siteTitle}", description: "this is the title of the website"}' +
-        '\n{ name: "siteUrl", value: "%{siteUrl}", description: "this is the url of the website"}' +
+        '{' +
+        '\n "siteTitle": {"value": "%{siteTitle}", "description": "this is the title of the website"},' +
+        '\n "siteUrl": {"value": "%{siteUrl}", "description": "this is the url of the website"}' +
+        '}' +
+        '\n```' +
+        '##Profile of the user: ' +
+        '\n```json' +
+        '{' +
+        ' "nativeLanguage": {"value": "%{firstLanguage}", "description": "this is the native language of the user"}' +
+        '}' +
         '\n```',
-      user: 'Explain the following text in %{targetLanguage}: %{sourceText}',
+      user: 'Professor Davis, can you explain the following sentence in %{targetLanguage}: <%{sourceText}>',
     },
   },
 } as const satisfies TaskRuntimeConfigs;

@@ -1,27 +1,46 @@
-# Para-Translator 浏览器扩展
+# Project Overview
 
-## 项目概述
+A browser extension that help user learn new languages by understanding webpage paragraphs.
 
-这是一个名为 **Para-Translator** 的浏览器扩展项目，旨在提供段落翻译，解析等功能，其根本目的是帮助用户学习外语，摆脱工具依赖。
+Learning when reading.
 
-该项目使用现代 Web 技术栈构建，主要包括：
+Not only read the translation, but also learn the grammar, vocabulary, and usage.
 
-- **框架**: [WXT](https://github.com/wxt-dev/wxt) (下一代 Web 扩展开发框架)
-- **UI 库**: Vue 3
-- **语言**: TypeScript
-- **包管理器**: pnpm
+## Key Dependencies
 
-项目结构遵循 WXT 框架的最佳实践，将不同的入口（如后台脚本、内容脚本、弹出页面）分离在 `src/entrypoints` 目录下。
+### Core Technologies
+- **WXT** - Web extension framework for building cross-browser extensions
+- **Vue.js 3** - Progressive JavaScript framework for building user interfaces
+- **TypeScript** - Type-safe JavaScript development
 
-## 构建与运行
+### Frontend & UI
+- **Vue Router** - Official router for Vue.js applications
+- **Pinia** - Intuitive state management for Vue.js
+- **Tailwind CSS + DaisyUI** - Utility-first CSS framework with component library
+- **VueUse** - Collection of Vue composition utilities
+- **Motion-v** - Vue animation library for smooth transitions
 
-_当前禁止 Agents 执行任何构建、运行、打包等任务。_
+### Browser Extension
+- **@webext-core/messaging** - Simplified, type-safe wrapper around web extension messaging APIs
 
-## 开发约定
+### Utilities
+- **es-toolkit** - Modern JavaScript utility library
+- **Zod@4^** - TypeScript-first schema validation
+- **LogTape** - Structured logging library for JavaScript
+- **vue-markdown-render** - Markdown rendering component for Vue
 
-- **Path Alias:** The project uses the `@` alias to refer to the `src` directory.
-- **模块化**: 代码遵循模块化原则，利用 TypeScript 的强类型特性。
-- **组件化**: UI 部分使用 Vue 3 单文件组件 (`.vue`) 进行开发，存放于 `src/components` 和 `src/entrypoints`。
-- **代码风格**: 项目使用 Prettier 进行代码格式化，并使用 Oxlint 进行代码质量检查。相关配置见 `.prettierrc` 和 `package.json`。
-- **配置驱动**: 项目的核心构建和开发行为由 `wxt.config.ts` 文件配置。
-- **依赖管理**: 使用 `pnpm` 管理依赖，具体版本锁定在 `pnpm-lock.yaml` 文件中。
+### Test
+- **Vitest** - Fast unit testing framework
+
+## Code style guidelines
+
+- Keep TypeScript strict mode
+- Use English By Default: use English for logging, comments, ui copywriting by default
+- Functional Patterns: Use functional patterns where possible
+
+- Use `@/` alias imports instead of relative imports
+
+- Use `#imports` module to import WXT APIs
+- Use wxt unified `browser` API directly instead of `chrome`
+- use `@wxt-dev/storage` to store extension data
+- Prefer Tagged Template over Normal Function Call for Logging with `LogTape`

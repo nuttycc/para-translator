@@ -1,3 +1,7 @@
+/*
+ * style: prefer tagged template over normal function call
+ */
+
 import {
   configureSync,
   defaultConsoleFormatter,

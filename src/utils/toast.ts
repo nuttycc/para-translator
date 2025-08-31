@@ -67,7 +67,7 @@ export function showToast(options: ToastOptions): void {
   const toastId = `toast-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
 
   toast.id = toastId;
-  toast.className = `alert ${TOAST_TYPE_CLASSES[config.type!]} shadow-lg pointer-events-auto`;
+  toast.className = `alert ${TOAST_TYPE_CLASSES[config.type ?? 'info']} shadow-lg pointer-events-auto`;
   toast.innerHTML = `
     <span>${config.message}</span>
   `;

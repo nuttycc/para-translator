@@ -10,7 +10,7 @@ const logger = createLogger('useTaskConfigsStore');
 export const useTaskConfigsStore = defineStore('taskConfigs', () => {
   const taskRuntimeConfigs = ref<TaskRuntimeConfigs>(AGENT_SEEDS.TASK_RUNTIME_CONFIGS);
   const lastActiveTaskId = ref<TaskType>('translate');
-  const lastWriteError = ref<unknown | null>(null);
+  const lastWriteError = ref<unknown>(null);
 
   let isInitialized = false;
   let initPromise: Promise<void> | null = null;
@@ -56,12 +56,12 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
       taskRuntimeConfigs.value =
         (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
       if (!unwatchStorage) {
-        unwatchStorage = agentStorage.taskConfigs.watch((newValue) => {
-          return withSuppressWrite(() => {
+        unwatchStorage = agentStorage.taskConfigs.watch((newValue) =>
+          withSuppressWrite(() => {
             taskRuntimeConfigs.value = newValue ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
             logger.debug`Task configs storage change merged`;
-          });
-        });
+          })
+        );
       }
       if (!unwatchState) {
         unwatchState = watch(

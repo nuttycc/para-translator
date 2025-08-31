@@ -43,7 +43,9 @@ export function renderTemplate(template: string, context: AgentContext): string 
   if (!template) return '';
 
   return template.replace(/%\{([a-zA-Z0-9_]+)\}/g, (match, key: string) => {
-    const mapper = REPLACEMENT_MAPPERS[key as BuiltinReplacementKey];
+    // Type-safe check for builtin replacement keys
+    const builtinKey = BUILTIN_REPLACEMENT_KEYS.find(k => k === key);
+    const mapper = builtinKey ? REPLACEMENT_MAPPERS[builtinKey] : undefined;
     return mapper ? mapper(context) : match; // Keep original placeholder if key not found
   });
 }

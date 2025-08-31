@@ -6,6 +6,11 @@ import { showToast } from '@/utils/toast';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
+interface ModelResponse {
+  id: string;
+  [key: string]: unknown;
+}
+
 const aiConfigsStore = useAiConfigsStore();
 
 const { firstConfigId, lastActiveConfigId, aiConfigs } = storeToRefs(aiConfigsStore);
@@ -73,7 +78,12 @@ const fetchModes = async () => {
       throw new Error('Invalid response format: "data" is not an array.');
     }
 
-    remoteModels.value = res.data.map((model: any) => model.id);
+    remoteModels.value = res.data.map((model: unknown) => {
+      if (typeof model === 'object' && model !== null && 'id' in model && typeof (model as ModelResponse).id === 'string') {
+        return (model as ModelResponse).id;
+      }
+      throw new Error('Invalid model format: missing or invalid id property');
+    });
   } catch (err) {
     logger.error`Failed to fetch models: ${err}`;
     showToast({

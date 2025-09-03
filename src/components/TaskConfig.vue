@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import type { TaskRuntimeConfig, TaskType } from '@/agent/types';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import type { TaskRuntimeConfig } from '@/agent/types';
 import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { computed, ref, toRaw, watch } from 'vue';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createLogger } from '@/utils/logger';
-import { useDebounceFn } from '@vueuse/core';
+import { computed } from 'vue';
 
 const logger = createLogger('TaskConfig');
 const taskConfigsStore = useTaskConfigsStore();

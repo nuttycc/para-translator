@@ -1,6 +1,6 @@
 {
   "name": "para-translator",
-  "description": "A browser extension focus on para translation",
+  "description": "A browser extension help you learn new languages by understanding webpage paragraphs.",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -8,31 +8,28 @@
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",
     "build": "wxt build",
-    "build:firefox": "wxt build -b firefox",
     "zip": "wxt zip",
-    "zip:firefox": "wxt zip -b firefox",
     "compile": "vue-tsc --noEmit",
-    "test": "vitest",
-    "test:run": "vitest run",
+    "test": "vitest run",
     "lint": "oxlint --type-aware .",
     "format": "prettier --write .",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "knip": "knip"
   },
   "dependencies": {
     "@logtape/logtape": "^1.0.4",
     "@logtape/pretty": "^1.0.4",
-    "@vueuse/core": "^13.8.0",
+    "@vueuse/core": "^13.9.0",
     "@webext-core/messaging": "^2.3.0",
     "es-toolkit": "^1.39.10",
-    "motion-v": "^1.7.0",
-    "openai": "^5.15.0",
+    "motion-v": "^1.7.1",
+    "openai": "^5.18.1",
     "overtype": "^1.2.3",
-    "p-debounce": "^4.0.0",
     "pinia": "^3.0.3",
-    "vue": "^3.5.19",
-    "vue-markdown-render": "^2.2.1",
+    "vue": "^3.5.21",
+    "vue-markdown-render": "^2.3.0",
     "vue-router": "^4.5.1",
-    "zod": "^4.1.1"
+    "zod": "^4.1.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.34.0",
@@ -40,20 +37,22 @@
     "@prettier/plugin-oxc": "^0.0.4",
     "@tailwindcss/typography": "^0.5.16",
     "@tailwindcss/vite": "^4.1.12",
+    "@types/node": "^24.3.0",
     "@wxt-dev/auto-icons": "^1.1.0",
     "@wxt-dev/module-vue": "^1.0.2",
-    "daisyui": "^5.0.50",
+    "daisyui": "^5.1.6",
     "eslint": "^9.34.0",
     "eslint-plugin-vue": "^10.4.0",
     "globals": "^16.3.0",
     "happy-dom": "^18.0.1",
     "jsdom": "^26.1.0",
-    "oxlint": "^1.12.0",
-    "oxlint-tsgolint": "^0.0.4",
+    "knip": "^5.63.0",
+    "oxlint": "^1.14.0",
+    "oxlint-tsgolint": "^0.1.5",
     "prettier": "^3.6.2",
     "tailwindcss": "^4.1.12",
     "typescript": "5.9.2",
-    "typescript-eslint": "^8.41.0",
+    "typescript-eslint": "^8.42.0",
     "vitest": "^3.2.4",
     "vue-tsc": "^3.0.6",
     "wxt": "^0.20.8"
@@ -64,8 +63,9 @@
     },
     "onlyBuiltDependencies": [
       "esbuild",
-      "sharp",
+      "oxc-resolver",
       "spawn-sync"
     ]
-  }
+  },
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
 }

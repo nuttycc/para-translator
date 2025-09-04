@@ -5,7 +5,8 @@ import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
-
+import { RefreshCcw } from 'lucide-vue-next';
+import { EyeOff, Eye } from 'lucide-vue-next';
 interface ModelResponse {
   id: string;
   [key: string]: unknown;
@@ -26,16 +27,13 @@ const remoteModels = ref<string[]>([]);
 
 // Initialize remoteModels with existing data from config
 const initializeRemoteModels = () => {
-// Initialize remoteModels with existing data from config
-const initializeRemoteModels = () => {
-  remoteModels.value = config.value?.remoteModels || [];
-};
+  remoteModels.value = config.value.remoteModels ?? [];
 };
 
 // Watch for config changes and initialize remote models
 watch(config, initializeRemoteModels, { immediate: true });
 
-const showRemoteModels = ref(false);
+const showRemoteModels = ref(config.value.isRemoteModel ?? false);
 const showApiKey = ref(false);
 
 const addLocalModel = () => {
@@ -91,7 +89,12 @@ const fetchModes = async () => {
     }
 
     const models = res.data.map((model: unknown) => {
-      if (typeof model === 'object' && model !== null && 'id' in model && typeof (model as ModelResponse).id === 'string') {
+      if (
+        typeof model === 'object' &&
+        model !== null &&
+        'id' in model &&
+        typeof (model as ModelResponse).id === 'string'
+      ) {
         return (model as ModelResponse).id;
       }
       throw new Error('Invalid model format: missing or invalid id property');
@@ -116,6 +119,10 @@ const fetchModes = async () => {
     remoteModels.value = [];
   }
 };
+
+watch(showRemoteModels, (value) => {
+  config.value.isRemoteModel = value;
+});
 </script>
 <template>
   <div class="card card-lg px-16 shadow-xl">
@@ -164,7 +171,8 @@ const fetchModes = async () => {
               placeholder="Enter your API key"
             />
             <button class="btn btn-soft btn-primary w-fit" @click="showApiKey = !showApiKey">
-              {{ showApiKey ? 'Hide' : 'Show' }}
+              <EyeOff v-if="!showApiKey" class="w-4 h-4" />
+              <Eye v-else class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -222,7 +230,7 @@ const fetchModes = async () => {
               </select>
 
               <button type="button" class="btn btn-soft btn-primary w-fit" @click="fetchModes">
-                Fetch Models
+                <RefreshCcw class="w-4 h-4" />
               </button>
             </div>
           </fieldset>

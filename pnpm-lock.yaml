@@ -26,6 +26,9 @@ importers:
       es-toolkit:
         specifier: ^1.39.10
         version: 1.39.10
+      lucide-vue-next:
+        specifier: ^0.542.0
+        version: 0.542.0(vue@3.5.21(typescript@5.9.2))
       motion-v:
         specifier: ^1.7.1
         version: 1.7.1(@vueuse/core@13.9.0(vue@3.5.21(typescript@5.9.2)))(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(vue@3.5.21(typescript@5.9.2))
@@ -2623,6 +2626,11 @@ packages:
 
   lru-cache@10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
+
+  lucide-vue-next@0.542.0:
+    resolution: {integrity: sha512-cJfyhFoneDgYTouHwUJEutXaCW5EQuRrBsvfELudWnMiwfqvcEtpZTFZLdZ5Nrqow+znzn+Iyhu3KeYIfa3mEg==}
+    peerDependencies:
+      vue: '>=3.0.1'
 
   magic-string@0.30.18:
     resolution: {integrity: sha512-yi8swmWbO17qHhwIBNeeZxTceJMeBvWJaId6dyvTSOwTipqeHhMhOrz6513r1sOKnpvQ7zkhlG8tPrpilwTxHQ==}
@@ -6058,6 +6066,10 @@ snapshots:
   loupe@3.2.1: {}
 
   lru-cache@10.4.3: {}
+
+  lucide-vue-next@0.542.0(vue@3.5.21(typescript@5.9.2)):
+    dependencies:
+      vue: 3.5.21(typescript@5.9.2)
 
   magic-string@0.30.18:
     dependencies:

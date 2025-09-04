@@ -57,6 +57,7 @@ export interface AIConfig {
   name: string;
   provider: string;
   model: string;
+  isRemoteModel?: boolean;
   localModels: string[];
   remoteModels?: string[];
   apiKey: string;

@@ -30,7 +30,7 @@ const parsedResult = computed<ResponseFormatType>(() => {
 </script>
 
 <template>
-  <div class="card bg-base-100 shadow-lg">
+  <div class="card text-sm">
     <div class="card-body py-2">
       <!-- <h2 class="card-title text-primary">Para-Translator</h2> -->
 
@@ -62,7 +62,7 @@ const parsedResult = computed<ResponseFormatType>(() => {
           <li><button @click="isTab = 'grammar'" :class="{'menu-active': isTab === 'grammar'}">Grammar</button></li>
           <li><button @click="isTab = 'vocabulary'" :class="{'menu-active': isTab === 'vocabulary'}">Vocabulary</button></li>
         </ul>
-        <ul class="row-auto pb-3 list-none prose">
+        <ul class="row-auto pb-3 list-none prose-sm">
           <li v-if="isTab === 'translation'">
             {{ parsedResult.translatedText }}
           </li>

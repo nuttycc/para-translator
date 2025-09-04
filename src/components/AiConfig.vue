@@ -4,7 +4,7 @@ import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface ModelResponse {
   id: string;
@@ -23,6 +23,19 @@ const logger = createLogger('AiConfig');
 
 const newLocalModel = ref('');
 const remoteModels = ref<string[]>([]);
+
+// Initialize remoteModels with existing data from config
+const initializeRemoteModels = () => {
+  if (config.value?.remoteModels) {
+    remoteModels.value = config.value.remoteModels;
+  } else {
+    remoteModels.value = [];
+  }
+};
+
+// Watch for config changes and initialize remote models
+watch(config, initializeRemoteModels, { immediate: true });
+
 const showRemoteModels = ref(false);
 const showApiKey = ref(false);
 
@@ -78,12 +91,23 @@ const fetchModes = async () => {
       throw new Error('Invalid response format: "data" is not an array.');
     }
 
-    remoteModels.value = res.data.map((model: unknown) => {
+    const models = res.data.map((model: unknown) => {
       if (typeof model === 'object' && model !== null && 'id' in model && typeof (model as ModelResponse).id === 'string') {
         return (model as ModelResponse).id;
       }
       throw new Error('Invalid model format: missing or invalid id property');
     });
+
+    remoteModels.value = models;
+
+    // Persist remote models to the store
+    if (config.value) {
+      const updatedConfig = {
+        ...config.value,
+        remoteModels: models,
+      };
+      await aiConfigsStore.upsert(updatedConfig);
+    }
   } catch (err) {
     logger.error`Failed to fetch models: ${err}`;
     showToast({

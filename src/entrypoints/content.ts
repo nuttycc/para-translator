@@ -39,6 +39,10 @@ export default defineContentScript({
         position: 'inline',
         anchor: container,
         onMount: (mountContainer, shadow) => {
+
+          // Force dark theme for DaisyUI components in ShadowRoot
+          mountContainer.setAttribute('data-theme', 'dark');
+
           // Create a ParaCard app instance using the factory
           const app = createParaCardApp(state);
           app.mount(mountContainer);

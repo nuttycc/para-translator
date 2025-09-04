@@ -59,7 +59,7 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
         unwatchStorage = agentStorage.taskConfigs.watch((newValue) =>
           withSuppressWrite(() => {
             taskRuntimeConfigs.value = newValue ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
-            logger.debug`Task configs storage change merged`;
+            logger.debug`Read storage change, merged into state. next:${newValue}`;
           })
         );
       }
@@ -69,7 +69,8 @@ export const useTaskConfigsStore = defineStore('taskConfigs', () => {
           async () => {
             // Only allow writes when no suppression is active (depth === 0)
             if (suppressWriteDepth.value > 0 || !taskRuntimeConfigs.value) return;
-            await agentStorage.taskConfigs.setValue(taskRuntimeConfigs.value);
+            logger.debug`Write state to storage: ${toRaw(taskRuntimeConfigs.value)}`;
+            await agentStorage.taskConfigs.setValue(toRaw(taskRuntimeConfigs.value));
           },
           { deep: true }
         );

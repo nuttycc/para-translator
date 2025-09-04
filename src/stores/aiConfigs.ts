@@ -42,9 +42,10 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
   // state -> storage
   const writeToStorage = async () => {
     try {
+      logger.debug`Write state to storage: ${toRaw(aiConfigsState.value)}`;
+
       lastWriteError.value = null;
-      await agentStorage.aiConfigs.setValue({ ...aiConfigsState.value });
-      logger.debug`Persisted aiConfigs (${Object.keys(aiConfigsState.value).length} items)`;
+      await agentStorage.aiConfigs.setValue(toRaw(aiConfigsState.value));
     } catch (err) {
       // Reload from storage to reconcile and expose error
       lastWriteError.value = err;
@@ -91,9 +92,10 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
         unwatchStorage = agentStorage.aiConfigs.watch((newValue) =>
           withSuppressWrite(() => {
             // Last-write-wins by updatedAt for each key
-            const incoming = newValue || {};
-            const current = aiConfigsState.value;
+            const incoming = toRaw(newValue) || {};
+            const current = toRaw(aiConfigsState.value);
             const next: AIConfigs = {};
+
             // add/update
             for (const [id, cfg] of Object.entries(incoming)) {
               const cur = current[id];
@@ -107,7 +109,8 @@ export const useAiConfigsStore = defineStore('aiConfigs', () => {
               }
             }
             aiConfigsState.value = next;
-            logger.debug`Read storage change, merged into state. Items=${Object.keys(next).length}`;
+            logger.debug`Read storage change, merged into state. next:${next}`;
+
             return undefined;
           })
         );

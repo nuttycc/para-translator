@@ -55,7 +55,7 @@ watch(
   <div>
     <div class="navbar flex gap-2">
       <router-link
-        v-for="tid in taskIds"
+        v-for="tid in taskIds.sort()"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
         :class="['btn btn-soft']"

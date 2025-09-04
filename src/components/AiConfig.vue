@@ -26,11 +26,10 @@ const remoteModels = ref<string[]>([]);
 
 // Initialize remoteModels with existing data from config
 const initializeRemoteModels = () => {
-  if (config.value?.remoteModels) {
-    remoteModels.value = config.value.remoteModels;
-  } else {
-    remoteModels.value = [];
-  }
+// Initialize remoteModels with existing data from config
+const initializeRemoteModels = () => {
+  remoteModels.value = config.value?.remoteModels || [];
+};
 };
 
 // Watch for config changes and initialize remote models

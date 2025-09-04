@@ -14,18 +14,29 @@ export default defineContentScript({
   main(ctx) {
     const logger = createLogger('content');
 
-    // Component factory for creating reusable ParaCard instances
-    // Note: Each call still creates a new Vue app instance, but reuses the ParaCard component definition
+    /**
+     * Factory function to create a new Vue app instance for the ParaCard component.
+     * Each call returns a new app instance, but the ParaCard definition is reused.
+     * @param state - The reactive state to pass as props to ParaCard
+     * @returns Vue App instance
+     */
     const createParaCardApp = (state: ParaCardProps): App =>
       createApp({
         components: {
-          ParaCard, // Same ParaCard definition reused across all instances
+          ParaCard,
         },
         setup() {
           return () => h(ParaCard, state);
         },
       });
 
+    /**
+     * Mounts a ParaCard UI to the given container element and returns the UI and its reactive state.
+     * Handles shadow DOM, theme, and app lifecycle.
+     * @param container - The DOM element to anchor the ParaCard UI
+     * @param initial - Initial props for the ParaCard (sourceText, loading, result, error)
+     * @returns An object containing the UI instance and its reactive state
+     */
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
         sourceText: initial.sourceText,
@@ -85,16 +96,24 @@ export default defineContentScript({
 
     // Feature: Hover paragraph + Shift to toggle translation card
     let currentHoveredElement: HTMLElement | null = null;
+    /**
+     * Map of active translation cards, keyed by paragraph ID.
+     * Each entry contains the UI instance, container element, and reactive state.
+     */
     let cardUIs = new Map<
       string,
       { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
     >();
 
-    // WeakMap to associate UI instances with their Vue app instances for cleanup
+    /**
+     * WeakMap to associate UI instances with their Vue app instances for cleanup.
+     * Ensures proper unmounting and memory management.
+     */
     const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
 
     /**
-     * Centralized cleanup function for translation cards to prevent race conditions
+     * Centralized cleanup for translation cards to prevent race conditions and memory leaks.
+     * Unmounts Vue app, removes UI, and cleans up dataset attributes.
      * @param paraKey - The unique identifier for the paragraph card
      * @param removeUI - Whether to remove the UI component (default: true)
      */
@@ -136,6 +155,11 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Toggles the translation card for the currently hovered paragraph if eligible.
+     * Adds a new card if none exists, or removes the card if already present.
+     * Handles async translation fetching and state updates.
+     */
     const toggleTranslateIfEligible = async () => {
       if (!currentHoveredElement) {
         logger.debug('skip: no element currently hovered');
@@ -221,6 +245,10 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Mouseover event handler to track the current hovered paragraph-like element.
+     * Sets currentHoveredElement if the target is eligible.
+     */
     const handleMouseOver = (ev: MouseEvent) => {
       const container = findClosestTextContainer(ev.target);
       if (container && isParagraphLike(extractReadableText(container)) && ev.target instanceof HTMLElement) {
@@ -229,6 +257,10 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Mouseout event handler to clear the hovered element when leaving a paragraph area.
+     * Ensures currentHoveredElement is only cleared when truly leaving the paragraph.
+     */
     const handleMouseOut = (ev: MouseEvent) => {
       // Only clear if mouse leaves the paragraph area
       const container = findClosestTextContainer(ev.target);
@@ -241,13 +273,17 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Keydown event handler to trigger translation toggle on Shift key press.
+     * Calls toggleTranslateIfEligible when Shift is pressed.
+     */
     const handleKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === 'Shift' && !ev.repeat) {
         void toggleTranslateIfEligible();
       }
     };
 
-    // Add hover event listeners to document
+    // Add event listeners for paragraph hover and Shift key translation toggle
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseout', handleMouseOut, { passive: true });
     globalThis.addEventListener('keydown', handleKeyDown, { passive: true });

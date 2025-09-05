@@ -4,6 +4,7 @@ import AiView from './views/AiView.vue';
 import TaskPanel from './views/TaskPanel.vue';
 import TaskView from './views/TaskView.vue';
 import HistoryView from './views/HistoryView.vue';
+import UserView from './views/UserView.vue';
 
 const router = createRouter({
   linkActiveClass: 'btn-active btn-accent',
@@ -34,6 +35,11 @@ const router = createRouter({
       path: '/history',
       name: 'history',
       component: HistoryView,
+    },
+    {
+      path: '/user',
+      name: 'user',
+      component: UserView,
     },
   ],
 });

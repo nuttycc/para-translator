@@ -45,6 +45,7 @@ const resetStorage = () => {
         <RouterLink :to="{ name: 'ai.config' }" class="btn btn-soft"> AI</RouterLink>
         <RouterLink :to="{ name: 'tasks.detail' }" class="btn btn-soft">Tasks</RouterLink>
         <RouterLink :to="{ name: 'history' }" class="btn btn-soft">History</RouterLink>
+        <RouterLink :to="{ name: 'user' }" class="btn btn-soft">User</RouterLink>
       </div>
     </div>
 

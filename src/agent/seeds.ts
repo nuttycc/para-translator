@@ -27,8 +27,13 @@ const DEFAULT_AI_CONFIGS = {
     id: 'groq-123',
     name: 'Groq',
     provider: 'groq',
-    model: 'openai/gpt-oss-120b',
-    localModels: ['openai/gpt-oss-120b', 'openai/gpt-oss-20b', 'moonshotai/kimi-k2-instruct'],
+    model: 'moonshotai/kimi-k2-instruct-0905',
+    localModels: [
+      'openai/gpt-oss-120b',
+      'openai/gpt-oss-20b',
+      'moonshotai/kimi-k2-instruct-0905',
+      'moonshotai/kimi-k2-instruct',
+    ],
     apiKey: '',
     baseUrl: 'https://api.groq.com/openai/v1',
     createdAt: 0,
@@ -36,26 +41,54 @@ const DEFAULT_AI_CONFIGS = {
   },
 } as const satisfies AIConfigs;
 
+const TranslateSystemPrompt = {
+  role: 'You are a top-tier translation expert proficient in multiple languages and cultures. You not only understand words but also the cultural context, tone, and emotions behind them.',
+  task: 'Your task is to accurately translate the provided source_text from its original language into the target_language.',
+  response:
+    'Your only response must be the translated text string, containing no explanations, notes, extra greetings, or any other text.',
+  domain: 'auto',
+  targetAudience: 'individual reader',
+  guidelines: [
+    'Be faithful to the original meaning and intent, ensuring no omissions or misunderstandings.',
+    'Produce a smooth and natural translation that conforms to the grammar, idioms, and context of the target language.',
+    'Adapt cultural references and maintain the original tone and style to resonate with the target audience.',
+    'Produce context aware translation, and consider the cultural context of the source text',
+  ],
+};
+
+const TranslateUserPrompt = {
+  context: {
+    description: 'context of the source text for you to know before translating',
+    sourceLanguage: {
+      value: '%{sourceLanguage}',
+      description: "the source language of the text, if none, set to 'auto'",
+    },
+    language: {
+      value: '%{targetLanguage}',
+      description: 'the target language of the translation',
+    },
+    siteTitle: {
+      value: '%{siteTitle}',
+      description: 'the title of the webpage',
+    },
+    siteUrl: {
+      value: '%{siteUrl}',
+      description: 'the url of the webpage',
+    },
+  },
+  sourceText: {
+    value: '%{sourceText}',
+    description: 'webpage text waiting you to translate',
+  },
+};
+
 const DEFAULT_TASK_RUNTIME_CONFIGS = {
   translate: {
     aiConfigId: 'groq-123',
-    temperature: 0.7,
+    temperature: 0.9,
     prompt: {
-      system:
-        'You are a professional translator. Your task is to translate the source text into the target language.' +
-        '\nYou should refer to the additional context information about the source text to translate it correctly.' +
-        '\nRestrictions: Only return the translated text string, no other explanation, note or anything else.',
-      user:
-        'Here is some the context for your should know before translating: ' +
-        '\n```json' +
-        '\n{ name: "siteTitle", value: "%{siteTitle}", description: "this is the title of the website"}' +
-        '\n{ name: "siteUrl", value: "%{siteUrl}", description: "this is the url of the website"}' +
-        '\n```' +
-        '\nNow translate the following text into %{targetLanguage}.' +
-        '\n```json' +
-        '\n {"name": "sourceText", "value": "%{sourceText}", "description": "text waiting to be translated"}' +
-        '\n```' +
-        '\nRestrictions: Only return the translated text string, no other explanation, note or anything else.',
+      system: JSON.stringify(TranslateSystemPrompt),
+      user: JSON.stringify(TranslateUserPrompt),
     },
   },
   explain: {

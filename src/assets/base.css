@@ -52,3 +52,7 @@
 .fade-leave-from {
   opacity: 1;
 }
+
+:host body {
+  border-radius: 0.375rem;
+}

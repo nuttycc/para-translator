@@ -1,4 +1,5 @@
 // Types are now self-contained to avoid circular dependencies
+import { z } from 'zod';
 
 // ═══════════════════════════════════════════════════════════════════════════════
 // 📝 TASK TYPES & CONSTANTS
@@ -31,16 +32,21 @@ export interface TaskRuntimeConfig {
 export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// 🤖 AGENT CONTEXT & RESPONSE
+// 🤖 AGENT CONTEXT & RESPONSE (Single Source of Truth via Zod)
 // ═══════════════════════════════════════════════════════════════════════════════
 
-export interface AgentContext {
-  sourceText: string;
-  sourceLanguage?: string;
-  targetLanguage: string;
-  siteTitle?: string;
-  siteUrl?: string;
-}
+export const AgentContextSchema = z.object({
+  sourceText: z.string(),
+  sourceLanguage: z.string().optional(),
+  targetLanguage: z.string(),
+  siteTitle: z.string(),
+  siteUrl: z.string(),
+  siteDescription: z.string().nullable(),
+});
+
+export type AgentContext = z.infer<typeof AgentContextSchema>;
+
+export const AGENT_CONTEXT_KEYS = Object.keys(AgentContextSchema.shape) as (keyof AgentContext)[];
 
 export interface AgentResponse {
   ok: boolean;

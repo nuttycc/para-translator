@@ -5,6 +5,7 @@ import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
+import Defuddle from 'defuddle';
 import { createApp, h, shallowReactive, type App } from 'vue';
 
 export default defineContentScript({
@@ -231,15 +232,18 @@ export default defineContentScript({
 
         // 2) Request translation/explanation from the agent
         try {
+          const defuddle = new Defuddle(window.document);
+          const dedocument = defuddle.parse();
           const context: AgentContext = {
             sourceText,
             targetLanguage: 'zh-CN',
-            siteTitle: document.title,
-            siteUrl: document.location.href,
+            siteTitle: dedocument.title,
+            siteUrl: window.location.href,
+            siteDescription: dedocument.description,
           };
           logger.debug`context ${{ context }}`;
 
-          const response = await sendMessage('agent', { context, taskType: 'explain' });
+          const response = await sendMessage('agent', { context, taskType: 'translate' });
           logger.debug`translated result ${response}`;
 
           // Ignore late results if the card was removed

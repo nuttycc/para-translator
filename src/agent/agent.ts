@@ -1,3 +1,6 @@
+import { ExplainExecutor } from '@/agent/executor/explain';
+import { TranslateExecutor } from '@/agent/executor/translate';
+import { agentStorage } from '@/agent/storage';
 import {
   TASK_TYPES,
   type AgentContext,
@@ -7,8 +10,6 @@ import {
   type TaskType,
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { ExplainExecutor } from './executor';
-import { agentStorage } from './storage';
 
 /**
  * The LangAgent class is a singleton that manages the task executors for the LangAgent.
@@ -23,6 +24,9 @@ export class LangAgent implements LangAgentSpec {
     const explainExecutor = new ExplainExecutor();
     await explainExecutor.init();
     this.taskExecutors.set('explain', explainExecutor);
+    const translateExecutor = new TranslateExecutor();
+    await translateExecutor.init();
+    this.taskExecutors.set('translate', translateExecutor);
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {

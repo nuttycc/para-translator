@@ -1,22 +1,19 @@
 // src/utils/template.ts
 
 import type { AgentContext } from '@/agent/types';
+import { AGENT_CONTEXT_KEYS } from '@/agent/types';
 
 /**
  * Built-in replacement keys for template rendering
+ * Automatically extracted from AgentContext interface to maintain DRY principle
  */
-export const BUILTIN_REPLACEMENT_KEYS = [
-  'sourceText',
-  'sourceLanguage',
-  'targetLanguage',
-  'siteTitle',
-  'siteUrl',
-] as const;
+export const BUILTIN_REPLACEMENT_KEYS = AGENT_CONTEXT_KEYS;
 
 /**
  * Type for built-in replacement keys
+ * Automatically inferred from AgentContext interface keys
  */
-type BuiltinReplacementKey = (typeof BUILTIN_REPLACEMENT_KEYS)[number];
+type BuiltinReplacementKey = keyof AgentContext;
 
 /**
  * Type for replacement mapper functions
@@ -24,15 +21,28 @@ type BuiltinReplacementKey = (typeof BUILTIN_REPLACEMENT_KEYS)[number];
 type ReplacementMapper = (context: AgentContext) => string;
 
 /**
- * Built-in replacement mappers that extract values from context
+ * Generic mapper function that handles both required and optional fields
  */
-const REPLACEMENT_MAPPERS: Record<BuiltinReplacementKey, ReplacementMapper> = {
-  sourceText: (context) => context.sourceText,
-  sourceLanguage: (context) => context.sourceLanguage || '',
-  targetLanguage: (context) => context.targetLanguage,
-  siteTitle: (context) => context.siteTitle || '',
-  siteUrl: (context) => context.siteUrl || '',
-};
+function createFieldMapper<K extends BuiltinReplacementKey>(key: K): ReplacementMapper {
+  return (context: AgentContext) => {
+    const value = context[key];
+    return value ?? ''; // Handle both undefined and null cases
+  };
+}
+
+/**
+ * Built-in replacement mappers that extract values from context
+ * Automatically generated from AgentContext keys to eliminate duplication
+ */
+const REPLACEMENT_MAPPERS: Record<BuiltinReplacementKey, ReplacementMapper> = {} as Record<
+  BuiltinReplacementKey,
+  ReplacementMapper
+>;
+
+// Generate mappers for all builtin replacement keys
+BUILTIN_REPLACEMENT_KEYS.forEach((key) => {
+  REPLACEMENT_MAPPERS[key] = createFieldMapper(key);
+});
 
 /**
  * Render a template string with placeholders like `%{key}` using built-in replacements from context.

@@ -189,6 +189,25 @@ export default defineContentScript({
         logger.debug('skip: no element currently hovered');
         return;
       }
+      // Exclude if the hovered element or its active element is an input/textarea or contenteditable
+      // Exclude if the hovered element or its active element is an input/textarea or contenteditable
+      const isEditable = (element: Element | null): boolean => {
+        if (!(element instanceof HTMLElement)) {
+          return false;
+        }
+        const tagName = element.tagName.toUpperCase();
+        return (
+          tagName === 'INPUT' ||
+          tagName === 'TEXTAREA' ||
+          element.isContentEditable
+        );
+      };
+
+      if (isEditable(currentHoveredElement) || isEditable(document.activeElement)) {
+        logger.debug('skip: input/textarea/contenteditable is focused or hovered');
+        return;
+      }
+
 
       const container = findClosestTextContainer(currentHoveredElement);
       if (!container) {

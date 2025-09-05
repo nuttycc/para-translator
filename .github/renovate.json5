@@ -7,32 +7,17 @@
     "config:base"
   ],
 
-  // Group related dependencies together to reduce the number of PRs
+  // Group dependencies by update type
   "packageRules": [
     {
-      // Group Vue related packages
-      "matchPackagePatterns": ["^@vue", "vue", "vue-router", "pinia"],
-      "groupName": "vue"
+      // Group all patch updates together
+      "matchUpdateTypes": ["patch", "pin", "digest"],
+      "groupName": "all patch updates"
     },
     {
-      // Group WXT related packages
-      "matchPackagePatterns": ["^wxt", "^@wxt-dev/"],
-      "groupName": "wxt"
-    },
-    {
-      // Group TailwindCSS related packages
-      "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/", "daisyui", "autoprefixer", "postcss"],
-      "groupName": "tailwind"
-    },
-    {
-      // Group linting and formatting packages
-      "matchPackagePatterns": ["^eslint", "prettier", "@antfu/eslint-config"],
-      "groupName": "linting"
-    },
-    {
-      // Group vitest related packages
-      "matchPackagePatterns": ["^vitest"],
-      "groupName": "vitest"
+      // Group all minor updates together
+      "matchUpdateTypes": ["minor"],
+      "groupName": "all minor updates"
     }
   ]
 }

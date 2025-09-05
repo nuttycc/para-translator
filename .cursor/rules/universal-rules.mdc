@@ -55,13 +55,13 @@ Reminder: You should always use English in the tool calls.
 ### Deepwiki
 
 - **Match:** `when the user requests code examples, setup or configuration steps, or library/API documentation`
-- **Question Style:** [`Prefer English`, `structured question`, `Focused and specific`, `Rich context with user's code snippets and description`]
+- **Question Style:** [`Prefer English`, `Structured question`, `Focused and specific`, `Provide context with user's code snippets`, `Describe expected result`]
 - **Restrictions:** [`one topic or scope per call`]
 - **Examples:**
-  - `What is the signature of the function? Give me the type signatures, parameters, return types.`
-  - `How the function works? Give me the implementation details, comments, and other relevant information.`
-  - `Are there any apis to do x? Give me the related apis options`
-  - `why my function x are not working? I use it with the context [rich code context] and get issue [issue description], give me explanation and solution.`
+  - `What are the complete function signatures for [specific function]? Please include parameter types, return types, and any optional arguments.`
+  - `How does [specific function/method] work internally? Please provide implementation details, key concepts, and usage notes.`
+  - `What APIs are available for [specific task/functionality]? Please compare the main options with their strengths and use cases.`
+  - `Why isn't my [specific function/feature] working as expected? Here's my code: [code block], my environment: [details], the error I'm getting: [error message], and what I expected: [expected behavior].`
 
 ### Context7
 

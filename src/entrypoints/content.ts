@@ -11,21 +11,46 @@ export default defineContentScript({
   matches: ['<all_urls>'],
   cssInjectionMode: 'ui',
 
+  /**
+   * Entry point for the content script.
+   * Sets up hover/key listeners and manages the lifecycle of in-page
+   * translation cards rendered inside a ShadowRoot.
+   *
+   * @param ctx - Runtime context provided by the extension framework.
+   */
   main(ctx) {
     const logger = createLogger('content');
 
-    // Component factory for creating reusable ParaCard instances
-    // Note: Each call still creates a new Vue app instance, but reuses the ParaCard component definition
+    /**
+     * Factory that creates a Vue app instance rendering a `ParaCard`.
+     * Uses the provided reactive `state` so external code can update the card
+     * (e.g., finish loading, set result, or set error).
+     *
+     * @param state - Reactive state passed as props to `ParaCard`.
+     * @returns The mounted (yet not attached) Vue `App` instance.
+     */
     const createParaCardApp = (state: ParaCardProps): App =>
       createApp({
         components: {
-          ParaCard, // Same ParaCard definition reused across all instances
+          ParaCard,
         },
         setup() {
           return () => h(ParaCard, state);
         },
       });
 
+    /**
+     * Creates and mounts a ParaCard UI next to a text container.
+     * The UI is rendered inside a ShadowRoot to isolate styles and uses a dark theme.
+     *
+     * @param container - Element that visually anchors the card inline.
+     * @param initial - Optional initial state (e.g., `sourceText`, `loading`).
+     * @returns A tuple with the mounted UI handle and the reactive state used by the card.
+     *
+     * @remarks
+     * - The returned `state` object is meant to be mutated by the caller.
+     * - The UI is mounted immediately; cleanup is handled elsewhere.
+     */
     const addParaCard = async (container: Element, initial: Partial<ParaCardProps> = {}) => {
       const state = shallowReactive<ParaCardProps>({
         sourceText: initial.sourceText,
@@ -39,18 +64,15 @@ export default defineContentScript({
         position: 'inline',
         anchor: container,
         onMount: (mountContainer, shadow) => {
-
           // Force dark theme for DaisyUI components in ShadowRoot
           mountContainer.setAttribute('data-theme', 'dark');
 
-          // Create a ParaCard app instance using the factory
           const app = createParaCardApp(state);
           app.mount(mountContainer);
 
-          // Store the app instance for later cleanup
+          // Track the Vue app for later unmount on removal
           uiAppMap.set(ui, app);
 
-          // Debug CSS injection
           logger.debug`mounted para card ${{
             containerTag: mountContainer.tagName,
             shadowRoot: shadow,
@@ -59,7 +81,6 @@ export default defineContentScript({
             shadowBody: shadow.querySelector('body'),
           }}`;
 
-          // Check if CSS is injected
           if (shadow.styleSheets) {
             [...shadow.styleSheets].forEach((sheet, index) => {
               logger.debug`shadow stylesheet ${index}: ${sheet.href || 'inline'}`;
@@ -76,27 +97,46 @@ export default defineContentScript({
         },
       });
 
-      // Mount the UI to make it visible
+      // Make the UI visible in the page
       ui.mount();
 
-      // Return both UI and reactive state for later updates
       return { ui, state };
     };
 
-    // Feature: Hover paragraph + Shift to toggle translation card
+    // --- Hover/Toggle feature state ---
+
+    /**
+     * Currently hovered element (used to find its closest text container).
+     * Cleared when the pointer leaves the paragraph region.
+     */
     let currentHoveredElement: HTMLElement | null = null;
+
+    /**
+     * Active cards indexed by a stable paragraph key. Each entry stores:
+     * - `ui`: the ShadowRoot UI handle
+     * - `container`: the host element
+     * - `state`: the reactive ParaCard props to mutate as results arrive
+     */
     let cardUIs = new Map<
       string,
       { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
     >();
 
-    // WeakMap to associate UI instances with their Vue app instances for cleanup
+    /**
+     * Associates each UI handle with its Vue `App` instance, enabling
+     * proper unmount during cleanup. Uses WeakMap so GC can reclaim entries.
+     */
     const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
 
     /**
-     * Centralized cleanup function for translation cards to prevent race conditions
-     * @param paraKey - The unique identifier for the paragraph card
-     * @param removeUI - Whether to remove the UI component (default: true)
+     * Removes a translation card and cleans its associated resources safely.
+     *
+     * @param paraKey - Unique identifier for the paragraph/card.
+     * @param removeUI - When true (default), also detach and unmount the UI.
+     *
+     * @remarks
+     * - Idempotent: safe to call multiple times; exits if nothing to clean.
+     * - Also clears `data-para-*` flags from the host container.
      */
     const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
       const cardEntry = cardUIs.get(paraKey);
@@ -107,10 +147,9 @@ export default defineContentScript({
 
       const { ui, container } = cardEntry;
 
-      // Remove UI if requested and available
       if (removeUI && ui && typeof ui.remove === 'function') {
         try {
-          // Get the app instance from WeakMap and unmount it properly
+          // Unmount the Vue app if we have it recorded
           const app = uiAppMap.get(ui);
           if (app && typeof app.unmount === 'function') {
             app.unmount();
@@ -125,10 +164,8 @@ export default defineContentScript({
         }
       }
 
-      // Remove from map
       cardUIs.delete(paraKey);
 
-      // Clean up dataset attributes
       if (container) {
         delete container.dataset.paraIsTranslated;
         delete container.dataset.paraId;
@@ -136,6 +173,16 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * If the current hover target is a paragraph-like container, toggles
+     * a translation card in place:
+     * - If a card exists for that paragraph, it is removed.
+     * - If not, a loading card is added and an async translation is requested.
+     *
+     * @remarks
+     * - Guards against stale async results by checking `cardUIs` before applying updates.
+     * - Stores the paragraph key in `data-para-id` to keep toggling stable.
+     */
     const toggleTranslateIfEligible = async () => {
       if (!currentHoveredElement) {
         logger.debug('skip: no element currently hovered');
@@ -161,30 +208,28 @@ export default defineContentScript({
         return;
       }
 
-      // Generate unique key for this paragraph
+      // Stable paragraph key (persisted on the container once created)
       const paraKey = container.dataset.paraId || crypto.randomUUID();
 
-      // Check if card already exists - toggle logic
+      // Toggle behavior: remove if exists, otherwise create and load
       if (cardUIs.has(paraKey)) {
-        // Remove existing card using centralized cleanup
         cleanupTranslationCard(paraKey);
         return;
       }
 
-      // Add new card (mount loading UI first)
       try {
+        // 1) Create/loading UI
         const { ui, state } = await addParaCard(container, { sourceText, loading: true });
 
-        // Store for later removal/updates
         if (ui && typeof ui.remove === 'function') {
-          cardUIs.set(paraKey, { ui, container, state });
+          cardUIs.set(paraKey, { ui, container: container as HTMLElement, state });
           logger.debug`added translation card for ${paraKey}`;
         } else {
           logger.error`failed to create valid UI for ${paraKey}`;
           return;
         }
 
-        // Fetch translation result and update reactive state
+        // 2) Request translation/explanation from the agent
         try {
           const context: AgentContext = {
             sourceText,
@@ -193,10 +238,11 @@ export default defineContentScript({
             siteUrl: document.location.href,
           };
           logger.debug`context ${{ context }}`;
-          const response = await sendMessage('agent', {context, taskType: 'explain'});
+
+          const response = await sendMessage('agent', { context, taskType: 'explain' });
           logger.debug`translated result ${response}`;
 
-          // Check if card is still active before applying results to avoid stale data
+          // Ignore late results if the card was removed
           if (!cardUIs.has(paraKey)) {
             logger.debug`card for ${paraKey} was removed during async operation, skipping result application`;
             return;
@@ -205,7 +251,7 @@ export default defineContentScript({
           state.result = response.data;
           state.error = response.error;
 
-          // Mark container as translated
+          // Persist identity on the container for stable toggling
           container.dataset.paraIsTranslated = 'true';
           container.dataset.paraId = paraKey;
         } catch (err) {
@@ -216,11 +262,17 @@ export default defineContentScript({
         }
       } catch (error) {
         logger.error`failed to add/update translation card for ${paraKey}: ${error}`;
-        // Clean up using centralized function (without UI removal since UI wasn't created)
+        // UI may not exist yet, skip removing
         cleanupTranslationCard(paraKey, false);
       }
     };
 
+    /**
+     * Tracks the hovered element if it belongs to a paragraph-like container.
+     * Lightweight gate to avoid expensive work for non-paragraph nodes.
+     *
+     * @param ev - Mouse event bubbling from the document.
+     */
     const handleMouseOver = (ev: MouseEvent) => {
       const container = findClosestTextContainer(ev.target);
       if (container && isParagraphLike(extractReadableText(container)) && ev.target instanceof HTMLElement) {
@@ -229,8 +281,13 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Clears the `currentHoveredElement` when leaving the paragraph region.
+     * Prevents accidental toggles outside of the intended text block.
+     *
+     * @param ev - Mouse event bubbling from the document.
+     */
     const handleMouseOut = (ev: MouseEvent) => {
-      // Only clear if mouse leaves the paragraph area
       const container = findClosestTextContainer(ev.target);
       if (container && currentHoveredElement) {
         const relatedContainer = findClosestTextContainer(ev.relatedTarget);
@@ -241,13 +298,19 @@ export default defineContentScript({
       }
     };
 
+    /**
+     * Global keydown handler for the toggle gesture.
+     * Pressing **Shift** toggles the translation card for the currently hovered paragraph.
+     *
+     * @param ev - Keyboard event; only acts on non-repeated Shift key presses.
+     */
     const handleKeyDown = (ev: KeyboardEvent) => {
       if (ev.key === 'Shift' && !ev.repeat) {
         void toggleTranslateIfEligible();
       }
     };
 
-    // Add hover event listeners to document
+    // --- Event subscriptions (passive for perf) ---
     document.addEventListener('mouseover', handleMouseOver, { passive: true });
     document.addEventListener('mouseout', handleMouseOut, { passive: true });
     globalThis.addEventListener('keydown', handleKeyDown, { passive: true });

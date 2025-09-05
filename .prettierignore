@@ -3,3 +3,8 @@ build
 coverage
 
 .gemini
+.github
+.cursor
+
+.gitignore
+

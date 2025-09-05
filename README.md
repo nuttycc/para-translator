@@ -38,17 +38,20 @@ Para-Translator is a browser extension designed to enhance your language learnin
 ### Development Setup
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/nuttycc/para-translator.git
    cd para-translator
    ```
 
 2. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 3. Start the development server:
+
    ```bash
    pnpm dev
    ```
@@ -97,4 +100,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built with [WXT](https://wxt.dev/) - The next-gen web extension framework
 - UI powered by [Vue.js](https://vuejs.org/) and [Tailwind CSS](https://tailwindcss.com/)
-

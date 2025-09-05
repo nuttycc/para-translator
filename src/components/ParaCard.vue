@@ -58,16 +58,34 @@ const parsedResult = computed<ResponseFormatType>(() => {
 
       <div v-else class="grid text-base-content">
         <ul class="row-span-1 menu menu-sm menu-horizontal place-self-end">
-          <li><button @click="isTab = 'translation'" :class="{'menu-active': isTab === 'translation'}">Translation</button></li>
-          <li><button @click="isTab = 'grammar'" :class="{'menu-active': isTab === 'grammar'}">Grammar</button></li>
-          <li><button @click="isTab = 'vocabulary'" :class="{'menu-active': isTab === 'vocabulary'}">Vocabulary</button></li>
+          <li>
+            <button
+              @click="isTab = 'translation'"
+              :class="{ 'menu-active': isTab === 'translation' }"
+            >
+              Translation
+            </button>
+          </li>
+          <li>
+            <button @click="isTab = 'grammar'" :class="{ 'menu-active': isTab === 'grammar' }">
+              Grammar
+            </button>
+          </li>
+          <li>
+            <button
+              @click="isTab = 'vocabulary'"
+              :class="{ 'menu-active': isTab === 'vocabulary' }"
+            >
+              Vocabulary
+            </button>
+          </li>
         </ul>
         <ul class="row-auto pb-3 list-none prose-sm">
           <li v-if="isTab === 'translation'">
             {{ parsedResult.translatedText }}
           </li>
           <li v-if="isTab === 'grammar'">
-            <vue-markdown :source="parsedResult.grammar"/>
+            <vue-markdown :source="parsedResult.grammar" />
           </li>
           <li v-if="isTab === 'vocabulary'">
             <vue-markdown :source="parsedResult.vocabulary" />

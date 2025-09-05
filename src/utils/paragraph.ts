@@ -15,8 +15,7 @@ const PARAGRAPH_SELECTOR = 'p, a, li, blockquote, dd, dt, pre, article, section,
  */
 export function findClosestTextContainer(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Node)) return null;
-  const element =
-    target instanceof Element ? target : target.parentElement;
+  const element = target instanceof Element ? target : target.parentElement;
   if (!element) return null;
   const closest = element.closest(PARAGRAPH_SELECTOR);
   return closest instanceof HTMLElement ? closest : null;

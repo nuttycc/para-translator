@@ -22,6 +22,7 @@ const initializeStores = async () => {
 initializeStores()
   .then(() => {
     app.mount('#app');
+    return;
   })
   .catch((err) => {
     console.error('Failed to initialize stores:', err);

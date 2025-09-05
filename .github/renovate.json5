@@ -1,26 +1,36 @@
 {
+  // See the schema for all options: https://docs.renovatebot.com/renovate-schema.json
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+
+  // Extend the base configuration
   "extends": [
     "config:base"
   ],
+
+  // Group related dependencies together to reduce the number of PRs
   "packageRules": [
     {
+      // Group Vue related packages
       "matchPackagePatterns": ["^@vue", "vue", "vue-router", "pinia"],
       "groupName": "vue"
     },
     {
+      // Group WXT related packages
       "matchPackagePatterns": ["^wxt", "^@wxt-dev/"],
       "groupName": "wxt"
     },
     {
+      // Group TailwindCSS related packages
       "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/", "daisyui", "autoprefixer", "postcss"],
       "groupName": "tailwind"
     },
     {
+      // Group linting and formatting packages
       "matchPackagePatterns": ["^eslint", "prettier", "@antfu/eslint-config"],
       "groupName": "linting"
     },
     {
+      // Group vitest related packages
       "matchPackagePatterns": ["^vitest"],
       "groupName": "vitest"
     }

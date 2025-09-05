@@ -64,8 +64,8 @@
       "vite": "npm:rolldown-vite@latest"
     },
     "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
       "esbuild",
-      "oxc-resolver",
       "spawn-sync"
     ]
   },

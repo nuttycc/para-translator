@@ -11,7 +11,7 @@
     "zip": "wxt zip",
     "compile": "vue-tsc --noEmit",
     "test": "vitest run",
-    "lint": "oxlint --type-aware .",
+    "lint": "oxlint --fix --type-aware .",
     "format": "prettier --write .",
     "postinstall": "wxt prepare",
     "knip": "knip"
@@ -21,6 +21,7 @@
     "@logtape/pretty": "^1.0.4",
     "@vueuse/core": "^13.9.0",
     "@webext-core/messaging": "^2.3.0",
+    "defuddle": "^0.6.6",
     "es-toolkit": "^1.39.10",
     "lucide-vue-next": "^0.542.0",
     "motion-v": "^1.7.1",

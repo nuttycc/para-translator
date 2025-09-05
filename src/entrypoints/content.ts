@@ -305,6 +305,12 @@ export default defineContentScript({
      * @param ev - Keyboard event; only acts on non-repeated Shift key presses.
      */
     const handleKeyDown = (ev: KeyboardEvent) => {
+      // Exclude input/textarea fields
+      const activeEl = document.activeElement?.tagName?.toLowerCase();
+      if (activeEl === 'input' || activeEl === 'textarea') {
+        return;
+      }
+
       if (ev.key === 'Shift' && !ev.repeat) {
         void toggleTranslateIfEligible();
       }

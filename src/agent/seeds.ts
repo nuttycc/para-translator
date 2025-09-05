@@ -1,14 +1,14 @@
 import { type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 
 const DEFAULT_AI_CONFIGS = {
-  'deepseek-123': {
-    id: 'deepseek-123',
-    name: 'DeepSeek',
-    provider: 'deepseek',
-    model: 'deepseek-chat',
-    localModels: ['deepseek-chat', 'deepseek-reasoner'],
+  'openrouter-123': {
+    id: 'openrouter-123',
+    name: 'OpenRouter',
+    provider: 'openrouter',
+    model: 'openai/gpt-4o',
+    localModels: ['openai/gpt-4o'],
     apiKey: '',
-    baseUrl: 'https://api.deepseek.com/v1/',
+    baseUrl: 'https://openrouter.ai/api/v1',
     createdAt: 0,
     updatedAt: 0,
   },

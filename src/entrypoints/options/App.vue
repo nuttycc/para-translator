@@ -19,6 +19,7 @@ const resetStorage = () => {
         type: 'success',
         position: 'toast-bottom toast-center',
       });
+      return;
     })
     .catch((err) => {
       logger.error`Failed to reset storage: ${err}`;

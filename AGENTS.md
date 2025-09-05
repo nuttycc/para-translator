@@ -9,11 +9,13 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 ## Key Dependencies
 
 ### Core Technologies
+
 - **WXT** - Web extension framework for building cross-browser extensions
 - **Vue.js 3** - Progressive JavaScript framework for building user interfaces
 - **TypeScript** - Type-safe JavaScript development
 
 ### Frontend & UI
+
 - **Vue Router** - Official router for Vue.js applications
 - **Pinia** - Intuitive state management for Vue.js
 - **Tailwind CSS + DaisyUI** - Utility-first CSS framework with component library
@@ -21,15 +23,18 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 - **Motion-v** - Vue animation library for smooth transitions
 
 ### Browser Extension
+
 - **@webext-core/messaging** - Simplified, type-safe wrapper around web extension messaging APIs
 
 ### Utilities
+
 - **es-toolkit** - Modern JavaScript utility library
 - **Zod@4^** - TypeScript-first schema validation
 - **LogTape** - Structured logging library for JavaScript
 - **vue-markdown-render** - Markdown rendering component for Vue
 
 ### Test
+
 - **Vitest** - Fast unit testing framework
 
 ## Code style guidelines

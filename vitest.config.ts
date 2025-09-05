@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { WxtVitest } from 'wxt/testing';
 
 export default defineConfig({
-// oxlint-disable-next-line new-cap
+  // oxlint-disable-next-line new-cap
   plugins: [WxtVitest()],
   test: {
     environment: 'happy-dom',

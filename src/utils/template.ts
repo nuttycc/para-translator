@@ -44,7 +44,7 @@ export function renderTemplate(template: string, context: AgentContext): string 
 
   return template.replace(/%\{([a-zA-Z0-9_]+)\}/g, (match, key: string) => {
     // Type-safe check for builtin replacement keys
-    const builtinKey = BUILTIN_REPLACEMENT_KEYS.find(k => k === key);
+    const builtinKey = BUILTIN_REPLACEMENT_KEYS.find((k) => k === key);
     const mapper = builtinKey ? REPLACEMENT_MAPPERS[builtinKey] : undefined;
     return mapper ? mapper(context) : match; // Keep original placeholder if key not found
   });

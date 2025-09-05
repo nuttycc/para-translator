@@ -7,7 +7,7 @@ import { AGENT_SEEDS } from '@/agent/seeds';
  * Stores the list of AI service configurations
  */
 const aiConfigsStorage = storage.defineItem<AIConfigs>('local:aiConfigs', {
-  fallback: AGENT_SEEDS.AI_CONFIGS,
+  init: () => AGENT_SEEDS.AI_CONFIGS,
   version: 1,
 });
 
@@ -16,7 +16,7 @@ const aiConfigsStorage = storage.defineItem<AIConfigs>('local:aiConfigs', {
  * Stores runtime configurations for different task types (translate, explain, etc.)
  */
 const taskConfigsStorage = storage.defineItem<TaskRuntimeConfigs>('local:taskConfigs', {
-  fallback: AGENT_SEEDS.TASK_RUNTIME_CONFIGS,
+  init: () => AGENT_SEEDS.TASK_RUNTIME_CONFIGS,
   version: 1,
 });
 
@@ -27,7 +27,7 @@ const taskConfigsStorage = storage.defineItem<TaskRuntimeConfigs>('local:taskCon
 const agentExecutionResultsStorage = storage.defineItem<AgentExecutionResults>(
   'local:agentExecutionResults',
   {
-    fallback: [],
+    init: () => [],
     version: 1,
   }
 );

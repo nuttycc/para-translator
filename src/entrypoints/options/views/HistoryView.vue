@@ -13,6 +13,7 @@ agentStorage.agentExecutionResults
   .getValue()
   .then((value) => {
     history.value = value;
+    return;
   })
   .catch((error) => {
     logger.error`Failed to get history, ${error}`;
@@ -124,9 +125,7 @@ agentStorage.agentExecutionResults
               <div class="divider my-2"></div>
               <div>
                 <div class="font-medium mb-2">Result:</div>
-                <div
-                  class="p-3 rounded text-sm"
-                >
+                <div class="p-3 rounded text-sm">
                   <ParaCard :result="item.result" />
                 </div>
               </div>

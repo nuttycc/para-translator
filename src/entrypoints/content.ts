@@ -222,7 +222,7 @@ export default defineContentScript({
         const { ui, state } = await addParaCard(container, { sourceText, loading: true });
 
         if (ui && typeof ui.remove === 'function') {
-          cardUIs.set(paraKey, { ui, container: container as HTMLElement, state });
+          cardUIs.set(paraKey, { ui, container, state });
           logger.debug`added translation card for ${paraKey}`;
         } else {
           logger.error`failed to create valid UI for ${paraKey}`;
@@ -275,7 +275,11 @@ export default defineContentScript({
      */
     const handleMouseOver = (ev: MouseEvent) => {
       const container = findClosestTextContainer(ev.target);
-      if (container && isParagraphLike(extractReadableText(container)) && ev.target instanceof HTMLElement) {
+      if (
+        container &&
+        isParagraphLike(extractReadableText(container)) &&
+        ev.target instanceof HTMLElement
+      ) {
         currentHoveredElement = ev.target;
         // logger.debug`hovering over paragraph-like element`;
       }

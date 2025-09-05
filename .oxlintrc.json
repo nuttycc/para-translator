@@ -96,7 +96,7 @@
     "typescript/no-unsafe-unary-minus": "warn",
     "typescript/no-useless-empty-export": "warn",
     "typescript/no-wrapper-object-types": "warn",
-    "typescript/no-explicit-any": "warn",
+    "typescript/no-explicit-any": "error",
     "typescript/prefer-as-const": "warn",
     "typescript/require-array-sort-compare": "warn",
     "typescript/restrict-template-expressions": "warn",

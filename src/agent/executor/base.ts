@@ -1,5 +1,6 @@
 import type { AgentContext, TaskExecutor, TaskRuntimeConfig, TaskType } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
+import { renderTemplate as renderTpl } from '@/utils/template';
 import { OpenAI } from 'openai';
 import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
 
@@ -17,20 +18,14 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
   model: string | null = null;
   openai: OpenAI | null = null;
 
-  async init() {
-    // This will be implemented by concrete classes
-    throw new Error('init() must be implemented by concrete executor');
-  }
+  abstract init(): Promise<void>;
 
-  async createOpenAIClient(configId: string) {
-    // This will be implemented by concrete classes
-    throw new Error('createOpenAIClient() must be implemented by concrete executor');
-  }
+  abstract createOpenAIClient(configId: string): Promise<void>;
 
   protected async executeBase(
     context: AgentContext,
     useJsonSchema = false,
-    responseSchema?: any
+    responseSchema?: Record<string, unknown>
   ): Promise<string> {
     if (!this.openai || !this.model) {
       throw new Error(`OpenAI client or model not found for ${this.taskType}`);
@@ -80,8 +75,6 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
   }
 
   protected renderTemplate(template: string, context: AgentContext): string {
-    // Import here to avoid circular dependencies
-    const { renderTemplate } = require('@/utils/template');
-    return renderTemplate(template, context);
+    return renderTpl(template, context);
   }
 }

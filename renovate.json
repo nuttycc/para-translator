@@ -2,5 +2,133 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
-  ]
+  ],
+  "packageRules": [
+    {
+      "groupName": "Vue ecosystem",
+      "matchPackageNames": [
+        "vue",
+        "vue-router",
+        "vue-tsc",
+        "@vueuse/core",
+        "eslint-plugin-vue",
+        "vue-markdown-render"
+      ]
+    },
+    {
+      "groupName": "TypeScript and ESLint",
+      "matchPackageNames": [
+        "typescript",
+        "typescript-eslint",
+        "eslint",
+        "@eslint/js",
+        "globals"
+      ]
+    },
+    {
+      "groupName": "Testing tools",
+      "matchPackageNames": [
+        "vitest",
+        "happy-dom",
+        "jsdom"
+      ]
+    },
+    {
+      "groupName": "Build and dev tools",
+      "matchPackageNames": [
+        "wxt",
+        "@wxt-dev/auto-icons",
+        "@wxt-dev/module-vue",
+        "vite"
+      ]
+    },
+    {
+      "groupName": "Linting and formatting",
+      "matchPackageNames": [
+        "oxlint",
+        "oxlint-tsgolint",
+        "prettier",
+        "@prettier/plugin-oxc",
+        "knip"
+      ]
+    },
+    {
+      "groupName": "Tailwind CSS",
+      "matchPackageNames": [
+        "tailwindcss",
+        "@tailwindcss/typography",
+        "@tailwindcss/vite",
+        "daisyui"
+      ]
+    },
+    {
+      "groupName": "OpenAI and AI tools",
+      "matchPackageNames": [
+        "openai"
+      ]
+    },
+    {
+      "groupName": "Utility libraries",
+      "matchPackageNames": [
+        "es-toolkit",
+        "defuddle",
+        "overtype",
+        "zod"
+      ]
+    },
+    {
+      "groupName": "Logging",
+      "matchPackageNames": [
+        "@logtape/logtape",
+        "@logtape/pretty"
+      ]
+    },
+    {
+      "groupName": "UI and animation",
+      "matchPackageNames": [
+        "lucide-vue-next",
+        "motion-v"
+      ]
+    },
+    {
+      "groupName": "State management",
+      "matchPackageNames": [
+        "pinia"
+      ]
+    },
+    {
+      "groupName": "WebExtension messaging",
+      "matchPackageNames": [
+        "@webext-core/messaging"
+      ]
+    },
+    {
+      "groupName": "Fonts",
+      "matchPackageNames": [
+        "@fontsource-variable/inter"
+      ]
+    },
+    {
+      "groupName": "Node.js types",
+      "matchPackageNames": [
+        "@types/node"
+      ]
+    },
+    {
+      "groupName": "Major updates",
+      "matchUpdateTypes": ["major"],
+      "schedule": ["before 10am on monday"],
+      "reviewers": ["nuttycc"]
+    },
+    {
+      "groupName": "Non-major updates",
+      "matchUpdateTypes": ["minor", "patch"],
+      "schedule": ["before 10am on wednesday"]
+    }
+  ],
+  "schedule": ["before 10am on monday and wednesday"],
+  "timezone": "UTC",
+  "labels": ["dependencies"],
+  "assignees": ["nuttycc"],
+  "reviewers": ["nuttycc"]
 }

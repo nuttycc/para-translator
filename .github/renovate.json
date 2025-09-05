@@ -3,27 +3,27 @@
   "extends": [
     "config:recommended"
   ],
-  "groups": {
-    "major-updates": {
+  "packageRules": [
+    {
       "matchUpdateTypes": ["major"],
       "groupName": "Major Updates",
       "groupSlug": "major-updates"
     },
-    "minor-updates": {
+    {
       "matchUpdateTypes": ["minor"],
       "groupName": "Minor Updates",
       "groupSlug": "minor-updates"
     },
-    "patch-updates": {
+    {
       "matchUpdateTypes": ["patch"],
       "groupName": "Patch Updates",
       "groupSlug": "patch-updates"
     },
-    "other-updates": {
+    {
       "matchUpdateTypes": ["digest", "pin", "rollback"],
       "groupName": "Other Updates",
       "groupSlug": "other-updates"
     }
-  },
+  ],
   "labels": ["dependencies"]
 }

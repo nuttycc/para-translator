@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["^@vue", "vue", "vue-router", "pinia"],
+      "groupName": "vue"
+    },
+    {
+      "matchPackagePatterns": ["^wxt", "^@wxt-dev/"],
+      "groupName": "wxt"
+    },
+    {
+      "matchPackagePatterns": ["^tailwindcss", "^@tailwindcss/", "daisyui", "autoprefixer", "postcss"],
+      "groupName": "tailwind"
+    },
+    {
+      "matchPackagePatterns": ["^eslint", "prettier", "@antfu/eslint-config"],
+      "groupName": "linting"
+    },
+    {
+      "matchPackagePatterns": ["^vitest"],
+      "groupName": "vitest"
+    }
+  ]
+}

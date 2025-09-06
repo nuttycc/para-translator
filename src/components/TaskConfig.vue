@@ -4,6 +4,7 @@ import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createLogger } from '@/utils/logger';
 import { computed } from 'vue';
+import PromptEditor from '@/components/PromptEditor.vue';
 
 const logger = createLogger('TaskConfig');
 const taskConfigsStore = useTaskConfigsStore();
@@ -15,6 +16,8 @@ const { aiConfigs } = aiConfigsStore;
 const activeTaskId = computed(() => taskConfigsStore.lastActiveTaskId);
 
 const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activeTaskId.value]);
+
+
 </script>
 
 <template>
@@ -37,7 +40,9 @@ const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activ
           </select>
         </div>
 
-        <div class="form-control">
+        <PromptEditor :taskType="activeTaskId" />
+
+        <!-- <div class="form-control">
           <label class="label">
             <span class="label-text font-semibold">System Prompt</span>
           </label>
@@ -46,6 +51,8 @@ const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activ
             class="textarea textarea-bordered textarea-primary h-20 w-full resize-none"
             placeholder="Enter system prompt"
           ></textarea>
+
+
         </div>
 
         <div class="form-control">
@@ -57,7 +64,7 @@ const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activ
             class="textarea textarea-bordered textarea-primary h-20 w-full resize-none"
             placeholder="Enter user prompt"
           ></textarea>
-        </div>
+        </div> -->
 
         <div class="form-control">
           <label class="label">

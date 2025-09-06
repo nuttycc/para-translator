@@ -11,7 +11,7 @@ export class TranslateExecutor extends OpenAIBaseExecutor {
     const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
     this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
-    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
+    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | null) => {
       const nextCfg = newConfigs?.[this.taskType];
       if (nextCfg) this.runtimeConfig = nextCfg;
     });
@@ -22,7 +22,7 @@ export class TranslateExecutor extends OpenAIBaseExecutor {
   async createOpenAIClient(configId: string) {
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
-      .then((configs: AIConfigs) => configs[configId]);
+      .then((configs: AIConfigs | null) => configs?.[configId]);
 
     if (!aiConfig) {
       throw new Error(`AI config not found for ${this.taskType}`);

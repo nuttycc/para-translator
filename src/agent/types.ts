@@ -37,11 +37,11 @@ export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
 
 export const AgentContextSchema = z.object({
   sourceText: z.string(),
-  sourceLanguage: z.string().optional(),
+  sourceLanguage: z.string().optional().default('auto'),
   targetLanguage: z.string(),
   siteTitle: z.string(),
   siteUrl: z.string(),
-  siteDescription: z.string().nullable(),
+  siteDescription: z.string().optional().nullable(),
 });
 
 export type AgentContext = z.infer<typeof AgentContextSchema>;

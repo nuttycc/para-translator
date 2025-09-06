@@ -255,6 +255,7 @@ export default defineContentScript({
           const dedocument = defuddle.parse();
           const context: AgentContext = {
             sourceText,
+            sourceLanguage: 'auto',
             targetLanguage: 'zh-CN',
             siteTitle: dedocument.title,
             siteUrl: window.location.href,

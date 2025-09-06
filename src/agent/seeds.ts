@@ -1,12 +1,12 @@
-import { type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
+import { type AgentContext, type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
 
 const DEFAULT_AI_CONFIGS = {
   'openrouter-123': {
     id: 'openrouter-123',
     name: 'OpenRouter',
     provider: 'openrouter',
-    model: 'openai/gpt-4o',
-    localModels: ['openai/gpt-4o'],
+    model: 'openrouter/sonoma-dusk-alpha',
+    localModels: ['openai/gpt-4o', 'openrouter/sonoma-dusk-alpha'],
     apiKey: '',
     baseUrl: 'https://openrouter.ai/api/v1',
     createdAt: 0,
@@ -42,49 +42,51 @@ const DEFAULT_AI_CONFIGS = {
 } as const satisfies AIConfigs;
 
 const TranslateSystemPrompt = {
-  role: 'You are a top-tier translation expert proficient in multiple languages and cultures. You not only understand words but also the cultural context, tone, and emotions behind them.',
-  task: 'Your task is to accurately translate the provided source_text from its original language into the target_language.',
-  response:
-    'Your only response must be the translated text string, containing no explanations, notes, extra greetings, or any other text.',
+  role: 'You are a world-class translation specialist — deeply attuned to linguistic subtleties, cultural currents, and stylistic expectations across global audiences.',
+  mission:
+    'Deliver a target_language version of source_text that feels native, faithful, and context-perfect — as if originally written for the intended reader.',
+  output:
+    'Only output the translation, containing no explanations, notes, extra greetings, or any other text.',
+  domainOptions: [
+    'auto',
+    'general',
+    'technical',
+    'legal',
+    'literary',
+    'marketing',
+    'medical',
+    'academic',
+  ],
   domain: 'auto',
-  targetAudience: 'individual reader',
-  guidelines: [
-    'Be faithful to the original meaning and intent, ensuring no omissions or misunderstandings.',
-    'Produce a smooth and natural translation that conforms to the grammar, idioms, and context of the target language.',
-    'Adapt cultural references and maintain the original tone and style to resonate with the target audience.',
-    'Produce context aware translation, and consider the cultural context of the source text',
+  targetAudience: 'general reader',
+  coreValues: [
+    '- Faithfulness: Produce a translation that faithfully conveys the original meaning, information, and tone without distortion or omission.',
+    '- Fluency: Produce a translation that reads fluently and naturally in the target language, following its grammar and idiomatic usage.',
+    '- Appropriateness: Produce a translation that is appropriate to the context, audience, and cultural norms of the target language.',
+    '- Style Adaptation: Match the register, tone, and stylistic nuances of the original (e.g., formal, casual, poetic, technical) to ensure the translation feels authentic to the target audience.',
+  ],
+  bestPractices: [
+    'Prioritize idiomatic fluency over literal accuracy — find natural equivalents in the target language.',
+    'Localize cultural references: adapt metaphors, jokes, and idioms to resonate with the target audience.',
+    'Maintain terminological consistency — use glossaries or context to ensure repeated terms are translated uniformly.',
   ],
 };
 
-const TranslateUserPrompt = {
-  context: {
-    description: 'context of the source text for you to know before translating',
-    sourceLanguage: {
-      value: '%{sourceLanguage}',
-      description: "the source language of the text, if none, set to 'auto'",
-    },
-    language: {
-      value: '%{targetLanguage}',
-      description: 'the target language of the translation',
-    },
-    siteTitle: {
-      value: '%{siteTitle}',
-      description: 'the title of the webpage',
-    },
-    siteUrl: {
-      value: '%{siteUrl}',
-      description: 'the url of the webpage',
-    },
-  },
-  sourceText: {
-    value: '%{sourceText}',
-    description: 'webpage text waiting you to translate',
-  },
+const TranslateUserPrompt: AgentContext & { instructions: string } = {
+  instructions: 'Please translate the source text into %{targetLanguage}.',
+
+  siteTitle: '%{siteTitle}',
+  siteUrl: '%{siteUrl}',
+  siteDescription: '%{siteDescription}',
+
+  sourceText: '%{sourceText}',
+  sourceLanguage: '%{sourceLanguage}',
+  targetLanguage: '%{targetLanguage}',
 };
 
 const DEFAULT_TASK_RUNTIME_CONFIGS = {
   translate: {
-    aiConfigId: 'groq-123',
+    aiConfigId: 'openrouter-123',
     temperature: 0.9,
     prompt: {
       system: JSON.stringify(TranslateSystemPrompt),

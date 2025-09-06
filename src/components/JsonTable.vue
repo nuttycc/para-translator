@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { createLogger } from '@/utils/logger';
 import { isJSONObject } from 'es-toolkit';
+import JsonEditor from 'jsoneditor';
 
 const logger = createLogger('JsonTable');
 
@@ -9,7 +10,6 @@ const props = defineProps<{
 }>();
 
 logger.info`isJSONObject: ${isJSONObject(props.data)}, data: ${JSON.stringify(props.data)}`;
-
 </script>
 
 <template>

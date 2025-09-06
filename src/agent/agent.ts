@@ -36,7 +36,7 @@ export class LangAgent implements LangAgentSpec {
     await executor.init();
     try {
       const result = await executor.execute(context);
-      const history = await agentStorage.agentExecutionResults.getValue() || [];
+      const history = (await agentStorage.agentExecutionResults.getValue()) || [];
       history.unshift({
         id: crypto.randomUUID(),
         timestamp: Date.now(),

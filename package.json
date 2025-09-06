@@ -13,8 +13,7 @@
     "test": "vitest run",
     "lint": "oxlint --fix --type-aware .",
     "format": "prettier --write .",
-    "postinstall": "wxt prepare",
-    "knip": "knip"
+    "postinstall": "wxt prepare"
   },
   "dependencies": {
     "@logtape/logtape": "^1.0.4",
@@ -23,19 +22,18 @@
     "@webext-core/messaging": "^2.3.0",
     "defuddle": "^0.6.6",
     "es-toolkit": "^1.39.10",
-    "jsoneditor": "^10.4.1",
     "lucide-vue-next": "^0.542.0",
     "motion-v": "^1.7.1",
     "openai": "^5.18.1",
     "overtype": "^1.2.3",
     "pinia": "^3.0.3",
     "vue": "^3.5.21",
+    "vue-json-pretty": "^2.5.0",
     "vue-markdown-render": "^2.3.0",
     "vue-router": "^4.5.1",
     "zod": "^4.1.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.34.0",
     "@fontsource-variable/inter": "^5.2.6",
     "@prettier/plugin-oxc": "^0.0.4",
     "@tailwindcss/typography": "^0.5.16",
@@ -44,12 +42,9 @@
     "@wxt-dev/auto-icons": "^1.1.0",
     "@wxt-dev/module-vue": "^1.0.2",
     "daisyui": "^5.1.6",
-    "eslint": "^9.34.0",
-    "eslint-plugin-vue": "^10.4.0",
     "globals": "^16.3.0",
     "happy-dom": "^18.0.1",
     "jsdom": "^26.1.0",
-    "knip": "^5.63.0",
     "oxlint": "^1.14.0",
     "oxlint-tsgolint": "^0.1.5",
     "prettier": "^3.6.2",

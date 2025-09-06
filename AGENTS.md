@@ -20,7 +20,6 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 - **Pinia** - Intuitive state management for Vue.js
 - **Tailwind CSS + DaisyUI** - Utility-first CSS framework with component library
 - **VueUse** - Collection of Vue composition utilities
-- **Motion-v** - Vue animation library for smooth transitions
 
 ### Browser Extension
 
@@ -28,7 +27,7 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 
 ### Utilities
 
-- **es-toolkit** - Modern JavaScript utility library
+- **es-toolkit** - Modern JavaScript utility library, like `lodash` but with more modern features
 - **Zod@4^** - TypeScript-first schema validation
 - **LogTape** - Structured logging library for JavaScript
 - **vue-markdown-render** - Markdown rendering component for Vue

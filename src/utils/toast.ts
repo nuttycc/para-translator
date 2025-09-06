@@ -32,7 +32,7 @@ const TOAST_TYPE_CLASSES: Record<ToastType, string> = {
 const DEFAULT_OPTIONS: Partial<ToastOptions> = {
   type: 'info',
   duration: 3000,
-  position: 'toast-bottom toast-end',
+  position: 'toast-top toast-end',
 };
 
 /**

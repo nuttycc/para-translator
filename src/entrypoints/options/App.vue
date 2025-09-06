@@ -3,6 +3,7 @@ import { browser } from '#imports';
 import { createLogger } from '@/utils/logger';
 import { showToast, testToast } from '@/utils/toast';
 import { RouterLink, RouterView } from 'vue-router';
+import { Wrench, Bolt } from 'lucide-vue-next';
 
 const logger = createLogger('options');
 
@@ -30,15 +31,43 @@ const resetStorage = () => {
       });
     });
 };
+
+const openDrawer = () => {
+  document.getElementById('my-drawer')?.click();
+};
 </script>
 
 <template>
   <div class="w-fit mx-auto flex flex-col items-center font-sans">
     <div class="navbar h-4 max-h-[22vh] w-5xl flex justify-between">
       <h1 class="text-xl font-bold">Options</h1>
-      <div class="flex gap-2">
-        <button class="btn btn-outline btn-warning" @click="runToastTest">Test Toast</button>
-        <button class="btn btn-outline btn-error" @click="resetStorage">Reset Storage</button>
+
+      <div class="drawer">
+        <input id="my-drawer" type="checkbox" class="drawer-toggle" />
+        <div class="drawer-content">
+          <!-- Page content here -->
+          <label for="my-drawer" class="btn btn-primary drawer-button hidden">Open drawer</label>
+        </div>
+        <div class="drawer-side">
+          <label for="my-drawer" aria-label="close sidebar" class="drawer-overlay"></label>
+          <ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4">
+            <!-- Sidebar content here -->
+            <li><button @click="runToastTest">Test Toast</button></li>
+            <li><button @click="resetStorage">Reset Storage</button></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="fab inset-x-14 inset-y-8">
+        <!-- a focusable div with tabindex is necessary to work on all browsers. role="button" is necessary for accessibility -->
+        <div tabindex="0" role="button" class="btn btn-lg btn-circle btn-soft">
+          <Bolt />
+        </div>
+
+        <!-- buttons that show up when FAB is open -->
+        <div class="tooltip" data-tip="Debug Menu">
+          <button class="btn btn-lg btn-circle" @click="openDrawer"><Wrench /></button>
+        </div>
       </div>
 
       <div class="flex gap-2">

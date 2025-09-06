@@ -15,20 +15,40 @@ export type ResponseFormatType = z.infer<typeof ResponseFormat>;
 
 export class ExplainExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'explain';
-  private inited = false;
+  private initPromise: Promise<void> | null = null;
+  private unwatchTaskConfigs: (() => void) | null = null;
 
   async init() {
-    if (this.inited) return;
-    const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
-    this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
+    if (this.initPromise) return this.initPromise;
+    this.initPromise = (async () => {
+      const loaded = await agentStorage.taskConfigs
+        .getValue()
+        .catch(() => undefined);
+      this.runtimeConfig =
+        loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
-    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | null) => {
-      const nextCfg = newConfigs?.[this.taskType];
-      if (nextCfg) this.runtimeConfig = nextCfg;
-    });
+      await this.createOpenAIClient(this.runtimeConfig.aiConfigId);
 
-    await this.createOpenAIClient(this.runtimeConfig.aiConfigId);
-    this.inited = true;
+      // register watcher after client is ready (see next comment)
+      this.unwatchTaskConfigs = agentStorage.taskConfigs.watch(
+        (newConfigs: TaskRuntimeConfigs | null | undefined) => {
+          const nextCfg = newConfigs?.[this.taskType];
+          if (!nextCfg) return;
+          const prevId = this.runtimeConfig.aiConfigId;
+          this.runtimeConfig = nextCfg;
+          if (nextCfg.aiConfigId !== prevId) {
+            void this.createOpenAIClient(nextCfg.aiConfigId);
+          }
+        }
+      );
+    })();
+    return this.initPromise;
+  }
+
+  // Ensure watchers are cleaned up
+  dispose() {
+    this.unwatchTaskConfigs?.();
+    this.unwatchTaskConfigs = null;
   }
 
   async createOpenAIClient(configId: string) {

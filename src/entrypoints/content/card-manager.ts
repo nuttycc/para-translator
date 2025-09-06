@@ -79,18 +79,18 @@ export const toggleTranslateIfEligible = async (
   currentHoveredElement: HTMLElement | null
 ) => {
   if (!currentHoveredElement) {
-    logger.debug('skip: no element currently hovered');
+    logger.debug`skip: no element currently hovered`;
     return;
   }
 
   if (isEditable(currentHoveredElement) || isEditable(document.activeElement)) {
-    logger.debug('skip: input/textarea/contenteditable is focused or hovered');
+    logger.debug`skip: input/textarea/contenteditable is focused or hovered`;
     return;
   }
 
   const container = findClosestTextContainer(currentHoveredElement);
   if (!container) {
-    logger.debug('skip: no container found');
+    logger.debug`skip: no container found`;
     return;
   }
 
@@ -102,7 +102,7 @@ export const toggleTranslateIfEligible = async (
   logger.debug`extracted text meta ${{ length: sourceText.length, preview: sourceText.slice(0, 80) }}`;
 
   if (!isParagraphLike(sourceText)) {
-    logger.debug('skip: not paragraph-like');
+    logger.debug`skip: not paragraph-like`;
     return;
   }
 
@@ -170,5 +170,8 @@ export const toggleTranslateIfEligible = async (
     logger.error`failed to add/update translation card for ${paraKey}: ${error}`;
     // UI may not exist yet, skip removing
     cleanupTranslationCard(paraKey, false);
+    // Clean up stale attributes even if cardUIs doesn't have an entry
+    container.removeAttribute('data-para-id');
+    container.removeAttribute('data-para-is-translated');
   }
 };

@@ -26,5 +26,5 @@ export const getDocumentMeta = (): { title: string; description: string } => {
       description: dedocument.description,
     };
   }
-  return cachedDocument;
+  return cachedDocument!;
 };

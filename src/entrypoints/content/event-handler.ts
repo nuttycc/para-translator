@@ -10,6 +10,8 @@ import { findClosestTextContainer } from '@/utils/paragraph';
  * Cleared when the pointer leaves the paragraph region.
  */
 export let currentHoveredElement: HTMLElement | null = null;
+// Stable runner initialized in setupEventListeners
+let throttledToggle: (() => void) | null = null;
 
 /**
  * Tracks the hovered element if it belongs to a paragraph-like container.
@@ -47,12 +49,10 @@ export const handleMouseOut = (ev: MouseEvent) => {
  * Handles keyboard events for translation triggering.
  *
  * @param ev - Keyboard event
- * @param ctx - Content script context from WXT
  */
-export const handleKeyDown = (ev: KeyboardEvent, ctx: ContentScriptContext) => {
+export const handleKeyDown = (ev: KeyboardEvent) => {
   if (ev.key === 'Shift' && !ev.repeat) {
-    const throttledToggle = throttle(() => toggleParaCard(ctx, currentHoveredElement), 300);
-    void throttledToggle();
+    throttledToggle?.();
   }
 };
 
@@ -60,16 +60,21 @@ export const handleKeyDown = (ev: KeyboardEvent, ctx: ContentScriptContext) => {
  * Sets up event listeners for the content script.
  *
  * @param ctx - Content script context from WXT
+ * @returns Teardown function to remove event listeners
  */
 export const setupEventListeners = (ctx: ContentScriptContext) => {
+  // Prepare the throttled action once
+  throttledToggle = throttle(() => toggleParaCard(ctx, currentHoveredElement), 300);
   // --- Event subscriptions (passive for perf) ---
   document.addEventListener('mouseover', handleMouseOver, { passive: true });
   document.addEventListener('mouseout', handleMouseOut, { passive: true });
-  document.addEventListener(
-    'keydown',
-    (ev) => {
-      handleKeyDown(ev, ctx);
-    },
-    { passive: true }
-  );
+  const keydownHandler = (ev: KeyboardEvent) => handleKeyDown(ev);
+  document.addEventListener('keydown', keydownHandler);
+
+  // Return teardown to avoid leaks
+  return () => {
+    document.removeEventListener('mouseover', handleMouseOver as EventListener);
+    document.removeEventListener('mouseout', handleMouseOut as EventListener);
+    document.removeEventListener('keydown', keydownHandler);
+  };
 };

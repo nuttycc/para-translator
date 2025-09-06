@@ -14,9 +14,12 @@ export default defineContentScript({
     const logger = createLogger('content');
 
     // Setup event listeners for hover and keyboard interactions
-    setupEventListeners(ctx);
+    const teardown = setupEventListeners(ctx);
 
     const endTime = performance.now();
     logger.info`content script loaded in ${(endTime - startTime).toFixed(2)} ms`;
+
+    // Store teardown for potential cleanup
+    ctx.onInvalidated(teardown);
   },
 });

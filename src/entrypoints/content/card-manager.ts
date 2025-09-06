@@ -34,10 +34,10 @@ export const cardUIs = new Map<
  * - Idempotent: safe to call multiple times; exits if nothing to clean.
  * - Also clears `data-para-*` flags from the host container.
  */
-export const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
+export const cleanupParaCard = (paraKey: string, removeUI = true) => {
   const cardEntry = cardUIs.get(paraKey);
   if (!cardEntry) {
-    logger.debug`no card found for cleanup: ${paraKey}`;
+    logger.debug`no para card found for cleanup: ${paraKey}`;
     return;
   }
 
@@ -46,9 +46,9 @@ export const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
   if (removeUI && ui && typeof ui.remove === 'function') {
     try {
       ui.remove();
-      logger.debug`removed translation card UI for ${paraKey}`;
+      logger.debug`removed para card UI for ${paraKey}`;
     } catch (error) {
-      logger.error`failed to remove translation card UI for ${paraKey}: ${error}`;
+      logger.error`failed to remove para card UI for ${paraKey}: ${error}`;
     }
   }
 
@@ -57,7 +57,7 @@ export const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
   if (container) {
     container.removeAttribute('data-para-is-translated');
     container.removeAttribute('data-para-id');
-    logger.debug`cleaned up dataset for ${paraKey}`;
+    logger.debug`cleaned up dataset for para card ${paraKey}`;
   }
 };
 
@@ -74,7 +74,7 @@ export const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
  * - Guards against stale async results by checking `cardUIs` before applying updates.
  * - Stores the paragraph key in `data-para-id` to keep toggling stable.
  */
-export const toggleTranslateIfEligible = async (
+export const toggleParaCard = async (
   ctx: ContentScriptContext,
   currentHoveredElement: HTMLElement | null
 ) => {
@@ -114,7 +114,7 @@ export const toggleTranslateIfEligible = async (
 
   // Toggle behavior: remove if exists, otherwise create and load
   if (cardUIs.has(paraKey)) {
-    cleanupTranslationCard(paraKey);
+    cleanupParaCard(paraKey);
     return;
   }
 
@@ -124,9 +124,9 @@ export const toggleTranslateIfEligible = async (
 
     if (ui && typeof ui.remove === 'function') {
       cardUIs.set(paraKey, { ui, container, state });
-      logger.debug`added translation card for ${paraKey}`;
+      logger.debug`added para card for ${paraKey}`;
     } else {
-      logger.error`failed to create valid UI for ${paraKey}`;
+      logger.error`failed to create valid UI for para card ${paraKey}`;
       return;
     }
 
@@ -150,7 +150,7 @@ export const toggleTranslateIfEligible = async (
 
       // Ignore late results if the card was removed
       if (!cardUIs.has(paraKey)) {
-        logger.debug`card for ${paraKey} was removed during async operation, skipping result application`;
+        logger.debug`para card for ${paraKey} was removed during async operation, skipping result application`;
         return;
       }
 
@@ -167,11 +167,13 @@ export const toggleTranslateIfEligible = async (
       state.loading = false;
     }
   } catch (error) {
-    logger.error`failed to add/update translation card for ${paraKey}: ${error}`;
+    logger.error`failed to add/update para card for ${paraKey}: ${error}`;
     // UI may not exist yet, skip removing
-    cleanupTranslationCard(paraKey, false);
+    cleanupParaCard(paraKey, false);
     // Clean up stale attributes even if cardUIs doesn't have an entry
     container.removeAttribute('data-para-id');
     container.removeAttribute('data-para-is-translated');
   }
 };
+
+

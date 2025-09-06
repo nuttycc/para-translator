@@ -2,7 +2,9 @@ import type { ContentScriptContext } from '#imports';
 
 import { findClosestTextContainer } from '@/utils/paragraph';
 
-import { toggleTranslateIfEligible } from './card-manager';
+import { toggleParaCard } from '@/entrypoints/content/card-manager';
+
+import { throttle } from 'es-toolkit';
 
 /**
  * Currently hovered element (used to find its closest text container).
@@ -50,7 +52,8 @@ export const handleMouseOut = (ev: MouseEvent) => {
  */
 export const handleKeyDown = (ev: KeyboardEvent, ctx: ContentScriptContext) => {
   if (ev.key === 'Shift' && !ev.repeat) {
-    void toggleTranslateIfEligible(ctx, currentHoveredElement);
+    const throttledToggle = throttle(() => toggleParaCard(ctx, currentHoveredElement), 300);
+    void throttledToggle();
   }
 };
 

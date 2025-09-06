@@ -6,8 +6,10 @@ import OpenAI from 'openai';
 
 export class TranslateExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'translate';
+  private inited = false;
 
   async init() {
+    if (this.inited) return;
     const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
     this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
@@ -17,6 +19,7 @@ export class TranslateExecutor extends OpenAIBaseExecutor {
     });
 
     await this.createOpenAIClient(this.runtimeConfig.aiConfigId);
+    this.inited = true;
   }
 
   async createOpenAIClient(configId: string) {

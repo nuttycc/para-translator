@@ -15,23 +15,46 @@ export type ResponseFormatType = z.infer<typeof ResponseFormat>;
 
 export class ExplainExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'explain';
+  private initPromise: Promise<void> | null = null;
+  private unwatchTaskConfigs: (() => void) | null = null;
 
   async init() {
-    const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
-    this.runtimeConfig = loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
+    if (this.initPromise) return this.initPromise;
+    this.initPromise = (async () => {
+      const loaded = await agentStorage.taskConfigs
+        .getValue()
+        .catch(() => undefined);
+      this.runtimeConfig =
+        loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 
-    agentStorage.taskConfigs.watch((newConfigs: TaskRuntimeConfigs | undefined) => {
-      const nextCfg = newConfigs?.[this.taskType];
-      if (nextCfg) this.runtimeConfig = nextCfg;
-    });
+      await this.createOpenAIClient(this.runtimeConfig.aiConfigId);
 
-    await this.createOpenAIClient(this.runtimeConfig.aiConfigId);
+      // register watcher after client is ready (see next comment)
+      this.unwatchTaskConfigs = agentStorage.taskConfigs.watch(
+        (newConfigs: TaskRuntimeConfigs | null | undefined) => {
+          const nextCfg = newConfigs?.[this.taskType];
+          if (!nextCfg) return;
+          const prevId = this.runtimeConfig.aiConfigId;
+          this.runtimeConfig = nextCfg;
+          if (nextCfg.aiConfigId !== prevId) {
+            void this.createOpenAIClient(nextCfg.aiConfigId);
+          }
+        }
+      );
+    })();
+    return this.initPromise;
+  }
+
+  // Ensure watchers are cleaned up
+  dispose() {
+    this.unwatchTaskConfigs?.();
+    this.unwatchTaskConfigs = null;
   }
 
   async createOpenAIClient(configId: string) {
     const aiConfig = await agentStorage.aiConfigs
       .getValue()
-      .then((configs: AIConfigs) => configs[configId]);
+      .then((configs: AIConfigs | null) => configs?.[configId]);
 
     if (!aiConfig) {
       throw new Error(`AI config not found for ${this.taskType}`);
@@ -50,6 +73,6 @@ export class ExplainExecutor extends OpenAIBaseExecutor {
   }
 
   async execute(context: AgentContext): Promise<string> {
-    return this.executeBase(context, true, ResponseFormat);
+    return this.executeBase(context, true, ResponseFormat.shape);
   }
 }

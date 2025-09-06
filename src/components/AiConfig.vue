@@ -5,8 +5,8 @@ import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
-import { RefreshCcw } from 'lucide-vue-next';
-import { EyeOff, Eye } from 'lucide-vue-next';
+import { RefreshCcw, Plus, EyeOff, Eye, Trash, Minus } from 'lucide-vue-next';
+
 interface ModelResponse {
   id: string;
   [key: string]: unknown;
@@ -201,7 +201,12 @@ watch(showRemoteModels, (value) => {
                     {{ model }}
                   </option>
                 </select>
-                <button class="btn btn-soft w-fit" @click="deleteLocalModel">Delete Model</button>
+
+                <div class="tooltip" data-tip="Remove the model from list">
+                  <button class="btn btn-soft w-fit" @click="deleteLocalModel">
+                    <Minus />
+                  </button>
+                </div>
               </div>
 
               <!-- Add local model -->
@@ -212,9 +217,12 @@ watch(showRemoteModels, (value) => {
                   class="input"
                   v-model="newLocalModel"
                 />
-                <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">
-                  Add custom model
-                </button>
+
+                <div class="tooltip" data-tip="Add a model to local list">
+                  <button class="btn btn-soft btn-primary w-fit" @click="addLocalModel">
+                    <Plus />
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -237,7 +245,11 @@ watch(showRemoteModels, (value) => {
         </div>
       </div>
       <div class="flex justify-end mt-4">
-        <button class="btn btn-soft btn-error w-fit" @click="deleteConfig">Delete Config</button>
+        <button class="btn btn-soft btn-error w-fit" @click="deleteConfig">
+          <div class="tooltip" data-tip="Delete the config">
+            <Trash />
+          </div>
+        </button>
       </div>
     </div>
   </div>

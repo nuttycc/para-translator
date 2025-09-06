@@ -196,18 +196,13 @@ export default defineContentScript({
           return false;
         }
         const tagName = element.tagName.toUpperCase();
-        return (
-          tagName === 'INPUT' ||
-          tagName === 'TEXTAREA' ||
-          element.isContentEditable
-        );
+        return tagName === 'INPUT' || tagName === 'TEXTAREA' || element.isContentEditable;
       };
 
       if (isEditable(currentHoveredElement) || isEditable(document.activeElement)) {
         logger.debug('skip: input/textarea/contenteditable is focused or hovered');
         return;
       }
-
 
       const container = findClosestTextContainer(currentHoveredElement);
       if (!container) {
@@ -255,6 +250,7 @@ export default defineContentScript({
           const dedocument = defuddle.parse();
           const context: AgentContext = {
             sourceText,
+            sourceLanguage: 'auto',
             targetLanguage: 'zh-CN',
             siteTitle: dedocument.title,
             siteUrl: window.location.href,

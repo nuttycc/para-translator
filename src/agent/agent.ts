@@ -18,14 +18,12 @@ import { createLogger } from '@/utils/logger';
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
-  private taskExecutors = new Map<TaskType, TaskExecutor>();
+  private taskExecutors = new Map<TaskType, ExplainExecutor | TranslateExecutor>();
 
   async init() {
     const explainExecutor = new ExplainExecutor();
-    await explainExecutor.init();
     this.taskExecutors.set('explain', explainExecutor);
     const translateExecutor = new TranslateExecutor();
-    await translateExecutor.init();
     this.taskExecutors.set('translate', translateExecutor);
   }
 
@@ -35,9 +33,10 @@ export class LangAgent implements LangAgentSpec {
     if (!executor) {
       return { ok: false, error: `Executor for task type ${taskType} not found` };
     }
+    await executor.init();
     try {
       const result = await executor.execute(context);
-      const history = await agentStorage.agentExecutionResults.getValue();
+      const history = (await agentStorage.agentExecutionResults.getValue()) || [];
       history.unshift({
         id: crypto.randomUUID(),
         timestamp: Date.now(),

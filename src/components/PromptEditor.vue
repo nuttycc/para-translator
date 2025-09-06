@@ -1,11 +1,12 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import JsonTable from './JsonTable.vue';
+import { computed, isProxy, ref, watch } from 'vue';
 import { createLogger } from '@/utils/logger';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import type { TaskType } from '@/agent/types';
 import VueJsonPretty from 'vue-json-pretty';
 import 'vue-json-pretty/lib/styles.css';
+import { isJSON } from 'es-toolkit';
+import { storeToRefs } from 'pinia';
 
 const logger = createLogger('PromptEditor');
 const taskConfigsStore = useTaskConfigsStore();
@@ -13,12 +14,20 @@ const props = defineProps<{
   taskType: TaskType;
 }>();
 
-const { system, user } = taskConfigsStore.taskRuntimeConfigs[props.taskType].prompt;
+const { taskRuntimeConfigs } = storeToRefs(taskConfigsStore);
 
-const objPrompts = ref({
-  system: JSON.parse(system),
-  user: JSON.parse(user),
-});
+const runtimeConfig = computed(() => taskRuntimeConfigs.value[props.taskType]);
+
+const prompt = computed(() => runtimeConfig.value.prompt);
+
+const objPrompts = computed(() => ({
+  system: isJSON(prompt.value.system)
+    ? JSON.parse(prompt.value.system)
+    : prompt.value.system,
+  user: isJSON(prompt.value.user)
+    ? JSON.parse(prompt.value.user)
+    : prompt.value.user,
+}));
 
 const isPrettyMode = ref({
   system: true,
@@ -52,7 +61,7 @@ const isPrettyMode = ref({
         </div>
         <textarea
           v-else
-          v-model="system"
+          v-model="prompt.system"
           class="textarea textarea-bordered textarea-primary h-40 w-full"
         />
       </div>
@@ -80,7 +89,7 @@ const isPrettyMode = ref({
         </div>
         <textarea
           v-else
-          v-model="user"
+          v-model="prompt.user"
           class="textarea textarea-bordered textarea-primary h-40 w-full"
         />
       </div>

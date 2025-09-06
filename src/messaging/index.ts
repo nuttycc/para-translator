@@ -1,4 +1,5 @@
 import { defineExtensionMessaging } from '@webext-core/messaging';
+
 import type { ProtocolMap } from './protocol';
 
 // Single source of truth for sendMessage/onMessage used across the extension

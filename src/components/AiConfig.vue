@@ -1,11 +1,12 @@
 <script setup lang="ts">
+import { Eye, EyeOff, Minus, Plus, RefreshCcw, Trash } from 'lucide-vue-next';
+import { storeToRefs } from 'pinia';
+import { computed, ref, watch } from 'vue';
+
 import type { AIConfig } from '@/agent/types';
 import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
-import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
-import { RefreshCcw, Plus, EyeOff, Eye, Trash, Minus } from 'lucide-vue-next';
 
 interface ModelResponse {
   id: string;
@@ -127,7 +128,7 @@ watch(showRemoteModels, (value) => {
 <template>
   <div class="card card-lg px-16 shadow-xl">
     <div class="card-body flex flex-col">
-      <h1 class="card-title text-2xl font-bold mb-6">{{ config.name }}</h1>
+      <h1 class="card-title mb-6 text-2xl font-bold">{{ config.name }}</h1>
       <div class="space-y-4">
         <!-- name -->
         <div class="form-control w-full">
@@ -171,8 +172,8 @@ watch(showRemoteModels, (value) => {
               placeholder="Enter your API key"
             />
             <button class="btn btn-soft btn-primary w-fit" @click="showApiKey = !showApiKey">
-              <EyeOff v-if="!showApiKey" class="w-4 h-4" />
-              <Eye v-else class="w-4 h-4" />
+              <EyeOff v-if="!showApiKey" class="h-4 w-4" />
+              <Eye v-else class="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -180,7 +181,7 @@ watch(showRemoteModels, (value) => {
         <!-- Models -->
         <div class="form-control w-full">
           <fieldset class="fieldset flex flex-col gap-2">
-            <legend class="label label-text font-medium flex gap-2">
+            <legend class="label label-text flex gap-2 font-medium">
               Model
 
               <fieldset class="fieldset bg-base-100 border-base-300 rounded-box flex gap-2">
@@ -192,7 +193,7 @@ watch(showRemoteModels, (value) => {
             </legend>
 
             <div v-if="!showRemoteModels" class="join join-vertical gap-2">
-              <div class="join-item flex gap-2 items-center-safe">
+              <div class="join-item flex items-center-safe gap-2">
                 <select class="select" v-model="config.model">
                   <option v-if="config.localModels.length === 0" disabled selected>
                     Please add a custom model first
@@ -238,13 +239,13 @@ watch(showRemoteModels, (value) => {
               </select>
 
               <button type="button" class="btn btn-soft btn-primary w-fit" @click="fetchModes">
-                <RefreshCcw class="w-4 h-4" />
+                <RefreshCcw class="h-4 w-4" />
               </button>
             </div>
           </fieldset>
         </div>
       </div>
-      <div class="flex justify-end mt-4">
+      <div class="mt-4 flex justify-end">
         <button class="btn btn-soft btn-error w-fit" @click="deleteConfig">
           <div class="tooltip" data-tip="Delete the config">
             <Trash />

@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed, isProxy, ref, watch } from 'vue';
-import { createLogger } from '@/utils/logger';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
-import type { TaskType } from '@/agent/types';
 import VueJsonPretty from 'vue-json-pretty';
+
+import type { TaskType } from '@/agent/types';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { createLogger } from '@/utils/logger';
+
 import 'vue-json-pretty/lib/styles.css';
+
 import { isJSON } from 'es-toolkit';
 import { storeToRefs } from 'pinia';
 
@@ -21,12 +24,8 @@ const runtimeConfig = computed(() => taskRuntimeConfigs.value[props.taskType]);
 const prompt = computed(() => runtimeConfig.value.prompt);
 
 const objPrompts = computed(() => ({
-  system: isJSON(prompt.value.system)
-    ? JSON.parse(prompt.value.system)
-    : prompt.value.system,
-  user: isJSON(prompt.value.user)
-    ? JSON.parse(prompt.value.user)
-    : prompt.value.user,
+  system: isJSON(prompt.value.system) ? JSON.parse(prompt.value.system) : prompt.value.system,
+  user: isJSON(prompt.value.user) ? JSON.parse(prompt.value.user) : prompt.value.user,
 }));
 
 const isPrettyMode = ref({
@@ -39,7 +38,7 @@ const isPrettyMode = ref({
   <div class="space-y-4">
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body p-0">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           <label class="label">System Prompt</label>
           <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border">
             <label class="label">
@@ -56,7 +55,7 @@ const isPrettyMode = ref({
           <vue-json-pretty
             :data="objPrompts.system"
             :theme="'dark'"
-            class="overflow-y-auto max-h-80"
+            class="max-h-80 overflow-y-auto"
           />
         </div>
         <textarea
@@ -69,7 +68,7 @@ const isPrettyMode = ref({
 
     <div class="card bg-base-100 shadow-xl">
       <div class="card-body p-0">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           <label class="label">User Prompt</label>
           <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border">
             <label class="label">
@@ -84,7 +83,7 @@ const isPrettyMode = ref({
           <vue-json-pretty
             :data="objPrompts.user"
             :theme="'dark'"
-            class="overflow-y-auto max-h-80"
+            class="max-h-80 overflow-y-auto"
           />
         </div>
         <textarea

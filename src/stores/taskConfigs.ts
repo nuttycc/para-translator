@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia';
-import { ref, computed, toRaw, onScopeDispose, watch } from 'vue';
-import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
-import { agentStorage } from '@/agent/storage';
-import { createLogger } from '@/utils/logger';
+import { computed, onScopeDispose, ref, toRaw, watch } from 'vue';
+
 import { AGENT_SEEDS } from '@/agent/seeds';
+import { agentStorage } from '@/agent/storage';
+import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
+import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('useTaskConfigsStore');
 

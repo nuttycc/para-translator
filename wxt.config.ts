@@ -1,5 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
-import { fileURLToPath } from 'node:url';
+import tsconfigPaths from 'vite-tsconfig-paths';
 import { defineConfig } from 'wxt';
 
 // See https://wxt.dev/api/config.html
@@ -14,11 +14,6 @@ export default defineConfig({
     permissions: ['storage'],
   },
   vite: () => ({
-    resolve: {
-      alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url)),
-      },
-    },
-    plugins: [tailwindcss()],
+    plugins: [tailwindcss(), tsconfigPaths()],
   }),
 });

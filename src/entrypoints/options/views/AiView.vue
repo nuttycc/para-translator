@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed, ref, watch, nextTick } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { computed, nextTick, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
 import { useAiConfigsStore } from '@/stores/aiConfigs';
 
 const route = useRoute();
@@ -83,22 +84,22 @@ watch(
 </script>
 
 <template>
-  <div class="flex gap-9 justify-center items-start">
-    <div class="navbar basis-1/4 self-start flex flex-col items-start gap-2">
+  <div class="flex items-start justify-center gap-9">
+    <div class="navbar flex basis-1/4 flex-col items-start gap-2 self-start">
       <div>
         <button class="btn btn-soft btn-primary" @click="addNewConfig">+ New Config</button>
       </div>
 
       <div
         ref="scrollContainer"
-        class="h-[68vh] pr-3 overflow-y-auto flex flex-col justify-start items-start gap-2"
+        class="flex h-[68vh] flex-col items-start justify-start gap-2 overflow-y-auto pr-3"
       >
         <router-link
           v-for="configId in configIds"
           :key="configId"
           :data-config-id="configId"
           :to="{ name: 'ai.config', params: { configId } }"
-          :class="['btn btn-soft text-sm w-36 focus:outline-0']"
+          :class="['btn btn-soft w-36 text-sm focus:outline-0']"
           :title="aiConfigs[configId]?.name || String(configId)"
         >
           <p class="truncate">

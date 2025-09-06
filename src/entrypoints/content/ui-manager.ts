@@ -1,8 +1,13 @@
-import { createShadowRootUi, type ShadowRootContentScriptUi, type ContentScriptContext } from '#imports';
-import type { ParaCardProps } from '@/components/ParaCard.vue';
-import ParaCard from '@/components/ParaCard.vue';
-import { createLogger } from '@/utils/logger';
+import {
+  createShadowRootUi,
+  type ContentScriptContext,
+  type ShadowRootContentScriptUi,
+} from '#imports';
+
 import { createApp, h, shallowReactive, type App } from 'vue';
+
+import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
+import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('ui-manager');
 

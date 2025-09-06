@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { browser } from '#imports';
+
+import { Bolt, Wrench } from 'lucide-vue-next';
+import { RouterLink, RouterView } from 'vue-router';
+
 import { createLogger } from '@/utils/logger';
 import { showToast, testToast } from '@/utils/toast';
-import { RouterLink, RouterView } from 'vue-router';
-import { Wrench, Bolt } from 'lucide-vue-next';
 
 const logger = createLogger('options');
 
@@ -38,8 +40,8 @@ const openDrawer = () => {
 </script>
 
 <template>
-  <div class="w-fit mx-auto flex flex-col items-center font-sans">
-    <div class="navbar h-4 max-h-[22vh] w-5xl flex justify-between">
+  <div class="mx-auto flex w-fit flex-col items-center font-sans">
+    <div class="navbar flex h-4 max-h-[22vh] w-5xl justify-between">
       <h1 class="text-xl font-bold">Options</h1>
 
       <div class="drawer">

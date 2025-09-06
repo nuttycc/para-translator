@@ -1,9 +1,10 @@
+import { OpenAI } from 'openai';
+import { z } from 'zod';
+
 import { OpenAIBaseExecutor } from '@/agent/executor/base';
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
-import type { AIConfigs, AgentContext, TaskRuntimeConfigs } from '@/agent/types';
-import { OpenAI } from 'openai';
-import { z } from 'zod';
+import type { AgentContext, AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
 
 const ResponseFormat = z.object({
   translatedText: z.string(),
@@ -21,9 +22,7 @@ export class ExplainExecutor extends OpenAIBaseExecutor {
   async init() {
     if (this.initPromise) return this.initPromise;
     this.initPromise = (async () => {
-      const loaded = await agentStorage.taskConfigs
-        .getValue()
-        .catch(() => undefined);
+      const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
       this.runtimeConfig =
         loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 

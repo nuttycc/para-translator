@@ -1,6 +1,8 @@
-import { findClosestTextContainer } from '@/utils/paragraph';
-import { toggleTranslateIfEligible } from './card-manager';
 import type { ContentScriptContext } from '#imports';
+
+import { findClosestTextContainer } from '@/utils/paragraph';
+
+import { toggleTranslateIfEligible } from './card-manager';
 
 /**
  * Currently hovered element (used to find its closest text container).
@@ -61,7 +63,11 @@ export const setupEventListeners = (ctx: ContentScriptContext) => {
   // --- Event subscriptions (passive for perf) ---
   document.addEventListener('mouseover', handleMouseOver, { passive: true });
   document.addEventListener('mouseout', handleMouseOut, { passive: true });
-  document.addEventListener('keydown', (ev) => {
-    handleKeyDown(ev, ctx);
-  }, { passive: true });
+  document.addEventListener(
+    'keydown',
+    (ev) => {
+      handleKeyDown(ev, ctx);
+    },
+    { passive: true }
+  );
 };

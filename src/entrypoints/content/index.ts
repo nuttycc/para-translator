@@ -1,7 +1,9 @@
 import { defineContentScript } from '#imports';
+
 import '@/assets/content-ui.css';
+
+import { setupEventListeners } from '@/entrypoints/content/event-handler';
 import { createLogger } from '@/utils/logger';
-import { setupEventListeners } from './event-handler';
 
 export default defineContentScript({
   matches: ['<all_urls>'],

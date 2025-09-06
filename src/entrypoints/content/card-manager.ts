@@ -1,14 +1,15 @@
-import type { ShadowRootContentScriptUi } from '#imports';
+import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+
+import type { App } from 'vue';
+
 import type { AgentContext } from '@/agent/types';
 import type { ParaCardProps } from '@/components/ParaCard.vue';
+import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
+import { isEditable } from '@/entrypoints/content/content-utils';
+import { addParaCard } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
-import { createApp, type App } from 'vue';
-import { addParaCard } from './ui-manager';
-import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
-import { isEditable } from '@/entrypoints/content/content-utils';
-import type { ContentScriptContext } from '#imports';
 
 const logger = createLogger('card-manager');
 
@@ -73,7 +74,10 @@ export const cleanupTranslationCard = (paraKey: string, removeUI = true) => {
  * - Guards against stale async results by checking `cardUIs` before applying updates.
  * - Stores the paragraph key in `data-para-id` to keep toggling stable.
  */
-export const toggleTranslateIfEligible = async (ctx: ContentScriptContext, currentHoveredElement: HTMLElement | null) => {
+export const toggleTranslateIfEligible = async (
+  ctx: ContentScriptContext,
+  currentHoveredElement: HTMLElement | null
+) => {
   if (!currentHoveredElement) {
     logger.debug('skip: no element currently hovered');
     return;

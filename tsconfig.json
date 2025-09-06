@@ -2,9 +2,9 @@
   "extends": "./.wxt/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
-    "types": ["vitest/globals"],
     "paths": {
       "@/*": ["src/*"]
-    }
+    },
+    "types": ["vitest/globals"]
   }
 }

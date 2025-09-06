@@ -70,6 +70,7 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
 
       return content;
     } catch (error) {
+      OpenAIBaseExecutor.log.error`execute ${this.taskType} with error: ${error}`;
       throw error;
     }
   }

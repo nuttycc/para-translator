@@ -19,7 +19,7 @@ const isTab = ref('translation');
 </script>
 
 <template>
-  <div class="card prose-sm rounded-md text-sm max-w-full">
+  <div class="card prose-sm rounded-md text-sm/relaxed max-w-full">
     <div class="card-body p-3">
       <div v-if="props.loading" class="flex items-center gap-2">
         <span class="loading loading-spinner loading-sm"></span>

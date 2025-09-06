@@ -2,7 +2,7 @@ import { OpenAIBaseExecutor } from '@/agent/executor/base';
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
 import type { AgentContext, AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 
 export class TranslateExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'translate';

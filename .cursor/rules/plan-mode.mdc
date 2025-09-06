@@ -6,12 +6,12 @@ alwaysApply: false
 
 Now, please switch into PLAN MODE.
 
-You task is to generate a plan to achieve the user's goal.
+Your task is to generate a plan to achieve the user's goal.
 
-## NO TAKE ANY ACTIONS
+## DO NOT TAKE ANY ACTIONS
 
 - NO CODING, ONLY PLANNING.
-- NO CHANGING ANY FILES OR CODES.
+- NO CHANGING ANY FILES OR CODE.
 - NO FIXING ANYTHING.
 - NO IMPLEMENTING ANYTHING.
 

@@ -1,10 +1,9 @@
 import type { ContentScriptContext } from '#imports';
 
-import { findClosestTextContainer } from '@/utils/paragraph';
+import { throttle } from 'es-toolkit';
 
 import { toggleParaCard } from '@/entrypoints/content/card-manager';
-
-import { throttle } from 'es-toolkit';
+import { findClosestTextContainer } from '@/utils/paragraph';
 
 /**
  * Currently hovered element (used to find its closest text container).

@@ -175,5 +175,3 @@ export const toggleParaCard = async (
     container.removeAttribute('data-para-is-translated');
   }
 };
-
-

@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { computed } from 'vue';
+
 import type { TaskRuntimeConfig } from '@/agent/types';
+import PromptEditor from '@/components/PromptEditor.vue';
 import { useAiConfigsStore } from '@/stores/aiConfigs';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createLogger } from '@/utils/logger';
-import { computed } from 'vue';
-import PromptEditor from '@/components/PromptEditor.vue';
 
 const logger = createLogger('TaskConfig');
 const taskConfigsStore = useTaskConfigsStore();
@@ -55,7 +56,7 @@ const runtimeConfig = computed<TaskRuntimeConfig>(() => taskRuntimeConfigs[activ
         v-model.number="runtimeConfig.temperature"
         class="range range-primary w-full"
       />
-      <div class="flex justify-between text-xs text-base-content/60 mt-1 px-1">
+      <div class="text-base-content/60 mt-1 flex justify-between px-1 text-xs">
         <span>0</span>
         <span>1</span>
         <span>2</span>

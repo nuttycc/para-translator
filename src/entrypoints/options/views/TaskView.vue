@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+import type { TaskType } from '@/agent/types';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createLogger } from '@/utils/logger';
-import { useRoute, useRouter } from 'vue-router';
-import { storeToRefs } from 'pinia';
-import type { TaskType } from '@/agent/types';
 
 const route = useRoute();
 const router = useRouter();

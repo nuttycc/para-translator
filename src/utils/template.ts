@@ -1,7 +1,6 @@
 // src/utils/template.ts
 
-import type { AgentContext } from '@/agent/types';
-import { AGENT_CONTEXT_KEYS } from '@/agent/types';
+import { AGENT_CONTEXT_KEYS, type AgentContext } from '@/agent/types';
 
 /**
  * Built-in replacement keys for template rendering

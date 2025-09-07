@@ -1,8 +1,9 @@
+import { OpenAI } from 'openai';
+import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
+
 import type { AgentContext, TaskExecutor, TaskRuntimeConfig, TaskType } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate as renderTpl } from '@/utils/template';
-import { OpenAI } from 'openai';
-import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
 
 export abstract class BaseTaskExecutor implements TaskExecutor {
   abstract readonly taskType: TaskType;
@@ -70,6 +71,7 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
 
       return content;
     } catch (error) {
+      OpenAIBaseExecutor.log.error`execute ${this.taskType} with error: ${error}`;
       throw error;
     }
   }

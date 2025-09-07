@@ -1,10 +1,11 @@
+import { isEqual, omit } from 'es-toolkit';
+import { defineStore } from 'pinia';
+import { computed, onScopeDispose, readonly, ref, toRaw, watch } from 'vue';
+
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
 import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
-import { isEqual, omit } from 'es-toolkit';
-import { defineStore } from 'pinia';
-import { computed, onScopeDispose, readonly, ref, toRaw, watch } from 'vue';
 
 const logger = createLogger('useAiConfigsStore');
 

@@ -1,8 +1,9 @@
+import { OpenAI } from 'openai';
+
 import { OpenAIBaseExecutor } from '@/agent/executor/base';
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
 import type { AgentContext, AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
-import OpenAI from 'openai';
 
 export class TranslateExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'translate';
@@ -12,9 +13,7 @@ export class TranslateExecutor extends OpenAIBaseExecutor {
   async init() {
     if (this.initPromise) return this.initPromise;
     this.initPromise = (async () => {
-      const loaded = await agentStorage.taskConfigs
-        .getValue()
-        .catch(() => undefined);
+      const loaded = await agentStorage.taskConfigs.getValue().catch(() => undefined);
       this.runtimeConfig =
         loaded?.[this.taskType] ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS[this.taskType];
 

@@ -6,7 +6,6 @@ import {
   type AgentContext,
   type AgentResponse,
   type LangAgentSpec,
-  type TaskExecutor,
   type TaskType,
 } from '@/agent/types';
 import { createLogger } from '@/utils/logger';

@@ -1,9 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
-import AiPanel from './views/AiPanel.vue';
-import AiView from './views/AiView.vue';
-import TaskPanel from './views/TaskPanel.vue';
-import TaskView from './views/TaskView.vue';
-import HistoryView from './views/HistoryView.vue';
+
+import AiPanel from '@/entrypoints/options/views/AiPanel.vue';
+import AiView from '@/entrypoints/options/views/AiView.vue';
+import HistoryView from '@/entrypoints/options/views/HistoryView.vue';
+import TaskPanel from '@/entrypoints/options/views/TaskPanel.vue';
+import TaskView from '@/entrypoints/options/views/TaskView.vue';
 
 const router = createRouter({
   linkActiveClass: 'btn-active btn-accent',

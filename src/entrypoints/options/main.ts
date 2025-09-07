@@ -1,7 +1,9 @@
-import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
+
+import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useTaskConfigsStore } from '@/stores/taskConfigs';
+
 import App from './App.vue';
 import router from './router';
 

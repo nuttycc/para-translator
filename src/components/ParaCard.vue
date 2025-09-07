@@ -16,11 +16,16 @@ const props = withDefaults(defineProps<ParaCardProps>(), {
 });
 
 const logger = createLogger('ParaCard');
-const isTab = ref('translation');
+const showTab = ref('translation');
 </script>
 
 <template>
-  <div class="card prose-sm max-w-full rounded-md text-sm/relaxed">
+  <div class="card prose-sm max-w-full rounded-md text-sm/relaxed grid">
+    <!-- name of each tab group should be unique -->
+    <div class="tabs tabs-xs tabs-box justify-end-safe">
+      <input type="radio" name="my_tabs_1" value="translation" v-model="showTab" class="tab" aria-label="Translation" />
+      <input type="radio" name="my_tabs_1" value="explanation" v-model="showTab" class="tab" aria-label="Explanation" />
+    </div>
     <div class="card-body p-3">
       <div v-if="props.loading" class="flex items-center gap-2">
         <span class="loading loading-spinner loading-sm"></span>

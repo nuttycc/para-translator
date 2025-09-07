@@ -4,6 +4,9 @@
   "private": true,
   "version": "0.0.1",
   "type": "module",
+  "repository": "https://github.com/nuttycc/para-translator.git",
+  "homepage": "https://github.com/nuttycc/para-translator",
+  "license": "MIT",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt -b firefox",

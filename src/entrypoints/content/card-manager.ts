@@ -56,7 +56,6 @@ export const cleanupParaCard = (paraKey: string, removeUI = true) => {
   cardUIs.delete(paraKey);
 
   if (container) {
-    container.removeAttribute('data-para-is-translated');
     container.removeAttribute('data-para-id');
     logger.debug`cleaned up dataset for para card ${paraKey}`;
   }
@@ -177,7 +176,6 @@ export const toggleParaCard = async (
         return;
       }
 
-      container.setAttribute('data-para-is-translated', 'true');
       container.setAttribute('data-para-id', paraKey);
     } catch (err) {
       state.error = err instanceof Error ? err.message : String(err);
@@ -188,6 +186,6 @@ export const toggleParaCard = async (
     cleanupParaCard(paraKey, false);
     // Clean up stale attributes even if cardUIs doesn't have an entry
     container.removeAttribute('data-para-id');
-    container.removeAttribute('data-para-is-translated');
   }
 };
+

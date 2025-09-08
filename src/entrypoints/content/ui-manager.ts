@@ -4,10 +4,13 @@ import {
   type ShadowRootContentScriptUi,
 } from '#imports';
 
-import { createApp, h, shallowReactive, type App } from 'vue';
+import { createPinia } from 'pinia';
+import { createApp, h, reactive, toRaw, watch, type App } from 'vue';
 
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
+import { useHistoryStore } from '@/stores/history';
 import { createLogger } from '@/utils/logger';
+import type { HistoryData } from '@/agent/types';
 
 const logger = createLogger('ui-manager');
 
@@ -51,13 +54,26 @@ export const createParaCardApp = (state: ParaCardProps): App =>
 export const addParaCard = async (
   ctx: ContentScriptContext,
   container: Element,
-  initial: Partial<ParaCardProps> = {}
 ) => {
-  const state = shallowReactive<ParaCardProps>({
-    sourceText: initial.sourceText,
-    loading: initial.loading ?? true,
-    result: initial.result,
-    error: initial.error,
+  const state = reactive<ParaCardProps>({
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    context: {
+      sourceText: '',
+      sourceLanguage: '',
+      targetLanguage: '',
+      siteTitle: '',
+      siteUrl: '',
+      siteDescription: '',
+    },
+    sourceText: '',
+    translation: '',
+    explanation: '',
+  });
+
+  watch([() => state.translation, () => state.explanation], () => {
+    const historyStore = useHistoryStore();
+    historyStore.upsert(toRaw(state));
   });
 
   const ui = await createShadowRootUi(ctx, {
@@ -69,7 +85,9 @@ export const addParaCard = async (
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       mountContainer.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
 
+      const pinia = createPinia();
       const app = createParaCardApp(state);
+      app.use(pinia);
       app.mount(mountContainer);
 
       // Track the Vue app for later unmount on removal

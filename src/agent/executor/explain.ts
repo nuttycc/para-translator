@@ -1,18 +1,9 @@
 import { OpenAI } from 'openai';
-import { z } from 'zod';
 
 import { OpenAIBaseExecutor } from '@/agent/executor/base';
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
 import type { AgentContext, AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
-
-const ResponseFormat = z.object({
-  translatedText: z.string(),
-  grammar: z.string(),
-  vocabulary: z.string(),
-});
-
-export type ResponseFormatType = z.infer<typeof ResponseFormat>;
 
 export class ExplainExecutor extends OpenAIBaseExecutor {
   readonly taskType = 'explain';
@@ -72,6 +63,6 @@ export class ExplainExecutor extends OpenAIBaseExecutor {
   }
 
   async execute(context: AgentContext): Promise<string> {
-    return this.executeBase(context, true, ResponseFormat.shape);
+    return this.executeBase(context);
   }
 }

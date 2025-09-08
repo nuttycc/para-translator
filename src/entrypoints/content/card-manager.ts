@@ -8,6 +8,7 @@ import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
 import { isEditable } from '@/entrypoints/content/content-utils';
 import { addParaCard } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
+import { useHistoryStore } from '@/stores/history';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
 
@@ -120,7 +121,7 @@ export const toggleParaCard = async (
 
   try {
     // 1) Create/loading UI
-    const { ui, state } = await addParaCard(ctx, container, { sourceText, loading: true });
+    const { ui, state } = await addParaCard(ctx, container);
 
     if (ui && typeof ui.remove === 'function') {
       cardUIs.set(paraKey, { ui, container, state });
@@ -142,29 +143,44 @@ export const toggleParaCard = async (
         siteDescription: documentMeta.description,
       };
 
-      logger.debug`context ${{ context }}`;
+      state.context = context;
+      state.sourceText = sourceText;
 
-      const response = await sendMessage('agent', { context, taskType: 'translate' });
+      sendMessage('agent', { context, taskType: 'translate' }).then((translateResponse) => {
+        if (!translateResponse.data) {
+          throw new Error(`${translateResponse.error}`);
+        }
+        logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
+        state.translation = translateResponse.data;
+        return;
+      }).catch((error) => {
+        state.error = error instanceof Error ? error.message : String(error);
+        logger.error`${paraKey} ${error}`;
+        return;
+      });
 
-      logger.debug`translated result ${response}`;
+      sendMessage('agent', { context, taskType: 'explain' }).then((explanationResponse) => {
+        if (!explanationResponse.data || explanationResponse.error) {
+          throw new Error(`${explanationResponse.error}`);
+        }
+        logger.debug`explanationResponse.data: ${explanationResponse.data.slice(0, 20)}`;
+        state.explanation = explanationResponse.data;
+        return;
+      }).catch((error) => {
+        state.error = error instanceof Error ? error.message : String(error);
+        logger.error`${paraKey} ${error}`;
+        return;
+      });
 
       // Ignore late results if the card was removed
       if (!cardUIs.has(paraKey)) {
-        logger.debug`para card for ${paraKey} was removed during async operation, skipping result application`;
         return;
       }
 
-      state.result = response.data;
-      state.error = response.error;
-
-      // Persist identity on the container for stable toggling
       container.setAttribute('data-para-is-translated', 'true');
       container.setAttribute('data-para-id', paraKey);
     } catch (err) {
-      // Ensure UI exits loading and shows error
       state.error = err instanceof Error ? err.message : String(err);
-    } finally {
-      state.loading = false;
     }
   } catch (error) {
     logger.error`failed to add/update para card for ${paraKey}: ${error}`;

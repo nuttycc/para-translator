@@ -133,7 +133,6 @@ export interface AgentExecutionResult {
 // storage.local
 export type AgentExecutionResults = AgentExecutionResult[];
 
-
 export interface HistoryData {
   id: string;
   context: AgentContext;

@@ -1,7 +1,12 @@
 import { storage } from '#imports';
 
 import { AGENT_SEEDS } from '@/agent/seeds';
-import { type AgentExecutionResults, type AIConfigs, type HistoryData, type TaskRuntimeConfigs } from '@/agent/types';
+import {
+  type AgentExecutionResults,
+  type AIConfigs,
+  type HistoryData,
+  type TaskRuntimeConfigs,
+} from '@/agent/types';
 
 /**
  * AI configurations storage item
@@ -33,7 +38,7 @@ const agentExecutionResultsStorage = storage.defineItem<AgentExecutionResults>(
   }
 );
 
-const historyDataStorage = storage.defineItem<HistoryData []>('local:historyData', {
+const historyDataStorage = storage.defineItem<HistoryData[]>('local:historyData', {
   init: () => [],
   fallback: [],
   version: 1,

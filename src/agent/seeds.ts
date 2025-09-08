@@ -97,11 +97,15 @@ const ExplainSystemPrompt = {
 
   focusAreas: ['grammar', 'structure', 'vocabulary'],
 
-  constraints: ['explain in %{targetLanguage}', 'keep explanation short and concise', 'Keep at most 3 key points per focus area'],
+  constraints: [
+    'explain in %{targetLanguage}',
+    'keep explanation short and concise',
+    'Keep at most 3 key points per focus area',
+  ],
   style: ['prefer short sentences', 'prefer simple words', 'prefer clear examples'],
 
   output:
-  'Output ONLY in clean, well-structured and concise Markdown. Use headings, bullet points, bold/italic, and code blocks for clarity. No greetings, no fluff.',
+    'Output ONLY in clean, well-structured and concise Markdown. Use headings, bullet points, bold/italic, and code blocks for clarity. No greetings, no fluff.',
 };
 
 const DEFAULT_TASK_RUNTIME_CONFIGS = {

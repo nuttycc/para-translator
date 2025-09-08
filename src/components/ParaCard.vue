@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { CircleAlert } from 'lucide-vue-next';
 import { ref } from 'vue';
+import VueMarkdown from 'vue-markdown-render';
 
+import { HistoryData } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
-import VueMarkdown from 'vue-markdown-render'
-import { HistoryData } from '@/agent/types';
-
-export interface ParaCardProps extends HistoryData{
+export interface ParaCardProps extends HistoryData {
   showContext?: boolean;
   sourceText: string;
   translation: string | null;

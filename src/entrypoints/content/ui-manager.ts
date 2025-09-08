@@ -4,7 +4,7 @@ import {
   type ShadowRootContentScriptUi,
 } from '#imports';
 
-import { createPinia } from 'pinia';
+import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive, toRaw, watch, type App } from 'vue';
 
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
@@ -15,6 +15,11 @@ const logger = createLogger('ui-manager');
 
 // Create a single shared Pinia instance for all card apps
 const sharedPinia = createPinia();
+// Activate Pinia before any store usage outside of Vue components
+setActivePinia(sharedPinia);
+
+// Preserve a single history store instance for reuse
+const history = useHistoryStore();
 
 /**
  * Associates each UI handle with its Vue `App` instance, enabling
@@ -80,8 +85,7 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
   const stopHandles: Array<() => void> = [];
 
   const stopHistoryWatch = watch([() => state.translation, () => state.explanation], async () => {
-    const historyStore = useHistoryStore();
-    await historyStore.upsert(toRaw(state));
+    await history.upsert(toRaw(state));
   });
   stopHandles.push(stopHistoryWatch);
 

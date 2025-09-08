@@ -4,18 +4,34 @@ import {
   type ShadowRootContentScriptUi,
 } from '#imports';
 
-import { createApp, h, shallowReactive, type App } from 'vue';
+import { createPinia, setActivePinia } from 'pinia';
+import { createApp, h, reactive, toRaw, watch, type App } from 'vue';
 
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
+import { useHistoryStore } from '@/stores/history';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('ui-manager');
+
+// Create a single shared Pinia instance for all card apps
+const sharedPinia = createPinia();
+// Activate Pinia before any store usage outside of Vue components
+setActivePinia(sharedPinia);
+
+// Preserve a single history store instance for reuse
+const history = useHistoryStore();
 
 /**
  * Associates each UI handle with its Vue `App` instance, enabling
  * proper unmount during cleanup. Uses WeakMap so GC can reclaim entries.
  */
 export const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
+
+/**
+ * Tracks watcher/side-effect stop handles per UI to ensure proper cleanup
+ * when a card is removed.
+ */
+const uiCleanupMap = new WeakMap<ShadowRootContentScriptUi<App>, Array<() => void>>();
 
 /**
  * Factory that creates a Vue app instance rendering a `ParaCard`.
@@ -48,17 +64,30 @@ export const createParaCardApp = (state: ParaCardProps): App =>
  * - The returned `state` object is meant to be mutated by the caller.
  * - The UI is mounted immediately; cleanup is handled elsewhere.
  */
-export const addParaCard = async (
-  ctx: ContentScriptContext,
-  container: Element,
-  initial: Partial<ParaCardProps> = {}
-) => {
-  const state = shallowReactive<ParaCardProps>({
-    sourceText: initial.sourceText,
-    loading: initial.loading ?? true,
-    result: initial.result,
-    error: initial.error,
+export const addParaCard = async (ctx: ContentScriptContext, container: Element) => {
+  const state = reactive<ParaCardProps>({
+    id: crypto.randomUUID(),
+    timestamp: Date.now(),
+    context: {
+      sourceText: '',
+      sourceLanguage: '',
+      targetLanguage: '',
+      siteTitle: '',
+      siteUrl: '',
+      siteDescription: '',
+    },
+    sourceText: '',
+    translation: '',
+    explanation: '',
   });
+
+  // Collect stop handles for watchers to dispose on removal
+  const stopHandles: Array<() => void> = [];
+
+  const stopHistoryWatch = watch([() => state.translation, () => state.explanation], async () => {
+    await history.upsert(toRaw(state));
+  });
+  stopHandles.push(stopHistoryWatch);
 
   const ui = await createShadowRootUi(ctx, {
     name: 'para-card-ui',
@@ -70,10 +99,13 @@ export const addParaCard = async (
       mountContainer.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
 
       const app = createParaCardApp(state);
+      app.use(sharedPinia);
       app.mount(mountContainer);
 
       // Track the Vue app for later unmount on removal
       uiAppMap.set(ui, app);
+      // Track watchers for cleanup on removal
+      uiCleanupMap.set(ui, stopHandles);
 
       logger.debug`mounted para card ${{
         containerTag: mountContainer.tagName,
@@ -86,6 +118,14 @@ export const addParaCard = async (
       return app;
     },
     onRemove: (app) => {
+      // Dispose all watchers associated with this UI
+      const handles = uiCleanupMap.get(ui);
+      if (handles && Array.isArray(handles)) {
+        for (const stop of handles) {
+          stop();
+        }
+      }
+      uiCleanupMap.delete(ui);
       if (app && typeof app.unmount === 'function') {
         app.unmount();
       }

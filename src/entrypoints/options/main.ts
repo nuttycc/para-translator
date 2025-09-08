@@ -2,6 +2,7 @@ import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
 import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useHistoryStore } from '@/stores/history';
 import { useTaskConfigsStore } from '@/stores/taskConfigs';
 
 import App from './App.vue';
@@ -17,8 +18,9 @@ app.use(router);
 const initializeStores = async () => {
   const aiConfigsStore = useAiConfigsStore();
   const taskConfigsStore = useTaskConfigsStore();
+  const historyStore = useHistoryStore();
 
-  await Promise.all([aiConfigsStore.load(), taskConfigsStore.load()]);
+  await Promise.all([aiConfigsStore.load(), taskConfigsStore.load(), historyStore.load()]);
 };
 
 initializeStores()

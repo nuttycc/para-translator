@@ -9,75 +9,30 @@ alwaysApply: true
 Rule: You should always use English when you are coding, investigating, reasoning. But respond user in Chinese.
 Scope:
 
-- **UI**: [`interface` | `popup page` | `options page`]
-- **Logging**: [`log` | `console.log`]
-- **Comments**: [`comments` | `tsdoc` | `inline_documentation`]
-- **Research**: [`web search` | `code search` | `grep` | `code retrieval`]
+- **UI**: `user interface, e.g. popup page, options page`
+- **Logging**: `e.g. console.log()`
+- **Comments**: `e.g. comments, jsdoc`
+- **Research**: `e.g. web search, code search, grep, code retrieval`
 
-## 2.TypeScript Rules
+## 2.Keep TypeScript Strict Mode
 
-- **Strict Mode:** ✅ Required
-- **Any Type:** ❌ Forbidden
+Write TypeScript in strict mode.
 
-## 3.Write tsdoc
-
-- **tsdoc:** ✅ Required
-- **style:** English, concise and clear, follow TSDoc specifications
-- **scope:** Complex functions
-
-## 4.Organize Directory & Code
+## 3.Organize Directory & Code
 
 - **Rule:** Organize the code in a way that is easy to understand and maintain. and follow the existing code structure.
 - **Scope**: directory structure, file structure, code order, etc.
 
-## 5.Restrictions
+## 4.No Tests & Compilation & Build
 
-### NO TESTS & COMPILATION & BUILD
+Do not create or run any test, compile, build, tsc, start related tasks. e.g. `test`, `compile`, `build`, `tsc`, `start`.
 
-- **Status:** ❌ FORBIDDEN
-- **Scope:** All test creation and execution, compilation, and other build related tasks
-- **Forbidden List:** [`test` | `compile` | `build` | `tsc`, `start`]
-
-### NO DOCS
-
-- **Status:** ❌ FORBIDDEN
-- **Scope:** All documentation, e.g. `.md` files, etc.
-
-### Avoid CODE COMMENTS
-
-- **Status:** ✅ ALLOWED But should be less than 20% of the code
-- **Scope:** All code comments, e.g. `//` or `/* */`
-
-## 6.Tool Call Rules
-
-Reminder: You should always use English in the tool calls.
-
-### Deepwiki
-
-- **Match:** `when the user requests code examples, setup or configuration steps, or library/API documentation`
-- **Question Style:** [`Prefer English`, `Structured question`, `Focused and specific`, `Provide context with user's code snippets`, `Describe expected result`]
-- **Restrictions:** [`one topic or scope per call`]
-- **Examples:**
-  - `What are the complete function signatures for [specific function]? Please include parameter types, return types, and any optional arguments.`
-  - `How does [specific function/method] work internally? Please provide implementation details, key concepts, and usage notes.`
-  - `What APIs are available for [specific task/functionality]? Please compare the main options with their strengths and use cases.`
-  - `Why isn't my [specific function/feature] working as expected? Here's my code: [code block], my environment: [details], the error I'm getting: [error message], and what I expected: [expected behavior].`
-
-### Context7
-
-- **Match:** `when the user requests code examples, setup or configuration steps, or library/API documentation`
-
-### Perplexity
-
-- **Required Roles:** [`system`, `user`]
-
-## 7.Follow Design Principles
+## 5.Adopt Design Principles
 
 ### KISS
 
 - **Full Name:** Keep It Simple, Stupid
 - **Application:** Favor simple, readable solutions over complex ones
-- **Priority:** Prefer best solution over the simplest solution. Not just simple, but more should be the best.
 
 ### YAGNI
 
@@ -94,7 +49,7 @@ Reminder: You should always use English in the tool calls.
   4. **ISP:** Interface Segregation Principle
   5. **DIP:** Dependency Inversion Principle
 
-## 8.Referrence Github Repos
+## 6.Referrence Github Repos
 
 - [toss/es-toolkit](https://github.com/toss/es-toolkit)
 - [vuejs/core](https://github.com/vuejs/core)

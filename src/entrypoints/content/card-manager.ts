@@ -14,27 +14,31 @@ import { extractReadableText, findClosestTextContainer, isParagraphLike } from '
 const logger = createLogger('card-manager');
 
 /**
- * Active cards indexed by a stable paragraph key. Each entry stores:
- * - `ui`: the ShadowRoot UI handle
- * - `container`: the host element
- * - `state`: the reactive ParaCard props to mutate as results arrive
+ * Live translation cards keyed by a stable paragraph identifier.
+ * Each map entry contains:
+ * - `ui`: ShadowRoot UI handle
+ * - `container`: host element for the card
+ * - `state`: reactive `ParaCard` props mutated as results arrive
  */
-export const cardUIs = new Map<
-  string,
-  { ui: ShadowRootContentScriptUi<App>; container: HTMLElement; state: ParaCardProps }
->();
+interface ParaCardEntry {
+  ui: ShadowRootContentScriptUi<App>;
+  container: HTMLElement;
+  state: ParaCardProps;
+}
+
+export const cardUIs = new Map<string, ParaCardEntry>();
 
 /**
- * Removes a translation card and cleans its associated resources safely.
+ * Remove a card and clean up its associated resources.
  *
- * @param paraKey - Unique identifier for the paragraph/card.
- * @param removeUI - When true (default), also detach and unmount the UI.
+ * @param paraKey - Unique paragraph/card identifier
+ * @param removeUI - Also detach/unmount the UI (default: true)
  *
  * @remarks
- * - Idempotent: safe to call multiple times; exits if nothing to clean.
- * - Also clears `data-para-*` flags from the host container.
+ * - Idempotent: safe to call multiple times; no-ops if missing
+ * - Clears the `data-para-id` attribute on the host container
  */
-export const cleanupParaCard = (paraKey: string, removeUI = true) => {
+export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
   const cardEntry = cardUIs.get(paraKey);
   if (!cardEntry) {
     logger.debug`no para card found for cleanup: ${paraKey}`;
@@ -60,23 +64,34 @@ export const cleanupParaCard = (paraKey: string, removeUI = true) => {
   }
 };
 
+const buildAgentContext = (
+  sourceText: string,
+  documentMeta: { title: string; description: string }
+): AgentContext => ({
+  sourceText,
+  sourceLanguage: 'auto',
+  targetLanguage: 'zh-CN',
+  siteTitle: documentMeta.title,
+  siteUrl: window.location.href,
+  siteDescription: documentMeta.description,
+});
+
 /**
- * If the current hover target is a paragraph-like container, toggles
- * a translation card in place:
- * - If a card exists for that paragraph, it is removed.
- * - If not, a loading card is added and an async translation is requested.
+ * Toggle a translation card for the currently hovered paragraph-like container.
+ * - If a card already exists for the container, remove it.
+ * - Otherwise, create a loading card and request async results.
  *
- * @param ctx - Content script context from WXT
- * @param currentHoveredElement - The currently hovered element
+ * @param ctx - WXT content script context
+ * @param currentHoveredElement - The element currently under the cursor
  *
  * @remarks
- * - Guards against stale async results by checking `cardUIs` before applying updates.
- * - Stores the paragraph key in `data-para-id` to keep toggling stable.
+ * - Guards against stale async results by verifying presence in `cardUIs`
+ * - Persists the paragraph key in `data-para-id` for stable toggling
  */
 export const toggleParaCard = async (
   ctx: ContentScriptContext,
   currentHoveredElement: HTMLElement | null
-) => {
+): Promise<void> => {
   if (!currentHoveredElement) {
     logger.debug`skip: no element currently hovered`;
     return;
@@ -106,19 +121,20 @@ export const toggleParaCard = async (
   }
 
   // Stable paragraph key (persisted on the container once created)
-  const paraKey = container.getAttribute('data-para-id') || crypto.randomUUID();
+  const existingKey = container.getAttribute('data-para-id');
+  const paraKey = existingKey && existingKey.trim().length > 0 ? existingKey : crypto.randomUUID();
 
-  // Set paraId immediately to prevent duplicate cards on quick toggles
+  // Persist immediately to prevent duplicate cards on rapid toggles
   container.setAttribute('data-para-id', paraKey);
 
-  // Toggle behavior: remove if exists, otherwise create and load
+  // Toggle behavior: remove if exists; otherwise create and load
   if (cardUIs.has(paraKey)) {
     cleanupParaCard(paraKey);
     return;
   }
 
   try {
-    // 1) Create/loading UI
+    // 1) Create loading UI
     const { ui, state } = await addParaCard(ctx, container);
 
     if (ui && typeof ui.remove === 'function') {
@@ -126,26 +142,21 @@ export const toggleParaCard = async (
       logger.debug`added para card for ${paraKey}`;
     } else {
       logger.error`failed to create valid UI for para card ${paraKey}`;
+      container.removeAttribute('data-para-id');
       return;
     }
 
-    // 2) Request translation/explanation from the agent
+    // 2) Request translation and explanation from the agent
     try {
       const documentMeta = getDocumentMeta();
-      const context: AgentContext = {
-        sourceText,
-        sourceLanguage: 'auto',
-        targetLanguage: 'zh-CN',
-        siteTitle: documentMeta.title,
-        siteUrl: window.location.href,
-        siteDescription: documentMeta.description,
-      };
+      const context: AgentContext = buildAgentContext(sourceText, documentMeta);
 
       state.context = context;
       state.sourceText = sourceText;
 
       sendMessage('agent', { context, taskType: 'translate' })
         .then((translateResponse) => {
+          if (!cardUIs.has(paraKey)) return;
           if (!translateResponse.data) {
             throw new Error(`${translateResponse.error}`);
           }
@@ -154,6 +165,7 @@ export const toggleParaCard = async (
           return;
         })
         .catch((error) => {
+          if (!cardUIs.has(paraKey)) return;
           state.error = error instanceof Error ? error.message : String(error);
           logger.error`${paraKey} ${error}`;
           return;
@@ -161,6 +173,7 @@ export const toggleParaCard = async (
 
       sendMessage('agent', { context, taskType: 'explain' })
         .then((explanationResponse) => {
+          if (!cardUIs.has(paraKey)) return;
           if (!explanationResponse.data || explanationResponse.error) {
             throw new Error(`${explanationResponse.error}`);
           }
@@ -169,12 +182,13 @@ export const toggleParaCard = async (
           return;
         })
         .catch((error) => {
+          if (!cardUIs.has(paraKey)) return;
           state.error = error instanceof Error ? error.message : String(error);
           logger.error`${paraKey} ${error}`;
           return;
         });
 
-      // Ignore late results if the card was removed
+      // Ignore late results if the card was removed during async work
       if (!cardUIs.has(paraKey)) {
         return;
       }

@@ -34,12 +34,19 @@ export const useHistoryStore = defineStore('history', () => {
     isInitialized.value = true;
   };
 
-  const ensureInit = async () => {
+  const ensureInit = async (): Promise<void> => {
     if (isInitialized.value) return;
     if (loadPromise) return loadPromise;
-    loadPromise = (async () => {
-      await load();
-    })();
+
+    loadPromise = load();
+    try {
+      await loadPromise;
+    } catch (error) {
+      logger.error`Failed to initialize history store: ${error}`;
+      throw error;
+    } finally {
+      loadPromise = null; // Always clear promise after completion
+    }
   };
 
   const upsert = async (data: Partial<HistoryData>) => {
@@ -54,7 +61,7 @@ export const useHistoryStore = defineStore('history', () => {
       };
       history.value[index] = next;
     } else {
-      history.value.push(toRaw(data as HistoryData));
+      history.value.unshift(toRaw(data as HistoryData));
     }
 
     logger.debug`upsert history record \n {history: ${history.value}}`;

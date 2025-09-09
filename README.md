@@ -2,6 +2,16 @@
 
 A browser extension that helps you learn new languages by understanding webpage paragraphs.
 
+---
+
+**Update 2025-09-09:**
+- This README has been reviewed for accuracy and completeness.
+- If you are running the dev server for web preview, use the following ports: 52022 or 59489. Make sure to set the dev server host to `0.0.0.0` and allow CORS/iframe access for local testing.
+- For more details on the AI agent logic, see [`src/agent/`](src/agent/).
+- For contributor and agent design details, see [`AGENTS.md`](AGENTS.md).
+---
+
+
 ## Overview
 
 Para-Translator is a browser extension designed to enhance your language learning experience while browsing the web. Instead of just providing translations, it offers comprehensive language learning features including:

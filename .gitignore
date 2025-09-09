@@ -3,16 +3,15 @@
 .augment
 .qoder
 .claude
+.crush
 
-
-test.js
+*.play.ts
 
 # test
 src/agent/__tests__/vite-env.d.ts
 
 # GitHub App credentials
 gha-creds-*.json
-
 
 # docs
 .docs

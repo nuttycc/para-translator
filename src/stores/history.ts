@@ -38,17 +38,15 @@ export const useHistoryStore = defineStore('history', () => {
     if (isInitialized.value) return;
     if (loadPromise) return loadPromise;
 
-    loadPromise = (async () => {
-      try {
-        await load();
-      } catch (error) {
-        loadPromise = null; // Clear promise on error to allow retries
-        logger.error`Failed to initialize history store: ${error}`;
-        throw error;
-      }
-    })();
-
-    return loadPromise;
+    loadPromise = load();
+    try {
+      await loadPromise;
+    } catch (error) {
+      logger.error`Failed to initialize history store: ${error}`;
+      throw error;
+    } finally {
+      loadPromise = null; // Always clear promise after completion
+    }
   };
 
   const upsert = async (data: Partial<HistoryData>) => {

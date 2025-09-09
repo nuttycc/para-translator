@@ -142,6 +142,7 @@ export const toggleParaCard = async (
       logger.debug`added para card for ${paraKey}`;
     } else {
       logger.error`failed to create valid UI for para card ${paraKey}`;
+      container.removeAttribute('data-para-id');
       return;
     }
 

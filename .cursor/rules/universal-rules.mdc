@@ -49,7 +49,7 @@ Do not create or run any test, compile, build, tsc, start related tasks. e.g. `t
   4. **ISP:** Interface Segregation Principle
   5. **DIP:** Dependency Inversion Principle
 
-## 6.Referrence Github Repos
+## 6.Reference Github Repos
 
 - [toss/es-toolkit](https://github.com/toss/es-toolkit)
 - [vuejs/core](https://github.com/vuejs/core)

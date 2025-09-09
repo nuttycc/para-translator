@@ -16,7 +16,8 @@
     "test": "vitest run",
     "lint": "oxlint --fix --type-aware .",
     "format": "prettier --write .",
-    "postinstall": "wxt prepare"
+    "postinstall": "wxt prepare",
+    "prepare": "husky"
   },
   "dependencies": {
     "@logtape/logtape": "^1.0.4",
@@ -48,7 +49,9 @@
     "daisyui": "^5.1.7",
     "globals": "^16.3.0",
     "happy-dom": "^18.0.1",
+    "husky": "^9.1.7",
     "jsdom": "^26.1.0",
+    "lint-staged": "^16.1.6",
     "oxlint": "^1.14.0",
     "oxlint-tsgolint": "^0.1.5",
     "prettier": "^3.6.2",
@@ -71,5 +74,11 @@
       "spawn-sync"
     ]
   },
-  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67"
+  "packageManager": "pnpm@10.15.1+sha512.34e538c329b5553014ca8e8f4535997f96180a1d0f614339357449935350d924e22f8614682191264ec33d1462ac21561aff97f6bb18065351c162c7e8f6de67",
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "oxlint max-warnings=0",
+      "prettier --write"
+    ]
+  }
 }

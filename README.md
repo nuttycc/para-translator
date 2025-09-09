@@ -21,12 +21,30 @@ Para-Translator is a browser extension designed to enhance your language learnin
 
 ## Technologies Used
 
+### Core Technologies
+
 - **[WXT](https://wxt.dev/)** - Web extension framework for building cross-browser extensions
 - **[Vue.js 3](https://vuejs.org/)** - Progressive JavaScript framework for building user interfaces
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript development
+
+### Frontend & UI
+
+- **[Vue Router](https://router.vuejs.org/)** - Official router for Vue.js applications
+- **[Pinia](https://pinia.vuejs.org/)** - Intuitive state management for Vue.js
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[DaisyUI](https://daisyui.com/)** - Component library for Tailwind CSS
-- **[Pinia](https://pinia.vuejs.org/)** - Intuitive state management for Vue.js
+- **[VueUse](https://vueuse.org/)** - Collection of Vue composition utilities
+
+### Browser Extension
+
+- **[@webext-core/messaging](https://www.npmjs.com/package/@webext-core/messaging)** - Simplified, type-safe wrapper around web extension messaging APIs
+
+### Utilities
+
+- **[es-toolkit](https://es-toolkit.slash.page/)** - Modern JavaScript utility library
+- **[Zod](https://zod.dev/)** - TypeScript-first schema validation
+- **[LogTape](https://logtape.hongminhee.org/)** - Structured logging library for JavaScript
+- **[vue-markdown-render](https://www.npmjs.com/package/vue-markdown-render)** - Markdown rendering component for Vue
 
 ## Installation
 
@@ -91,6 +109,17 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+### Code Style Guidelines
+
+- Keep TypeScript strict mode enabled
+- Use English by default for logging, comments, and UI copywriting
+- Use functional patterns where possible
+- Use `@/` alias imports instead of relative imports
+- Use `#imports` module to import WXT APIs
+- Use wxt unified `browser` API directly instead of `chrome`
+- Use `@wxt-dev/storage` to store extension data
+- Prefer Tagged Template over Normal Function Call for Logging with `LogTape`
 
 ## License
 

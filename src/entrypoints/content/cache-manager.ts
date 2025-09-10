@@ -5,17 +5,9 @@ import Defuddle from 'defuddle';
  */
 let cachedDefuddle: Defuddle | null = null;
 
-/**
- * Cached document metadata containing title and description.
- */
 let cachedDocument: { title: string; description: string } | null = null;
 
-/**
- * Gets cached document metadata, creating it if not exists.
- *
- * @returns Document metadata containing title and description
- */
-export const getDocumentMeta = (): { title: string; description: string } => {
+export const getDocumentMeta = () => {
   if (!cachedDocument) {
     if (!cachedDefuddle) {
       cachedDefuddle = new Defuddle(window.document);
@@ -26,5 +18,5 @@ export const getDocumentMeta = (): { title: string; description: string } => {
       description: dedocument.description,
     };
   }
-  return cachedDocument!;
+  return cachedDocument;
 };

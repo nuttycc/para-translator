@@ -13,33 +13,55 @@ import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('ui-manager');
 
-// Create a single shared Pinia instance for all card apps
+const getPreferredTheme = (): 'dark' | 'light' => {
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+};
+
+// Single shared Pinia instance for all card apps
 const sharedPinia = createPinia();
-// Activate Pinia before any store usage outside of Vue components
+// Activate Pinia before any store is used outside Vue components
 setActivePinia(sharedPinia);
 
-// Preserve a single history store instance for reuse
+// Reuse a single history store instance
 const history = useHistoryStore();
 
 /**
- * Associates each UI handle with its Vue `App` instance, enabling
- * proper unmount during cleanup. Uses WeakMap so GC can reclaim entries.
+ * Maps each UI handle to its Vue `App` for proper teardown.
+ * WeakMap enables garbage collection when a UI is removed.
  */
 export const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
 
 /**
- * Tracks watcher/side-effect stop handles per UI to ensure proper cleanup
+ * Tracks watcher/side-effect stop functions per UI for cleanup
  * when a card is removed.
  */
 const uiCleanupMap = new WeakMap<ShadowRootContentScriptUi<App>, Array<() => void>>();
 
 /**
- * Factory that creates a Vue app instance rendering a `ParaCard`.
- * Uses the provided reactive `state` so external code can update the card
- * (e.g., finish loading, set result, or set error).
+ * Produces a fresh initial state for a `ParaCard`.
+ * Centralizes defaults to keep them auditable.
+ */
+const createInitialParaCardState = (): ParaCardProps => ({
+  id: crypto.randomUUID(),
+  timestamp: Date.now(),
+  context: {
+    sourceText: '',
+    sourceLanguage: '',
+    targetLanguage: '',
+    siteTitle: '',
+    siteUrl: '',
+    siteDescription: '',
+  },
+  sourceText: '',
+  translation: '',
+  explanation: '',
+});
+
+/**
+ * Creates a Vue app that renders a ParaCard component.
  *
- * @param state - Reactive state passed as props to `ParaCard`.
- * @returns The mounted (yet not attached) Vue `App` instance.
+ * @param state - Reactive state passed as props to the ParaCard.
+ * @returns The created Vue app instance (not yet mounted).
  */
 export const createParaCardApp = (state: ParaCardProps): App =>
   createApp({
@@ -52,42 +74,27 @@ export const createParaCardApp = (state: ParaCardProps): App =>
   });
 
 /**
- * Creates and mounts a ParaCard UI next to a text container.
- * The UI is rendered inside a ShadowRoot to isolate styles and uses a dark theme.
+ * Creates and mounts a ParaCard UI near a text container.
+ * Uses ShadowRoot for style isolation and system theme detection.
  *
- * @param ctx - Content script context from WXT
- * @param container - Element that visually anchors the card inline.
- * @param initial - Optional initial state (e.g., `sourceText`, `loading`).
- * @returns A tuple with the mounted UI handle and the reactive state used by the card.
+ * @param ctx - Content script context from WXT.
+ * @param container - Element that anchors the inline card.
+ * @returns The mounted UI handle and its reactive state.
  *
- * @remarks
- * - The returned `state` object is meant to be mutated by the caller.
- * - The UI is mounted immediately; cleanup is handled elsewhere.
+ * @remarks The returned state is mutable for external updates.
  */
-export const addParaCard = async (ctx: ContentScriptContext, container: Element) => {
-  const state = reactive<ParaCardProps>({
-    id: crypto.randomUUID(),
-    timestamp: Date.now(),
-    context: {
-      sourceText: '',
-      sourceLanguage: '',
-      targetLanguage: '',
-      siteTitle: '',
-      siteUrl: '',
-      siteDescription: '',
-    },
-    sourceText: '',
-    translation: '',
-    explanation: '',
-  });
+export const addParaCard = async (
+  ctx: ContentScriptContext,
+  container: Element
+): Promise<{ ui: ShadowRootContentScriptUi<App>; state: ParaCardProps }> => {
+  const state = reactive<ParaCardProps>(createInitialParaCardState());
 
-  // Collect stop handles for watchers to dispose on removal
-  const stopHandles: Array<() => void> = [];
+  const cleanupHandles: Array<() => void> = [];
 
-  const stopHistoryWatch = watch([() => state.translation, () => state.explanation], async () => {
+  const stopHistoryWatcher = watch([() => state.translation, () => state.explanation], async () => {
     await history.upsert(toRaw(state));
   });
-  stopHandles.push(stopHistoryWatch);
+  cleanupHandles.push(stopHistoryWatcher);
 
   const ui = await createShadowRootUi(ctx, {
     name: 'para-card-ui',
@@ -95,17 +102,14 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
     inheritStyles: false,
     anchor: container,
     onMount: (mountContainer, shadow) => {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      mountContainer.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      const theme = getPreferredTheme();
+      mountContainer.setAttribute('data-theme', theme);
 
       const app = createParaCardApp(state);
       app.use(sharedPinia);
       app.mount(mountContainer);
 
-      // Track the Vue app for later unmount on removal
       uiAppMap.set(ui, app);
-      // Track watchers for cleanup on removal
-      uiCleanupMap.set(ui, stopHandles);
 
       logger.debug`mounted para card ${{
         containerTag: mountContainer.tagName,
@@ -118,7 +122,6 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
       return app;
     },
     onRemove: (app) => {
-      // Dispose all watchers associated with this UI
       const handles = uiCleanupMap.get(ui);
       if (handles && Array.isArray(handles)) {
         for (const stop of handles) {
@@ -129,10 +132,11 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
       if (app && typeof app.unmount === 'function') {
         app.unmount();
       }
-      // Clean up the app reference from the map
       uiAppMap.delete(ui);
     },
   });
+
+  uiCleanupMap.set(ui, cleanupHandles);
 
   ui.mount();
 

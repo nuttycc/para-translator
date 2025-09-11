@@ -104,8 +104,7 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
 
       // Track the Vue app for later unmount on removal
       uiAppMap.set(ui, app);
-      // Track watchers for cleanup on removal
-      uiCleanupMap.set(ui, stopHandles);
+      // Cleanup handles are registered before mount to avoid closure timing issues
 
       logger.debug`mounted para card ${{
         containerTag: mountContainer.tagName,
@@ -133,6 +132,9 @@ export const addParaCard = async (ctx: ContentScriptContext, container: Element)
       uiAppMap.delete(ui);
     },
   });
+
+  // Register cleanup handles before mounting to avoid relying on onMount closure timing
+  uiCleanupMap.set(ui, stopHandles);
 
   ui.mount();
 

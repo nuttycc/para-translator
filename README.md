@@ -47,28 +47,18 @@ Para-Translator is a browser extension designed to enhance your language learnin
 2. Install dependencies:
 
    ```bash
-   pnpm install
+   bun install
    ```
 
 3. Start the development server:
 
    ```bash
-   pnpm dev
+   bun dev
    ```
 
 4. Load the extension in your browser:
    - **Chrome/Chromium**: Visit `chrome://extensions`, enable "Developer mode", and click "Load unpacked" then select the `.output/chrome-mv3` directory
-   - **Firefox**: Visit `about:debugging`, click "This Firefox", then "Load Temporary Add-on" and select the `.output/firefox-mv2/manifest.json` file
 
-### Available Scripts
-
-- `pnpm dev` - Start development server
-- `pnpm dev:firefox` - Start development server for Firefox
-- `pnpm build` - Build for production
-- `pnpm zip` - Package extension for distribution
-- `pnpm test` - Run tests
-- `pnpm lint` - Lint code with oxlint
-- `pnpm format` - Format code with prettier
 
 ## Project Structure
 
@@ -94,7 +84,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License.
 
 ## Acknowledgments
 

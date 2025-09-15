@@ -48,3 +48,11 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 - Use wxt unified `browser` API directly instead of `chrome`
 - use `@wxt-dev/storage` to store extension data
 - Prefer Tagged Template over Normal Function Call for Logging with `LogTape`
+
+## Development 
+
+
+```bash
+bun install
+bun dev
+```

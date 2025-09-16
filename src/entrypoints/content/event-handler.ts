@@ -33,7 +33,13 @@ export const setupEventListeners = (ctx: ContentScriptContext) => {
       { immediate: true }
     );
 
-    onKeyDown('Shift', () => { throttledToggle(); }, { target: document, dedupe: true });
+    onKeyDown(
+      'Shift',
+      () => {
+        throttledToggle();
+      },
+      { target: document, dedupe: true }
+    );
   });
 
   // Return teardown to avoid leaks

@@ -7,9 +7,9 @@ import { agentStorage } from '@/agent/storage';
 import type { AIConfig, AIConfigs } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
-const logger = createLogger('useAiConfigsStore');
+const logger = createLogger('store:ai-providers');
 
-export const useAiConfigsStore = defineStore('aiConfigs', () => {
+export const useAiProviderStore = defineStore('ai-providers', () => {
   const aiConfigsState = ref<AIConfigs>(AGENT_SEEDS.AI_CONFIGS);
   const lastWriteError = ref<unknown>(null);
   const lastActiveConfigId = ref<string>('');

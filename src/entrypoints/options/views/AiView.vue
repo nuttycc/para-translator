@@ -3,12 +3,13 @@ import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useAiProviderStore } from '@/stores';
 
 const route = useRoute();
 const router = useRouter();
-const aiConfigsStore = useAiConfigsStore();
-const { aiConfigs, configIds, lastActiveConfigId, firstConfigId } = storeToRefs(aiConfigsStore);
+const aiProviderStore = useAiProviderStore();
+
+const { aiConfigs, configIds, lastActiveConfigId, firstConfigId } = storeToRefs(aiProviderStore);
 
 // Template ref for the scrollable container
 const scrollContainer = ref<HTMLElement>();
@@ -51,9 +52,9 @@ const scrollToActiveConfig = async () => {
 
 const addNewConfig = async () => {
   const newConfigId = `new-${Date.now()}`;
-  await aiConfigsStore.upsert({
+  await aiProviderStore.upsert({
     id: newConfigId,
-    name: `New Config ${aiConfigsStore.configIds.length + 1}`,
+    name: `New Config ${aiProviderStore.configIds.length + 1}`,
     provider: 'new',
     model: 'new',
     localModels: [],
@@ -76,7 +77,7 @@ watch(
 watch(
   () => activeConfigId.value,
   (id) => {
-    aiConfigsStore.setLastActiveConfigId(id);
+    aiProviderStore.setLastActiveConfigId(id);
     router.replace({ name: 'ai.config', params: { configId: id } });
   },
   { immediate: true }

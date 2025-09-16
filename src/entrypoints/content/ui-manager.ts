@@ -8,7 +8,7 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive, toRaw, watch, type App } from 'vue';
 
 import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
-import { useHistoryStore } from '@/stores/history';
+import { useParaHistoryStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('ui-manager');
@@ -23,7 +23,7 @@ const sharedPinia = createPinia();
 setActivePinia(sharedPinia);
 
 // Reuse a single history store instance
-const history = useHistoryStore();
+const history = useParaHistoryStore();
 
 /**
  * Maps each UI handle to its Vue `App` for proper teardown.

@@ -5,8 +5,9 @@ import { agentStorage } from '@/agent/storage';
 import type { HistoryData } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
-export const useHistoryStore = defineStore('history', () => {
-  const logger = createLogger('HistoryStore');
+const logger = createLogger('store:para-history');
+
+export const useParaHistoryStore = defineStore('para-history', () => {
 
   const history = ref<HistoryData[]>([]);
   const isInitialized = ref(false);

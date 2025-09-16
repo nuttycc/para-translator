@@ -4,15 +4,15 @@ import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import type { TaskType } from '@/agent/types';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
 const route = useRoute();
 const router = useRouter();
 
 const logger = createLogger('options');
-const taskConfigsStore = useTaskConfigsStore();
-const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
+const taskSettingsStore = useTaskSettingsStore();
+const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskSettingsStore);
 
 const activeTaskId = computed(() => {
   if (route.params.taskId && typeof route.params.taskId === 'string') {
@@ -44,7 +44,7 @@ watch(
     if (!id || !taskIds.value.includes(id)) {
       return;
     }
-    taskConfigsStore.setLastActiveTaskId(id);
+    taskSettingsStore.setLastActiveTaskId(id);
 
     router.replace({ name: 'tasks.detail', params: { taskId: id } });
   },

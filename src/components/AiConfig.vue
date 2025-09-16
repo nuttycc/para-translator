@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 
 import type { AIConfig } from '@/agent/types';
-import { useAiConfigsStore } from '@/stores/aiConfigs';
+import { useAiProviderStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
 
@@ -13,7 +13,7 @@ interface ModelResponse {
   [key: string]: unknown;
 }
 
-const aiConfigsStore = useAiConfigsStore();
+const aiConfigsStore = useAiProviderStore();
 
 const { firstConfigId, lastActiveConfigId, aiConfigs } = storeToRefs(aiConfigsStore);
 

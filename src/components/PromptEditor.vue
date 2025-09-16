@@ -3,7 +3,7 @@ import { computed, isProxy, ref, watch } from 'vue';
 import VueJsonPretty from 'vue-json-pretty';
 
 import type { TaskType } from '@/agent/types';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
 import 'vue-json-pretty/lib/styles.css';
@@ -12,7 +12,7 @@ import { isJSON } from 'es-toolkit';
 import { storeToRefs } from 'pinia';
 
 const logger = createLogger('PromptEditor');
-const taskConfigsStore = useTaskConfigsStore();
+const taskConfigsStore = useTaskSettingsStore();
 const props = defineProps<{
   taskType: TaskType;
 }>();

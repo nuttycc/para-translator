@@ -1,11 +1,11 @@
-import type { ContentScriptContext } from '#imports';
-
 import { onKeyDown, useElementByPoint, useMouse } from '@vueuse/core';
 import { throttle } from 'es-toolkit';
 import { effectScope, watch } from 'vue';
 
 import { toggleParaCard } from '@/entrypoints/content/card-manager';
 import { findClosestTextContainer } from '@/utils/paragraph';
+
+import type { ContentScriptContext } from '#imports';
 
 export let currentHoveredElement: HTMLElement | null = null;
 

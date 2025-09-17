@@ -1,15 +1,14 @@
-import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
-
-import type { App } from 'vue';
-
-import type { AgentContext } from '@/agent/types';
-import type { ParaCardProps } from '@/components/ParaCard.vue';
 import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
 import { isEditable } from '@/entrypoints/content/content-utils';
 import { addParaCard } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
+
+import type { AgentContext } from '@/agent/types';
+import type { ParaCardProps } from '@/components/ParaCard.vue';
+import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+import type { App } from 'vue';
 
 const logger = createLogger('card-manager');
 

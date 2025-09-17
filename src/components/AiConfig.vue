@@ -3,10 +3,11 @@ import { Eye, EyeOff, Minus, Plus, RefreshCcw, Trash } from 'lucide-vue-next';
 import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 
-import type { AIConfig } from '@/agent/types';
 import { useAiProviderStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 import { showToast } from '@/utils/toast';
+
+import type { AIConfig } from '@/agent/types';
 
 interface ModelResponse {
   id: string;

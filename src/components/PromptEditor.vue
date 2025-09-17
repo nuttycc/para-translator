@@ -2,9 +2,10 @@
 import { computed, isProxy, ref, watch } from 'vue';
 import VueJsonPretty from 'vue-json-pretty';
 
-import type { TaskType } from '@/agent/types';
 import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
+
+import type { TaskType } from '@/agent/types';
 
 import 'vue-json-pretty/lib/styles.css';
 

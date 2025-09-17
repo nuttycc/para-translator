@@ -3,9 +3,10 @@ import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import type { TaskType } from '@/agent/types';
 import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
+
+import type { TaskType } from '@/agent/types';
 
 const route = useRoute();
 const router = useRouter();

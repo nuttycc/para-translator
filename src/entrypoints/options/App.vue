@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { browser } from '#imports';
-
 import { Bolt, Wrench } from 'lucide-vue-next';
 import { RouterLink, RouterView } from 'vue-router';
 

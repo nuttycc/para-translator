@@ -1,15 +1,14 @@
-import {
-  createShadowRootUi,
-  type ContentScriptContext,
-  type ShadowRootContentScriptUi,
-} from '#imports';
-
+import { createShadowRootUi } from '#imports';
 import { createPinia, setActivePinia } from 'pinia';
-import { createApp, h, reactive, toRaw, watch, type App } from 'vue';
+import { createApp, h, reactive, toRaw, watch } from 'vue';
 
-import ParaCard, { type ParaCardProps } from '@/components/ParaCard.vue';
+import ParaCard from '@/components/ParaCard.vue';
 import { useParaHistoryStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
+
+import type { ParaCardProps } from '@/components/ParaCard.vue';
+import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+import type { App } from 'vue';
 
 const logger = createLogger('ui-manager');
 

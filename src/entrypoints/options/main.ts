@@ -26,7 +26,7 @@ const initializeStores = async () => {
 initializeStores()
   .then(() => {
     app.mount('#app');
-    console.log(`App mounted in ${ (performance.now() - startTime).toFixed(2)}ms`);
+    console.log(`App mounted in ${(performance.now() - startTime).toFixed(2)}ms`);
     return;
   })
   .catch((err) => {

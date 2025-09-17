@@ -2,13 +2,13 @@ import { defineStore } from 'pinia';
 import { readonly, ref, toRaw, watch } from 'vue';
 
 import { agentStorage } from '@/agent/storage';
-import type { HistoryData } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
+
+import type { HistoryData } from '@/agent/types';
 
 const logger = createLogger('store:para-history');
 
 export const useParaHistoryStore = defineStore('para-history', () => {
-
   const history = ref<HistoryData[]>([]);
   const isInitialized = ref(false);
   let loadPromise: Promise<void> | null = null;

@@ -3,8 +3,9 @@ import { computed, onScopeDispose, ref, toRaw, watch } from 'vue';
 
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
-import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
+
+import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 
 const logger = createLogger('store:task-settings');
 

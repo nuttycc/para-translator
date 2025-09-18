@@ -47,16 +47,6 @@ const TranslateSystemPrompt = {
     'Deliver a target_language version of source_text that feels native, faithful, and context-perfect — as if originally written for the intended reader.',
   output:
     'Only output the translation, containing no explanations, notes, extra greetings, or any other text.',
-  domainOptions: [
-    'auto',
-    'general',
-    'technical',
-    'legal',
-    'literary',
-    'marketing',
-    'medical',
-    'academic',
-  ],
   domain: 'auto',
   targetAudience: 'general reader',
   coreValues: [
@@ -72,16 +62,14 @@ const TranslateSystemPrompt = {
   ],
 };
 
-const TranslateUserPrompt: AgentContext & { instructions: string } = {
-  instructions: 'Please translate the source text into %{targetLanguage}.',
-
-  siteTitle: '%{siteTitle}',
-  siteUrl: '%{siteUrl}',
-  siteDescription: '%{siteDescription}',
-
+const TranslateUserPrompt = {
+  instructions: 'Please translate the source text from %{sourceLanguage} to %{targetLanguage}.',
+  sourceContext: {
+    siteTitle: '%{siteTitle}',
+    siteUrl: '%{siteUrl}',
+    siteDescription: '%{siteDescription}',
+  },
   sourceText: '%{sourceText}',
-  sourceLanguage: '%{sourceLanguage}',
-  targetLanguage: '%{targetLanguage}',
 };
 
 const ExplainSystemPrompt = {

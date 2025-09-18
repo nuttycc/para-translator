@@ -8,7 +8,7 @@ import { createLogger } from '@/utils/logger';
 
 import type { AIConfig, AIConfigs } from '@/agent/types';
 
-const logger = createLogger('store:ai-providers');
+const logger = createLogger('store', 'ai-providers');
 
 export const useAiProviderStore = defineStore('ai-providers', () => {
   const aiConfigsState = ref<AIConfigs>(AGENT_SEEDS.AI_CONFIGS);
@@ -43,7 +43,7 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
   // Persist state -> storage
   const writeToStorage = async () => {
     try {
-      logger.debug`Write state to storage: ${toRaw(aiConfigsState.value)}`;
+      logger.debug`Writing state to storage...`;
 
       lastWriteError.value = null;
       await agentStorage.aiConfigs.setValue(toRaw(aiConfigsState.value));
@@ -57,7 +57,7 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
         }
         return undefined;
       });
-      logger.error`Failed to persist aiConfigs: ${String(err)}`;
+      logger.error`Failed to write state to storage: ${String(err)}`;
     }
   };
 
@@ -83,7 +83,7 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
         // Storage -> State: merge by updatedAt (last-write-wins per key)
         unwatchStorage = agentStorage.aiConfigs.watch((newValue) =>
           withSuppressWrite(() => {
-            const incoming = toRaw(newValue) || {};
+            const incoming = toRaw(newValue) ?? {};
             const current = toRaw(aiConfigsState.value);
             const next: AIConfigs = {};
 
@@ -99,7 +99,7 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
               }
             }
             aiConfigsState.value = next;
-            logger.debug`Read storage change, merged into state. next:${next}`;
+            logger.debug`Watched storage change, merged into state. next: ${next}`;
 
             return undefined;
           })

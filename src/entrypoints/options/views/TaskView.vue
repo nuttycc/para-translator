@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import { DISABLED_EXPLANATION } from '@/constant';
 import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
@@ -57,7 +58,7 @@ watch(
   <div>
     <div class="navbar flex gap-2">
       <router-link
-        v-for="tid in taskIds.sort()"
+        v-for="tid in taskIds.sort().filter((tid) => {if (DISABLED_EXPLANATION && tid === 'explain') {return false;} return true;})"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
         :class="['btn btn-soft']"

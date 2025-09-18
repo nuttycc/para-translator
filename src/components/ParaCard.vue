@@ -4,6 +4,7 @@ import { ref } from 'vue';
 import VueMarkdown from 'vue-markdown-render';
 
 import { HistoryData } from '@/agent/types';
+import { DISABLED_EXPLANATION } from '@/constant';
 import { createLogger } from '@/utils/logger';
 
 export interface ParaCardProps extends HistoryData {
@@ -11,7 +12,7 @@ export interface ParaCardProps extends HistoryData {
   sourceText: string;
   translation: string | null;
   explanation: string | null;
-  error?: string;
+  error?: { type: 'translate' | 'explain'; message: string };
 }
 
 const props = withDefaults(defineProps<ParaCardProps>(), {
@@ -46,6 +47,7 @@ const showTab = ref(props.showContext ? 'context' : 'translation');
         aria-label="Translation"
       />
       <input
+        v-if="!DISABLED_EXPLANATION"
         type="radio"
         name="my_tabs_1"
         value="explanation"
@@ -56,12 +58,11 @@ const showTab = ref(props.showContext ? 'context' : 'translation');
     </div>
 
     <div class="card-body p-3">
-      <div v-if="props.error" class="alert alert-error">
-        <CircleAlert />
-        <span>{{ props.error }}</span>
-      </div>
-
-      <div v-else-if="showTab === 'translation'">
+      <div v-if="showTab === 'translation'">
+        <div v-if="props.error?.type === 'translate'" role="alert" class="alert alert-error">
+          <CircleAlert />
+          <span>{{ props.error.message }}</span>
+        </div>
         <div v-if="!props.translation">
           <span class="loading loading-spinner loading-sm"></span>
           <span class="text-base-content/70">Loading...</span>
@@ -72,7 +73,11 @@ const showTab = ref(props.showContext ? 'context' : 'translation');
       </div>
 
       <div v-else-if="showTab === 'explanation'">
-        <div v-if="!props.explanation">
+        <div v-if="props.error?.type === 'explain'" role="alert" class="alert alert-error">
+          <CircleAlert />
+          <span>{{ props.error.message }}</span>
+        </div>
+        <div v-else-if="!props.explanation">
           <span class="loading loading-spinner loading-sm"></span>
           <span class="text-base-content/70">Loading...</span>
         </div>

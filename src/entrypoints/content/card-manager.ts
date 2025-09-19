@@ -157,11 +157,12 @@ export const toggleParaCard = async (
       sendMessage('agent', { context, taskType: 'translate' })
         .then((translateResponse) => {
           if (!cardUIs.has(paraKey)) return;
-          if (!translateResponse.data) {
-            throw new Error(`${translateResponse.error}`);
+          if (translateResponse.ok) {
+            logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
+            state.translation = translateResponse.data;
+          } else {
+            throw new Error(translateResponse.error);
           }
-          logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
-          state.translation = translateResponse.data;
           return;
         })
         .catch((error) => {
@@ -178,11 +179,12 @@ export const toggleParaCard = async (
         sendMessage('agent', { context, taskType: 'explain' })
           .then((explanationResponse) => {
             if (!cardUIs.has(paraKey)) return;
-            if (!explanationResponse.data || explanationResponse.error) {
-              throw new Error(`${explanationResponse.error}`);
+            if (explanationResponse.ok) {
+              logger.debug`explanationResponse.data: ${explanationResponse.data.slice(0, 20)}`;
+              state.explanation = explanationResponse.data;
+            } else {
+              throw new Error(explanationResponse.error);
             }
-            logger.debug`explanationResponse.data: ${explanationResponse.data.slice(0, 20)}`;
-            state.explanation = explanationResponse.data;
             return;
           })
           .catch((error) => {

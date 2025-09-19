@@ -45,7 +45,7 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
           { role: 'user', content: userPrompt },
         ],
         temperature: this.runtimeConfig.temperature,
-        stream: false
+        stream: false,
       };
 
       if (useJsonSchema && responseSchema) {

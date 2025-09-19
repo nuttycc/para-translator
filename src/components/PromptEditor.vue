@@ -90,16 +90,16 @@ const resetUserPrompt = () => {
           <label class="label">User Prompt</label>
 
           <div class="flex items-center gap-2">
-          <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border">
-            <label class="label">
-              Edit
-              <input type="checkbox" class="toggle toggle-sm" v-model="isPrettyMode.user" />
-              View
-            </label>
-          </fieldset>
-          <div class="tooltip" data-tip="Reset the user prompt to default">
-            <button class="btn btn-xs btn-soft" @click="resetUserPrompt">RESET</button>
-          </div>
+            <fieldset class="fieldset bg-base-100 border-base-300 rounded-box border">
+              <label class="label">
+                Edit
+                <input type="checkbox" class="toggle toggle-sm" v-model="isPrettyMode.user" />
+                View
+              </label>
+            </fieldset>
+            <div class="tooltip" data-tip="Reset the user prompt to default">
+              <button class="btn btn-xs btn-soft" @click="resetUserPrompt">RESET</button>
+            </div>
           </div>
         </div>
         <!-- <JsonTable v-if="isJsonMode" :data="JSON.parse(user)" /> -->

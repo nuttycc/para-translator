@@ -58,7 +58,12 @@ watch(
   <div>
     <div class="navbar flex gap-2">
       <router-link
-        v-for="tid in taskIds.sort().filter((tid) => {if (DISABLED_EXPLANATION && tid === 'explain') {return false;} return true;})"
+        v-for="tid in taskIds.sort().filter((tid) => {
+          if (DISABLED_EXPLANATION && tid === 'explain') {
+            return false;
+          }
+          return true;
+        })"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
         :class="['btn btn-soft']"

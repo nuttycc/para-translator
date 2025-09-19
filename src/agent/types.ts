@@ -1,26 +1,13 @@
-// Types are now self-contained to avoid circular dependencies
 import { z } from 'zod';
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📝 TASK TYPES & CONSTANTS
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export const TASK_TYPES = ['translate', 'explain'] as const;
 
 export type TaskType = (typeof TASK_TYPES)[number];
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🧩 PROMPT UNIT
-// ═══════════════════════════════════════════════════════════════════════════════
-
 export interface PromptUnit {
   system: string;
   user: string;
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// ⚙️ TASK RUNTIME CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface TaskRuntimeConfig {
   aiConfigId: string;
@@ -30,10 +17,6 @@ export interface TaskRuntimeConfig {
 
 // storage.local
 export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🤖 AGENT CONTEXT & RESPONSE (Single Source of Truth via Zod)
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export const AgentContextSchema = z.object({
   sourceText: z.string(),
@@ -46,17 +29,17 @@ export const AgentContextSchema = z.object({
 
 export type AgentContext = z.infer<typeof AgentContextSchema>;
 
-export const AGENT_CONTEXT_KEYS = Object.keys(AgentContextSchema.shape) as (keyof AgentContext)[];
+export const AGENT_CONTEXT_KEYS = AgentContextSchema.keyof().options satisfies ReadonlyArray<keyof AgentContext>;
 
-export interface AgentResponse {
-  ok: boolean;
-  data?: string;
-  error?: string;
-}
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🔧 AI CONFIGURATION
-// ═══════════════════════════════════════════════════════════════════════════════
+export type AgentResponse =
+  | {
+      ok: true;
+      data: string;
+    }
+  | {
+      ok: false;
+      error: string;
+    };
 
 export interface AIConfig {
   id: string;
@@ -75,10 +58,6 @@ export interface AIConfig {
 // storage.local
 export type AIConfigs = Record<string, AIConfig>;
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🏃 TASK EXECUTORS
-// ═══════════════════════════════════════════════════════════════════════════════
-
 export interface TaskExecutor {
   readonly taskType: TaskType;
   runtimeConfig: TaskRuntimeConfig;
@@ -93,19 +72,11 @@ export interface ExplainTaskExecutor extends TaskExecutor {
   readonly taskType: 'explain';
 }
 
-// ═══════════════════════════════════════════════════════════════════════════════
-// 🎯 LANGUAGE AGENT SPECIFICATION
-// ═══════════════════════════════════════════════════════════════════════════════
-
 export interface LangAgentSpec {
   readonly taskTypes: typeof TASK_TYPES;
 
   perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse>;
 }
-
-// ═══════════════════════════════════════════════════════════════════════════════
-// 📊 EXECUTION RESULTS & HISTORY
-// ═══════════════════════════════════════════════════════════════════════════════
 
 export interface AgentExecutionResult {
   id: string;

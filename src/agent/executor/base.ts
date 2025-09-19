@@ -1,9 +1,10 @@
 import { OpenAI } from 'openai';
-import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
 
-import type { AgentContext, TaskExecutor, TaskRuntimeConfig, TaskType } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 import { renderTemplate as renderTpl } from '@/utils/template';
+
+import type { AgentContext, TaskExecutor, TaskRuntimeConfig, TaskType } from '@/agent/types';
+import type { ChatCompletionCreateParamsNonStreaming } from 'openai/resources/index.mjs';
 
 export abstract class BaseTaskExecutor implements TaskExecutor {
   abstract readonly taskType: TaskType;
@@ -44,7 +45,7 @@ export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
           { role: 'user', content: userPrompt },
         ],
         temperature: this.runtimeConfig.temperature,
-        max_completion_tokens: 1200,
+        stream: false,
       };
 
       if (useJsonSchema && responseSchema) {

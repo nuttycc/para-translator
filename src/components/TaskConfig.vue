@@ -1,15 +1,15 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-import type { TaskRuntimeConfig } from '@/agent/types';
 import PromptEditor from '@/components/PromptEditor.vue';
-import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { useAiProviderStore, useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
+import type { TaskRuntimeConfig } from '@/agent/types';
+
 const logger = createLogger('TaskConfig');
-const taskConfigsStore = useTaskConfigsStore();
-const aiConfigsStore = useAiConfigsStore();
+const taskConfigsStore = useTaskSettingsStore();
+const aiConfigsStore = useAiProviderStore();
 
 const { taskRuntimeConfigs } = taskConfigsStore;
 const { aiConfigs } = aiConfigsStore;

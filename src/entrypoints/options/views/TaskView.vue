@@ -3,16 +3,18 @@ import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import type { TaskType } from '@/agent/types';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { DISABLED_EXPLANATION } from '@/constant';
+import { useTaskSettingsStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
+
+import type { TaskType } from '@/agent/types';
 
 const route = useRoute();
 const router = useRouter();
 
 const logger = createLogger('options');
-const taskConfigsStore = useTaskConfigsStore();
-const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskConfigsStore);
+const taskSettingsStore = useTaskSettingsStore();
+const { taskIds, lastActiveTaskId, firstTaskId } = storeToRefs(taskSettingsStore);
 
 const activeTaskId = computed(() => {
   if (route.params.taskId && typeof route.params.taskId === 'string') {
@@ -44,7 +46,7 @@ watch(
     if (!id || !taskIds.value.includes(id)) {
       return;
     }
-    taskConfigsStore.setLastActiveTaskId(id);
+    taskSettingsStore.setLastActiveTaskId(id);
 
     router.replace({ name: 'tasks.detail', params: { taskId: id } });
   },
@@ -56,7 +58,12 @@ watch(
   <div>
     <div class="navbar flex gap-2">
       <router-link
-        v-for="tid in taskIds.sort()"
+        v-for="tid in taskIds.sort().filter((tid) => {
+          if (DISABLED_EXPLANATION && tid === 'explain') {
+            return false;
+          }
+          return true;
+        })"
         :key="tid"
         :to="{ name: 'tasks.detail', params: { taskId: tid } }"
         :class="['btn btn-soft']"

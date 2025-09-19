@@ -1,14 +1,10 @@
 import { ExplainExecutor } from '@/agent/executor/explain';
 import { TranslateExecutor } from '@/agent/executor/translate';
 import { agentStorage } from '@/agent/storage';
-import {
-  TASK_TYPES,
-  type AgentContext,
-  type AgentResponse,
-  type LangAgentSpec,
-  type TaskType,
-} from '@/agent/types';
+import { TASK_TYPES } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
+
+import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
 
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');

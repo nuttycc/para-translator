@@ -3,12 +3,13 @@ import { computed, onScopeDispose, ref, toRaw, watch } from 'vue';
 
 import { AGENT_SEEDS } from '@/agent/seeds';
 import { agentStorage } from '@/agent/storage';
-import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
-const logger = createLogger('useTaskConfigsStore');
+import type { TaskRuntimeConfig, TaskRuntimeConfigs, TaskType } from '@/agent/types';
 
-export const useTaskConfigsStore = defineStore('taskConfigs', () => {
+const logger = createLogger('store:task-settings');
+
+export const useTaskSettingsStore = defineStore('task-settings', () => {
   const taskRuntimeConfigs = ref<TaskRuntimeConfigs>(AGENT_SEEDS.TASK_RUNTIME_CONFIGS);
   const lastActiveTaskId = ref<TaskType>('translate');
   const lastWriteError = ref<unknown>(null);

@@ -4,6 +4,7 @@
 .qoder
 .claude
 .crush
+.traycer
 
 *.play.ts
 
@@ -14,7 +15,7 @@ src/agent/__tests__/vite-env.d.ts
 gha-creds-*.json
 
 # docs
-.docs
+docs
 
 # env
 .env

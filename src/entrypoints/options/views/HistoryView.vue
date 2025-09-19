@@ -2,12 +2,12 @@
 import { storeToRefs } from 'pinia';
 
 import ParaCard from '@/components/ParaCard.vue';
-import { useHistoryStore } from '@/stores/history';
+import { useParaHistoryStore } from '@/stores';
 import { logger } from '@/utils/logger';
 
-const historyStore = useHistoryStore();
+const paraHistoryStore = useParaHistoryStore();
 
-const { history } = storeToRefs(historyStore);
+const { history } = storeToRefs(paraHistoryStore);
 
 logger.debug`history ${{ history }}`;
 </script>

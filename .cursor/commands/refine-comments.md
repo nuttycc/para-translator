@@ -1,9 +1,7 @@
-Mission: Refine the comments for clarity and readability.
+Mission: 
+Refine the comments for clarity and readability.
+Clear up redundant comments which are noisy.
 
-Restrictions: 
-- Do NOT destroy the existing logic, which means 'no breaking changes'.
 
-Requirements:
-- clear up redundant comments which are noisy.
 
 

@@ -1,15 +1,15 @@
-import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
-
-import type { App } from 'vue';
-
-import type { AgentContext } from '@/agent/types';
-import type { ParaCardProps } from '@/components/ParaCard.vue';
+import { DISABLED_EXPLANATION } from '@/constant';
 import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
 import { isEditable } from '@/entrypoints/content/content-utils';
 import { addParaCard } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
+
+import type { AgentContext } from '@/agent/types';
+import type { ParaCardProps } from '@/components/ParaCard.vue';
+import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+import type { App } from 'vue';
 
 const logger = createLogger('card-manager');
 
@@ -157,36 +157,46 @@ export const toggleParaCard = async (
       sendMessage('agent', { context, taskType: 'translate' })
         .then((translateResponse) => {
           if (!cardUIs.has(paraKey)) return;
-          if (!translateResponse.data) {
-            throw new Error(`${translateResponse.error}`);
+          if (translateResponse.ok) {
+            logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
+            state.translation = translateResponse.data;
+          } else {
+            throw new Error(translateResponse.error);
           }
-          logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
-          state.translation = translateResponse.data;
           return;
         })
         .catch((error) => {
           if (!cardUIs.has(paraKey)) return;
-          state.error = error instanceof Error ? error.message : String(error);
+          state.error = {
+            type: 'translate',
+            message: error instanceof Error ? error.message : String(error),
+          };
           logger.error`${paraKey} ${error}`;
           return;
         });
 
-      sendMessage('agent', { context, taskType: 'explain' })
-        .then((explanationResponse) => {
-          if (!cardUIs.has(paraKey)) return;
-          if (!explanationResponse.data || explanationResponse.error) {
-            throw new Error(`${explanationResponse.error}`);
-          }
-          logger.debug`explanationResponse.data: ${explanationResponse.data.slice(0, 20)}`;
-          state.explanation = explanationResponse.data;
-          return;
-        })
-        .catch((error) => {
-          if (!cardUIs.has(paraKey)) return;
-          state.error = error instanceof Error ? error.message : String(error);
-          logger.error`${paraKey} ${error}`;
-          return;
-        });
+      if (!DISABLED_EXPLANATION) {
+        sendMessage('agent', { context, taskType: 'explain' })
+          .then((explanationResponse) => {
+            if (!cardUIs.has(paraKey)) return;
+            if (explanationResponse.ok) {
+              logger.debug`explanationResponse.data: ${explanationResponse.data.slice(0, 20)}`;
+              state.explanation = explanationResponse.data;
+            } else {
+              throw new Error(explanationResponse.error);
+            }
+            return;
+          })
+          .catch((error) => {
+            if (!cardUIs.has(paraKey)) return;
+            state.error = {
+              type: 'explain',
+              message: error instanceof Error ? error.message : String(error),
+            };
+            logger.error`${paraKey} ${error}`;
+            return;
+          });
+      }
 
       // Ignore late results if the card was removed during async work
       if (!cardUIs.has(paraKey)) {
@@ -195,7 +205,7 @@ export const toggleParaCard = async (
 
       container.setAttribute('data-para-id', paraKey);
     } catch (err) {
-      state.error = err instanceof Error ? err.message : String(err);
+      state.error = { type: 'explain', message: err instanceof Error ? err.message : String(err) };
     }
   } catch (error) {
     logger.error`failed to add/update para card for ${paraKey}: ${error}`;

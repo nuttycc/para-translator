@@ -1,12 +1,12 @@
 import { createPinia } from 'pinia';
 import { createApp } from 'vue';
 
-import { useAiConfigsStore } from '@/stores/aiConfigs';
-import { useHistoryStore } from '@/stores/history';
-import { useTaskConfigsStore } from '@/stores/taskConfigs';
+import { useAiProviderStore, useParaHistoryStore, useTaskSettingsStore } from '@/stores';
 
 import App from './App.vue';
 import router from './router';
+
+const startTime = performance.now();
 
 const pinia = createPinia();
 const app = createApp(App);
@@ -16,16 +16,17 @@ app.use(router);
 
 // Preload stores before mounting to ensure route decisions have data available
 const initializeStores = async () => {
-  const aiConfigsStore = useAiConfigsStore();
-  const taskConfigsStore = useTaskConfigsStore();
-  const historyStore = useHistoryStore();
+  const aiProviderStore = useAiProviderStore();
+  const taskSettingsStore = useTaskSettingsStore();
+  const paraHistoryStore = useParaHistoryStore();
 
-  await Promise.all([aiConfigsStore.load(), taskConfigsStore.load(), historyStore.load()]);
+  await Promise.all([aiProviderStore.load(), taskSettingsStore.load(), paraHistoryStore.load()]);
 };
 
 initializeStores()
   .then(() => {
     app.mount('#app');
+    console.log(`App mounted in ${(performance.now() - startTime).toFixed(2)}ms`);
     return;
   })
   .catch((err) => {

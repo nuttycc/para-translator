@@ -29,7 +29,9 @@ export const AgentContextSchema = z.object({
 
 export type AgentContext = z.infer<typeof AgentContextSchema>;
 
-export const AGENT_CONTEXT_KEYS = AgentContextSchema.keyof().options satisfies ReadonlyArray<keyof AgentContext>;
+export const AGENT_CONTEXT_KEYS = AgentContextSchema.keyof().options satisfies ReadonlyArray<
+  keyof AgentContext
+>;
 
 export type AgentResponse =
   | {

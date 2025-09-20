@@ -1,9 +1,0 @@
-@import './base.css';
-
-* {
-  font-size: clamp(14px, 0.82rem, 18px);
-}
-
-body {
-  background-color: transparent;
-}

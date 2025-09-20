@@ -1,6 +1,6 @@
 import { defineContentScript } from '#imports';
 
-import '@/assets/content-ui.css';
+// import '@/assets/content-ui.css';
 
 import { setupEventListeners } from '@/entrypoints/content/event-handler';
 import { createLogger } from '@/utils/logger';

@@ -1,0 +1,13 @@
+.para-card {
+  font-size: 0.8em;
+  margin-block: 0.5em;
+  padding-inline: clamp(4px, 0.5em, 1em);
+  line-height: clamp(1.5, 1.7, 2);
+  border-inline-start: 3px solid lightslategray;
+  border-radius: 3px;
+}
+
+.para-card-loading {
+  text-align: center;
+  font-style: italic;
+}

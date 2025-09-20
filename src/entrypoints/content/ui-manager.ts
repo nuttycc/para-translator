@@ -1,20 +1,17 @@
-import { createShadowRootUi } from '#imports';
+import { createIntegratedUi } from '#imports';
 import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive, toRaw, watch } from 'vue';
 
+import paraCardCSS from '@/assets/ParaCard.css?inline';
 import ParaCard from '@/components/ParaCard.vue';
 import { useParaHistoryStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
-import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
 
 const logger = createLogger('ui-manager');
-
-const getPreferredTheme = (): 'dark' | 'light' => {
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-};
 
 // Single shared Pinia instance for all card apps
 const sharedPinia = createPinia();
@@ -28,13 +25,19 @@ const history = useParaHistoryStore();
  * Maps each UI handle to its Vue `App` for proper teardown.
  * WeakMap enables garbage collection when a UI is removed.
  */
-export const uiAppMap = new WeakMap<ShadowRootContentScriptUi<App>, App>();
+export const uiAppMap = new WeakMap<
+  IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
+  App
+>();
 
 /**
  * Tracks watcher/side-effect stop functions per UI for cleanup
  * when a card is removed.
  */
-const uiCleanupMap = new WeakMap<ShadowRootContentScriptUi<App>, Array<() => void>>();
+const uiCleanupMap = new WeakMap<
+  IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
+  Array<() => void>
+>();
 
 /**
  * Produces a fresh initial state for a `ParaCard`.
@@ -72,20 +75,13 @@ export const createParaCardApp = (state: ParaCardProps): App =>
     },
   });
 
-/**
- * Creates and mounts a ParaCard UI near a text container.
- * Uses ShadowRoot for style isolation and system theme detection.
- *
- * @param ctx - Content script context from WXT.
- * @param container - Element that anchors the inline card.
- * @returns The mounted UI handle and its reactive state.
- *
- * @remarks The returned state is mutable for external updates.
- */
 export const addParaCard = async (
   ctx: ContentScriptContext,
   container: Element
-): Promise<{ ui: ShadowRootContentScriptUi<App>; state: ParaCardProps }> => {
+): Promise<{
+  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
+  state: ParaCardProps;
+}> => {
   const state = reactive<ParaCardProps>(createInitialParaCardState());
 
   const cleanupHandles: Array<() => void> = [];
@@ -95,14 +91,17 @@ export const addParaCard = async (
   });
   cleanupHandles.push(stopHistoryWatcher);
 
-  const ui = await createShadowRootUi(ctx, {
-    name: 'para-card-ui',
+  const ui = createIntegratedUi(ctx, {
     position: 'inline',
-    inheritStyles: false,
     anchor: container,
-    onMount: (mountContainer, shadow) => {
-      const theme = getPreferredTheme();
-      mountContainer.setAttribute('data-theme', theme);
+    onMount: (mountContainer: HTMLElement) => {
+      // const theme = getPreferredTheme();
+      // mountContainer.setAttribute('data-theme', theme);
+
+      const styleEl = document.createElement('style');
+      styleEl.id = `para-card-style-${state.id}`;
+      styleEl.textContent = paraCardCSS;
+      document.head.appendChild(styleEl);
 
       const app = createParaCardApp(state);
       app.use(sharedPinia);
@@ -112,15 +111,15 @@ export const addParaCard = async (
 
       logger.debug`mounted para card ${{
         containerTag: mountContainer.tagName,
-        shadowRoot: shadow,
-        shadowStyleSheets: shadow.styleSheets,
-        shadowHead: shadow.querySelector('head'),
-        shadowBody: shadow.querySelector('body'),
+        isConnected: mountContainer.isConnected,
       }}`;
 
-      return app;
+      return { app, styleEl };
     },
-    onRemove: (app) => {
+    onRemove: (mounted: { app: App; styleEl: HTMLStyleElement } | undefined) => {
+      if (!mounted) return;
+
+      const { app, styleEl } = mounted;
       const handles = uiCleanupMap.get(ui);
       if (handles && Array.isArray(handles)) {
         for (const stop of handles) {
@@ -130,6 +129,9 @@ export const addParaCard = async (
       uiCleanupMap.delete(ui);
       if (app && typeof app.unmount === 'function') {
         app.unmount();
+      }
+      if (styleEl && styleEl.parentNode) {
+        styleEl.remove();
       }
       uiAppMap.delete(ui);
     },

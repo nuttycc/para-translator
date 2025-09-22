@@ -1,36 +1,53 @@
-import { ExplainExecutor } from '@/agent/executor/explain';
-import { TranslateExecutor } from '@/agent/executor/translate';
+import { Mutex } from 'es-toolkit/promise';
+
+import { OpenAIClientPool } from '@/agent/services/openai-client-pool';
+import { TaskConfigService } from '@/agent/services/task-config-service';
 import { agentStorage } from '@/agent/storage';
+import { explainRunner } from '@/agent/tasks/explain';
+import { translateRunner } from '@/agent/tasks/translate';
 import { TASK_TYPES } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
+import type { TaskRunner } from '@/agent/tasks/types';
 import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
+import type { ChatCompletion } from 'openai/resources/index.mjs';
+
+const RUNNERS: Record<TaskType, TaskRunner> = {
+  translate: translateRunner,
+  explain: explainRunner,
+};
 
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
-  private taskExecutors = new Map<TaskType, ExplainExecutor | TranslateExecutor>();
+  private configService = new TaskConfigService();
+  private clientPool = new OpenAIClientPool();
+  private readonly runsMutex = new Mutex();
 
   async init() {
-    await this.initExecutor('explain', new ExplainExecutor());
-    await this.initExecutor('translate', new TranslateExecutor());
+    this.log.info`Initializing LangAgent`;
+    await this.configService.init();
   }
 
-  private async initExecutor(taskType: TaskType, executor: ExplainExecutor | TranslateExecutor) {
-    this.taskExecutors.set(taskType, executor);
-    await executor.init();
+  dispose() {
+    this.log.info`Disposing LangAgent`;
+    this.configService.dispose();
+    this.clientPool.clear();
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
-    const executor = this.taskExecutors.get(taskType);
-    if (!executor) {
-      return { ok: false, error: `Executor for task type ${taskType} not found` };
-    }
-
     try {
-      const result = await executor.execute(context);
-      await this.recordExecution(taskType, context, result, executor.runtimeConfig.aiConfigId);
-      return { ok: true, data: result };
+      this.log.info`Performing task: ${taskType}...`;
+
+      const config = this.configService.get(taskType);
+      const client = await this.clientPool.get(config.aiConfigId);
+      const runner = RUNNERS[taskType];
+
+      const response = await runner.run(context, config, client);
+
+      await this.recordExecution(taskType, context, response, config.aiConfigId);
+
+      return { ok: true, data: response.choices?.[0]?.message?.content ?? 'no content' };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.log.error`Task failed: ${taskType}, ${message}`;
@@ -41,19 +58,27 @@ export class LangAgent implements LangAgentSpec {
   private async recordExecution(
     taskType: TaskType,
     context: AgentContext,
-    result: string,
+    response: ChatCompletion,
     aiConfigId: string
   ) {
-    const history = (await agentStorage.agentExecutionResults.getValue()) || [];
-    history.unshift({
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      taskType,
-      context,
-      result,
-      aiConfigId,
-    });
-    await agentStorage.agentExecutionResults.setValue(history);
+    await this.runsMutex.acquire();
+    try {
+      const history = (await agentStorage.runs.getValue()) || [];
+      history.unshift({
+        id: crypto.randomUUID(),
+        timestamp: Date.now(),
+        taskType,
+        context,
+        response,
+        aiConfigId,
+      });
+      if (history.length > 100) {
+        history.pop();
+      }
+      await agentStorage.runs.setValue(history);
+    } finally {
+      this.runsMutex.release();
+    }
   }
 }
 

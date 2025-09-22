@@ -8,7 +8,7 @@ import { extractReadableText, findClosestTextContainer, isParagraphLike } from '
 
 import type { AgentContext } from '@/agent/types';
 import type { ParaCardProps } from '@/components/ParaCard.vue';
-import type { ContentScriptContext, ShadowRootContentScriptUi } from '#imports';
+import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
 
 const logger = createLogger('card-manager');
@@ -16,12 +16,12 @@ const logger = createLogger('card-manager');
 /**
  * Live translation cards keyed by a stable paragraph identifier.
  * Each map entry contains:
- * - `ui`: ShadowRoot UI handle
+ * - `ui`: Integrated UI handle
  * - `container`: host element for the card
  * - `state`: reactive `ParaCard` props mutated as results arrive
  */
 interface ParaCardEntry {
-  ui: ShadowRootContentScriptUi<App>;
+  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
   container: HTMLElement;
   state: ParaCardProps;
 }

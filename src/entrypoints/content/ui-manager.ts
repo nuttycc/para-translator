@@ -1,10 +1,9 @@
 import { createIntegratedUi } from '#imports';
 import { createPinia, setActivePinia } from 'pinia';
-import { createApp, h, reactive, toRaw, watch } from 'vue';
+import { createApp, h, reactive } from 'vue';
 
 import paraCardCSS from '@/assets/ParaCard.css?inline';
 import ParaCard from '@/components/ParaCard.vue';
-import { useParaHistoryStore } from '@/stores';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
@@ -13,13 +12,26 @@ import type { App } from 'vue';
 
 const logger = createLogger('ui-manager');
 
+// Shared style element for all ParaCard instances on a page
+let sharedStyleEl: HTMLStyleElement | null = null;
+let sharedStyleRefCount = 0;
+
+const ensureSharedStyleElement = (): HTMLStyleElement => {
+  if (sharedStyleEl && document.head.contains(sharedStyleEl)) {
+    return sharedStyleEl;
+  }
+  const styleEl = document.createElement('style');
+  styleEl.id = 'para-card-style';
+  styleEl.textContent = paraCardCSS;
+  document.head.appendChild(styleEl);
+  sharedStyleEl = styleEl;
+  return styleEl;
+};
+
 // Single shared Pinia instance for all card apps
 const sharedPinia = createPinia();
 // Activate Pinia before any store is used outside Vue components
 setActivePinia(sharedPinia);
-
-// Reuse a single history store instance
-const history = useParaHistoryStore();
 
 /**
  * Maps each UI handle to its Vue `App` for proper teardown.
@@ -44,16 +56,6 @@ const uiCleanupMap = new WeakMap<
  * Centralizes defaults to keep them auditable.
  */
 const createInitialParaCardState = (): ParaCardProps => ({
-  id: crypto.randomUUID(),
-  timestamp: Date.now(),
-  context: {
-    sourceText: '',
-    sourceLanguage: '',
-    targetLanguage: '',
-    siteTitle: '',
-    siteUrl: '',
-    siteDescription: '',
-  },
   sourceText: '',
   translation: '',
   explanation: '',
@@ -86,11 +88,6 @@ export const addParaCard = async (
 
   const cleanupHandles: Array<() => void> = [];
 
-  const stopHistoryWatcher = watch([() => state.translation, () => state.explanation], async () => {
-    await history.upsert(toRaw(state));
-  });
-  cleanupHandles.push(stopHistoryWatcher);
-
   const ui = createIntegratedUi(ctx, {
     position: 'inline',
     anchor: container,
@@ -98,10 +95,8 @@ export const addParaCard = async (
       // const theme = getPreferredTheme();
       // mountContainer.setAttribute('data-theme', theme);
 
-      const styleEl = document.createElement('style');
-      styleEl.id = `para-card-style-${state.id}`;
-      styleEl.textContent = paraCardCSS;
-      document.head.appendChild(styleEl);
+      const styleEl = ensureSharedStyleElement();
+      sharedStyleRefCount += 1;
 
       const app = createParaCardApp(state);
       app.use(sharedPinia);
@@ -119,7 +114,7 @@ export const addParaCard = async (
     onRemove: (mounted: { app: App; styleEl: HTMLStyleElement } | undefined) => {
       if (!mounted) return;
 
-      const { app, styleEl } = mounted;
+      const { app } = mounted;
       const handles = uiCleanupMap.get(ui);
       if (handles && Array.isArray(handles)) {
         for (const stop of handles) {
@@ -130,8 +125,13 @@ export const addParaCard = async (
       if (app && typeof app.unmount === 'function') {
         app.unmount();
       }
-      if (styleEl && styleEl.parentNode) {
-        styleEl.remove();
+      // Decrease ref count and remove shared style only when last card is removed
+      if (sharedStyleRefCount > 0) {
+        sharedStyleRefCount -= 1;
+      }
+      if (sharedStyleRefCount === 0 && sharedStyleEl) {
+        sharedStyleEl.remove();
+        sharedStyleEl = null;
       }
       uiAppMap.delete(ui);
     },

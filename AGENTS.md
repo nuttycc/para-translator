@@ -52,7 +52,7 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 ## Development 
 
 
-```bash
 bun install
-bun dev
-```
+bun run dev
+
+bun run compile

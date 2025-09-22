@@ -2,27 +2,25 @@ import { AGENT_CONTEXT_KEYS } from '@/agent/types';
 
 import type { AgentContext } from '@/agent/types';
 
-// src/utils/template.ts
-
 /**
- * Built-in replacement keys for template rendering
- * Automatically extracted from AgentContext interface to maintain DRY principle
+ * All available replacement keys for template rendering.
+ * Automatically derived from AgentContext to ensure consistency.
  */
 export const BUILTIN_REPLACEMENT_KEYS = AGENT_CONTEXT_KEYS;
 
 /**
- * Type for built-in replacement keys
- * Automatically inferred from AgentContext interface keys
+ * Type representing any built-in replacement key from AgentContext.
  */
 type BuiltinReplacementKey = keyof AgentContext;
 
 /**
- * Type for replacement mapper functions
+ * Function type for mapping context values to strings.
  */
 type ReplacementMapper = (context: AgentContext) => string;
 
 /**
- * Generic mapper function that handles both required and optional fields
+ * Creates a mapper function that safely extracts a field value from context.
+ * Handles both required and optional fields by returning empty string for null/undefined.
  */
 function createFieldMapper<K extends BuiltinReplacementKey>(key: K): ReplacementMapper {
   return (context: AgentContext) => {
@@ -32,23 +30,22 @@ function createFieldMapper<K extends BuiltinReplacementKey>(key: K): Replacement
 }
 
 /**
- * Built-in replacement mappers that extract values from context
- * Automatically generated from AgentContext keys to eliminate duplication
+ * Registry of mapper functions for all built-in replacement keys.
+ * Automatically populated to eliminate manual duplication.
  */
 const REPLACEMENT_MAPPERS: Record<BuiltinReplacementKey, ReplacementMapper> = {} as Record<
   BuiltinReplacementKey,
   ReplacementMapper
 >;
 
-// Generate mappers for all builtin replacement keys
+// Populate mappers for all available replacement keys
 BUILTIN_REPLACEMENT_KEYS.forEach((key) => {
   REPLACEMENT_MAPPERS[key] = createFieldMapper(key);
 });
 
 /**
- * Render a template string with placeholders like `%{key}` using built-in replacements from context.
- * Performs a single pass with a global regex and uses a replacer callback
- * to avoid `$` interpolation issues in replacement strings.
+ * Replaces placeholders like `%{key}` in a template string with values from context.
+ * Uses a single regex pass with callback replacement to avoid interpolation conflicts.
  */
 export function renderTemplate(template: string, context: AgentContext): string {
   if (!template) return '';

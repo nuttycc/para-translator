@@ -1,9 +1,7 @@
 <script setup lang="ts">
 import { CircleAlert } from 'lucide-vue-next';
 
-import { HistoryData } from '@/agent/types';
-
-export interface ParaCardProps extends HistoryData {
+export interface ParaCardProps {
   showContext?: boolean;
   sourceText: string;
   translation: string | null;

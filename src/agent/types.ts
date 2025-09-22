@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { ChatCompletion } from 'openai/resources/index.mjs';
+
 export const TASK_TYPES = ['translate', 'explain'] as const;
 
 export type TaskType = (typeof TASK_TYPES)[number];
@@ -60,26 +62,13 @@ export interface AIConfig {
 // storage.local
 export type AIConfigs = Record<string, AIConfig>;
 
-export interface TaskExecutor {
-  readonly taskType: TaskType;
-  runtimeConfig: TaskRuntimeConfig;
-  execute(context: AgentContext): Promise<string>;
-}
-
-export interface TranslatorTaskExecutor extends TaskExecutor {
-  readonly taskType: 'translate';
-}
-
-export interface ExplainTaskExecutor extends TaskExecutor {
-  readonly taskType: 'explain';
-}
-
 export interface LangAgentSpec {
   readonly taskTypes: typeof TASK_TYPES;
 
   perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse>;
 }
 
+// storage.local
 export interface AgentExecutionResult {
   id: string;
 
@@ -89,27 +78,9 @@ export interface AgentExecutionResult {
 
   context: AgentContext;
 
-  result: string;
+  response: ChatCompletion;
 
   aiConfigId: string;
-
-  duration?: number;
-
-  metadata?: {
-    provider?: string;
-    model?: string;
-    temperature?: number;
-    resultLength?: number;
-  };
 }
 
-// storage.local
 export type AgentExecutionResults = AgentExecutionResult[];
-
-export interface HistoryData {
-  id: string;
-  context: AgentContext;
-  translation: string | null;
-  explanation: string | null;
-  timestamp: number;
-}

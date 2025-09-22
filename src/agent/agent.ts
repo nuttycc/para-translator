@@ -1,35 +1,47 @@
-import { ExplainExecutor } from '@/agent/executor/explain';
-import { TranslateExecutor } from '@/agent/executor/translate';
+import { explainRunner } from '@/agent/tasks/explain';
+import { translateRunner } from '@/agent/tasks/translate';
+import { OpenAIClientPool } from '@/agent/services/openai-client-pool';
+import { TaskConfigService } from '@/agent/services/task-config-service';
 import { agentStorage } from '@/agent/storage';
 import { TASK_TYPES } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
 import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
+import type { TaskRunner } from '@/agent/tasks/types';
+
+const RUNNERS: Record<TaskType, TaskRunner> = {
+  translate: translateRunner,
+  explain: explainRunner,
+};
 
 export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
-  private taskExecutors = new Map<TaskType, ExplainExecutor | TranslateExecutor>();
+  private configService = new TaskConfigService();
+  private clientPool = new OpenAIClientPool();
 
   async init() {
-    await this.initExecutor('explain', new ExplainExecutor());
-    await this.initExecutor('translate', new TranslateExecutor());
+    this.log.info`Initializing LangAgent`;
+    await this.configService.init();
   }
 
-  private async initExecutor(taskType: TaskType, executor: ExplainExecutor | TranslateExecutor) {
-    this.taskExecutors.set(taskType, executor);
-    await executor.init();
+  dispose() {
+    this.log.info`Disposing LangAgent`;
+    this.configService.dispose();
+    this.clientPool.clear();
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
-    const executor = this.taskExecutors.get(taskType);
-    if (!executor) {
-      return { ok: false, error: `Executor for task type ${taskType} not found` };
-    }
-
     try {
-      const result = await executor.execute(context);
-      await this.recordExecution(taskType, context, result, executor.runtimeConfig.aiConfigId);
+      this.log.info`Performing task: ${taskType}`;
+
+      const config = this.configService.get(taskType);
+      const client = await this.clientPool.get(config.aiConfigId);
+      const runner = RUNNERS[taskType];
+
+      const result = await runner.run(context, config, client);
+      await this.recordExecution(taskType, context, result, config.aiConfigId);
+
       return { ok: true, data: result };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);

@@ -60,19 +60,6 @@ export interface AIConfig {
 // storage.local
 export type AIConfigs = Record<string, AIConfig>;
 
-export interface TaskExecutor {
-  readonly taskType: TaskType;
-  runtimeConfig: TaskRuntimeConfig;
-  execute(context: AgentContext): Promise<string>;
-}
-
-export interface TranslatorTaskExecutor extends TaskExecutor {
-  readonly taskType: 'translate';
-}
-
-export interface ExplainTaskExecutor extends TaskExecutor {
-  readonly taskType: 'explain';
-}
 
 export interface LangAgentSpec {
   readonly taskTypes: typeof TASK_TYPES;

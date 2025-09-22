@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { CircleAlert } from 'lucide-vue-next';
 
-
 export interface ParaCardProps {
   showContext?: boolean;
   sourceText: string;

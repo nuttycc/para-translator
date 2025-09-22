@@ -1,3 +1,5 @@
+import { Mutex } from 'es-toolkit/promise';
+
 import { OpenAIClientPool } from '@/agent/services/openai-client-pool';
 import { TaskConfigService } from '@/agent/services/task-config-service';
 import { agentStorage } from '@/agent/storage';
@@ -20,6 +22,7 @@ export class LangAgent implements LangAgentSpec {
   readonly taskTypes = TASK_TYPES;
   private configService = new TaskConfigService();
   private clientPool = new OpenAIClientPool();
+  private readonly runsMutex = new Mutex();
 
   async init() {
     this.log.info`Initializing LangAgent`;
@@ -58,19 +61,24 @@ export class LangAgent implements LangAgentSpec {
     response: ChatCompletion,
     aiConfigId: string
   ) {
-    const history = (await agentStorage.runs.getValue()) || [];
-    history.unshift({
-      id: crypto.randomUUID(),
-      timestamp: Date.now(),
-      taskType,
-      context,
-      response,
-      aiConfigId,
-    });
-    if (history.length > 100) {
-      history.pop();
+    await this.runsMutex.acquire();
+    try {
+      const history = (await agentStorage.runs.getValue()) || [];
+      history.unshift({
+        id: crypto.randomUUID(),
+        timestamp: Date.now(),
+        taskType,
+        context,
+        response,
+        aiConfigId,
+      });
+      if (history.length > 100) {
+        history.pop();
+      }
+      await agentStorage.runs.setValue(history);
+    } finally {
+      this.runsMutex.release();
     }
-    await agentStorage.runs.setValue(history);
   }
 }
 

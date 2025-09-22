@@ -1,34 +1,6 @@
-<script setup lang="ts">
-import { storeToRefs } from 'pinia';
-
-import ParaCard from '@/components/ParaCard.vue';
-import { useParaHistoryStore } from '@/stores';
-import { logger } from '@/utils/logger';
-
-const paraHistoryStore = useParaHistoryStore();
-
-const { history } = storeToRefs(paraHistoryStore);
-
-logger.debug`history ${{ history }}`;
-</script>
+<script setup lang="ts"></script>
 <template>
   <div>
-    <div v-if="history.length === 0">
-      <span>No history found</span>
-    </div>
-
-    <ul class="list card">
-      <li v-for="(item, index) in history" :key="item.id">
-        <ParaCard
-          :show-context="true"
-          :id="item.id"
-          :context="item.context"
-          :timestamp="item.timestamp"
-          :source-text="item.context.sourceText"
-          :translation="item.translation"
-          :explanation="item.explanation"
-        />
-      </li>
-    </ul>
+    <h1>History</h1>
   </div>
 </template>

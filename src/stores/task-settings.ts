@@ -56,9 +56,9 @@ export const useTaskSettingsStore = defineStore('task-settings', () => {
     if (initPromise) return initPromise;
     initPromise = (async () => {
       taskRuntimeConfigs.value =
-        (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
+        (await agentStorage.task.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
       if (!unwatchStorage) {
-        unwatchStorage = agentStorage.taskConfigs.watch((newValue) =>
+        unwatchStorage = agentStorage.task.watch((newValue) =>
           withSuppressWrite(() => {
             taskRuntimeConfigs.value = newValue ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
             logger.debug`Read storage change, merged into state. next:${newValue}`;
@@ -72,7 +72,7 @@ export const useTaskSettingsStore = defineStore('task-settings', () => {
             // Only allow writes when no suppression is active (depth === 0)
             if (suppressWriteDepth.value > 0 || !taskRuntimeConfigs.value) return;
             logger.debug`Write state to storage: ${toRaw(taskRuntimeConfigs.value)}`;
-            await agentStorage.taskConfigs.setValue(toRaw(taskRuntimeConfigs.value));
+            await agentStorage.task.setValue(toRaw(taskRuntimeConfigs.value));
           },
           { deep: true }
         );
@@ -107,7 +107,7 @@ export const useTaskSettingsStore = defineStore('task-settings', () => {
     const prev = taskRuntimeConfigs.value ?? {};
     const next = { ...toRaw(prev), [taskType]: config } as TaskRuntimeConfigs;
     try {
-      await agentStorage.taskConfigs.setValue(next);
+      await agentStorage.task.setValue(next);
       taskRuntimeConfigs.value = next;
       logger.debug`Updated task config for ${taskType}. prev: ${toRaw(prev)}, next: ${toRaw(next)}`;
     } catch (err) {
@@ -115,7 +115,7 @@ export const useTaskSettingsStore = defineStore('task-settings', () => {
       logger.error`Failed to update task config for ${taskType}: ${String(err)}`;
       // Reload from storage to reconcile
       taskRuntimeConfigs.value =
-        (await agentStorage.taskConfigs.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
+        (await agentStorage.task.getValue()) ?? AGENT_SEEDS.TASK_RUNTIME_CONFIGS;
     }
   }
 

@@ -1,5 +1,5 @@
-import { renderTemplate } from '@/utils/template';
 import { createLogger } from '@/utils/logger';
+import { renderTemplate } from '@/utils/template';
 
 import type { TaskRunner } from './types';
 
@@ -22,13 +22,6 @@ export const translateRunner: TaskRunner = {
       stream: false,
     });
 
-    const content = response.choices?.[0]?.message?.content ?? '';
-
-    if (!content.trim()) {
-      throw new Error('Empty response for translate task');
-    }
-
-    log.info`Translate task completed successfully`;
-    return content;
+    return response;
   },
 };

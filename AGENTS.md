@@ -55,4 +55,6 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 ```bash
 bun install
 bun dev
+
+bun compile
 ```

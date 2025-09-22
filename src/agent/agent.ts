@@ -1,13 +1,14 @@
-import { explainRunner } from '@/agent/tasks/explain';
-import { translateRunner } from '@/agent/tasks/translate';
 import { OpenAIClientPool } from '@/agent/services/openai-client-pool';
 import { TaskConfigService } from '@/agent/services/task-config-service';
 import { agentStorage } from '@/agent/storage';
+import { explainRunner } from '@/agent/tasks/explain';
+import { translateRunner } from '@/agent/tasks/translate';
 import { TASK_TYPES } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
-import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
 import type { TaskRunner } from '@/agent/tasks/types';
+import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
+import type { ChatCompletion } from 'openai/resources/index.mjs';
 
 const RUNNERS: Record<TaskType, TaskRunner> = {
   translate: translateRunner,
@@ -33,16 +34,17 @@ export class LangAgent implements LangAgentSpec {
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
     try {
-      this.log.info`Performing task: ${taskType}`;
+      this.log.info`Performing task: ${taskType}...`;
 
       const config = this.configService.get(taskType);
       const client = await this.clientPool.get(config.aiConfigId);
       const runner = RUNNERS[taskType];
 
-      const result = await runner.run(context, config, client);
-      await this.recordExecution(taskType, context, result, config.aiConfigId);
+      const response = await runner.run(context, config, client);
 
-      return { ok: true, data: result };
+      await this.recordExecution(taskType, context, response, config.aiConfigId);
+
+      return { ok: true, data: response.choices?.[0]?.message?.content ?? 'no content' };
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       this.log.error`Task failed: ${taskType}, ${message}`;
@@ -53,19 +55,22 @@ export class LangAgent implements LangAgentSpec {
   private async recordExecution(
     taskType: TaskType,
     context: AgentContext,
-    result: string,
+    response: ChatCompletion,
     aiConfigId: string
   ) {
-    const history = (await agentStorage.agentExecutionResults.getValue()) || [];
+    const history = (await agentStorage.runs.getValue()) || [];
     history.unshift({
       id: crypto.randomUUID(),
       timestamp: Date.now(),
       taskType,
       context,
-      result,
+      response,
       aiConfigId,
     });
-    await agentStorage.agentExecutionResults.setValue(history);
+    if (history.length > 100) {
+      history.pop();
+    }
+    await agentStorage.runs.setValue(history);
   }
 }
 

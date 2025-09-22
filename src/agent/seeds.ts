@@ -1,12 +1,12 @@
-import { type AgentContext, type AIConfigs, type TaskRuntimeConfigs } from '@/agent/types';
+import type { AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
 
 const DEFAULT_AI_CONFIGS = {
   'openrouter-123': {
     id: 'openrouter-123',
     name: 'OpenRouter',
     provider: 'openrouter',
-    model: 'openrouter/sonoma-dusk-alpha',
-    localModels: ['openai/gpt-4o', 'openrouter/sonoma-dusk-alpha'],
+    model: 'x-ai/grok-4-fast:free',
+    localModels: ['openai/gpt-4o', 'x-ai/grok-4-fast:free'],
     apiKey: '',
     baseUrl: 'https://openrouter.ai/api/v1',
     createdAt: 0,

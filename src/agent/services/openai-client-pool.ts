@@ -1,4 +1,5 @@
 import { OpenAI } from 'openai';
+
 import { agentStorage } from '@/agent/storage';
 import { createLogger } from '@/utils/logger';
 
@@ -17,7 +18,7 @@ export class OpenAIClientPool {
 
     log.info`Creating new OpenAI client for config: ${aiConfigId}`;
 
-    const configs = await agentStorage.aiConfigs.getValue();
+    const configs = await agentStorage.ai.getValue();
     const aiConfig = configs?.[aiConfigId];
 
     if (!aiConfig) {

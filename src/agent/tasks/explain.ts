@@ -1,5 +1,5 @@
-import { renderTemplate } from '@/utils/template';
 import { createLogger } from '@/utils/logger';
+import { renderTemplate } from '@/utils/template';
 
 import type { TaskRunner } from './types';
 
@@ -22,13 +22,7 @@ export const explainRunner: TaskRunner = {
       stream: false,
     });
 
-    const content = response.choices?.[0]?.message?.content ?? '';
-
-    if (!content.trim()) {
-      throw new Error('Empty response for explain task');
-    }
-
     log.info`Explain task completed successfully`;
-    return content;
+    return response;
   },
 };

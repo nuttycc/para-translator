@@ -46,11 +46,11 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
       logger.debug`Writing state to storage...`;
 
       lastWriteError.value = null;
-      await agentStorage.aiConfigs.setValue(toRaw(aiConfigsState.value));
+      await agentStorage.ai.setValue(toRaw(aiConfigsState.value));
     } catch (err) {
       // On failure: record the error and reconcile from storage
       lastWriteError.value = err;
-      const fresh = (await agentStorage.aiConfigs.getValue()) ?? {};
+      const fresh = (await agentStorage.ai.getValue()) ?? {};
       await withSuppressWrite(() => {
         if (!isEqual(aiConfigsState.value, fresh)) {
           aiConfigsState.value = fresh;
@@ -77,11 +77,11 @@ export const useAiProviderStore = defineStore('ai-providers', () => {
     logger.debug`Initializing AI Configs...`;
     initPromise = (async () => {
       await withSuppressWrite(async () => {
-        aiConfigsState.value = (await agentStorage.aiConfigs.getValue()) ?? {};
+        aiConfigsState.value = (await agentStorage.ai.getValue()) ?? {};
       });
       if (!unwatchStorage) {
         // Storage -> State: merge by updatedAt (last-write-wins per key)
-        unwatchStorage = agentStorage.aiConfigs.watch((newValue) =>
+        unwatchStorage = agentStorage.ai.watch((newValue) =>
           withSuppressWrite(() => {
             const incoming = toRaw(newValue) ?? {};
             const current = toRaw(aiConfigsState.value);

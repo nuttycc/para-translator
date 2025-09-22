@@ -16,7 +16,7 @@ export abstract class BaseTaskExecutor implements TaskExecutor {
 // Common OpenAI executor base class to eliminate code duplication
 export abstract class OpenAIBaseExecutor extends BaseTaskExecutor {
   static readonly log = createLogger('OpenAIBaseExecutor');
-  runtimeConfig: TaskRuntimeConfig = {} as TaskRuntimeConfig;
+  runtimeConfig!: TaskRuntimeConfig;
   model: string | null = null;
   openai: OpenAI | null = null;
 

@@ -1,10 +1,10 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
-import AiPanel from '@/entrypoints/options/views/AiPanel.vue';
 import AiView from '@/entrypoints/options/views/AiView.vue';
 import HistoryView from '@/entrypoints/options/views/HistoryView.vue';
-import TaskPanel from '@/entrypoints/options/views/TaskPanel.vue';
 import TaskView from '@/entrypoints/options/views/TaskView.vue';
+import AiConfig from '@/components/AiConfig.vue';
+import TaskConfig from '@/components/TaskConfig.vue';
 
 const router = createRouter({
   linkActiveClass: 'btn-active btn-accent',
@@ -20,7 +20,7 @@ const router = createRouter({
       name: 'ai',
       component: AiView,
       meta: { transition: 'fade' },
-      children: [{ path: ':configId?', name: 'ai.config', component: AiPanel }],
+      children: [{ path: ':configId?', name: 'ai.config', component: AiConfig }],
     },
     {
       path: '/tasks',
@@ -28,7 +28,7 @@ const router = createRouter({
       component: TaskView,
       meta: { transition: 'fade' },
       children: [
-        { path: ':taskId?', name: 'tasks.detail', component: TaskPanel }, // for now, taskId === taskType
+        { path: ':taskId?', name: 'tasks.detail', component: TaskConfig }, // for now, taskId === taskType
       ],
     },
     {

@@ -4,6 +4,7 @@ import { createApp, h, reactive } from 'vue';
 
 import paraCardCSS from '@/assets/ParaCard.css?inline';
 import ParaCard from '@/components/ParaCard.vue';
+import { appearanceStorage } from '@/stores/appearance';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
@@ -16,16 +17,26 @@ const logger = createLogger('ui-manager');
 let sharedStyleEl: HTMLStyleElement | null = null;
 let sharedStyleRefCount = 0;
 
-const ensureSharedStyleElement = (): HTMLStyleElement => {
+const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement; unwatchStyle: () => void } => {
   if (sharedStyleEl && document.head.contains(sharedStyleEl)) {
-    return sharedStyleEl;
+    return { styleEl: sharedStyleEl, unwatchStyle: () => {} };
   }
+
   const styleEl = document.createElement('style');
   styleEl.id = 'para-card-style';
-  styleEl.textContent = paraCardCSS;
+
+  void appearanceStorage.getValue().then((newValue) => {
+    styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
+    return;
+  });
+
+  const unwatchStyle = appearanceStorage.watch((newValue) => {
+    styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
+  });
+
   document.head.appendChild(styleEl);
   sharedStyleEl = styleEl;
-  return styleEl;
+  return { styleEl, unwatchStyle };
 };
 
 // Single shared Pinia instance for all card apps
@@ -95,7 +106,7 @@ export const addParaCard = async (
       // const theme = getPreferredTheme();
       // mountContainer.setAttribute('data-theme', theme);
 
-      const styleEl = ensureSharedStyleElement();
+      const { styleEl, unwatchStyle } = ensureSharedStyleElement();
       sharedStyleRefCount += 1;
 
       const app = createParaCardApp(state);
@@ -109,12 +120,14 @@ export const addParaCard = async (
         isConnected: mountContainer.isConnected,
       }}`;
 
-      return { app, styleEl };
+      return { app, styleEl, unwatchStyle };
     },
-    onRemove: (mounted: { app: App; styleEl: HTMLStyleElement } | undefined) => {
+    onRemove: (
+      mounted: { app: App; styleEl: HTMLStyleElement; unwatchStyle: () => void } | undefined
+    ) => {
       if (!mounted) return;
 
-      const { app } = mounted;
+      const { app, unwatchStyle } = mounted;
       const handles = uiCleanupMap.get(ui);
       if (handles && Array.isArray(handles)) {
         for (const stop of handles) {
@@ -130,6 +143,7 @@ export const addParaCard = async (
         sharedStyleRefCount -= 1;
       }
       if (sharedStyleRefCount === 0 && sharedStyleEl) {
+        unwatchStyle();
         sharedStyleEl.remove();
         sharedStyleEl = null;
       }

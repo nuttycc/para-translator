@@ -87,9 +87,9 @@ watch(
 <template>
   <div class="flex items-start justify-center gap-9">
     <div class="navbar flex basis-1/4 flex-col items-start gap-2 self-start">
-      <div>
-        <button class="btn btn-soft btn-primary" @click="addNewConfig">+ New Config</button>
-      </div>
+      <button class="btn btn-soft btn-primary w-36" @click="addNewConfig">+ New Config</button>
+
+      <div class="divider w-36 my-0"></div>
 
       <div
         ref="scrollContainer"

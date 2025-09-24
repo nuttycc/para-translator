@@ -10,7 +10,6 @@ import CssEditor from '@/components/CssEditor.vue';
 
 const router = createRouter({
   linkActiveClass: 'btn-active btn-accent',
-  linkExactActiveClass: 'btn-active btn-info',
   history: createWebHashHistory(),
   routes: [
     {

@@ -3,7 +3,7 @@ import { watchDebounced } from '@vueuse/core';
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
-// dafault css string
+// default css string
 import defaultParaCardCSS from '@/assets/ParaCard.css?inline';
 import { createLogger } from '@/utils/logger';
 
@@ -36,7 +36,7 @@ export const useAppearanceStore = defineStore('ui-appearance', () => {
 
         logger.debug`CSS updated`;
       },
-      { debounce: 1000 }
+      { debounce: 500 }
     );
   }
 

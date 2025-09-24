@@ -42,8 +42,8 @@ const router = createRouter({
       path: '/appearance',
       name: 'appearance',
       component: AppearanceView,
+      redirect: { name: 'appearance.custom-css' },
       children: [
-        { path: '', redirect: { name: 'appearance.custom-css' } },
         { path: 'custom-css', name: 'appearance.custom-css', component: CssEditor },
       ],
     },

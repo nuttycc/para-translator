@@ -1,21 +1,5 @@
-
-# agent rules
-.augment
-.qoder
-.claude
-.crush
-.traycer
-
-*.play.ts
-
-# test
-src/agent/__tests__/vite-env.d.ts
-
 # GitHub App credentials
 gha-creds-*.json
-
-# docs
-docs
 
 # env
 .env
@@ -46,3 +30,17 @@ web-ext.config.ts
 *.njsproj
 *.sln
 *.sw?
+
+# LLM config
+.augment
+.qoder
+.claude
+.crush
+.traycer
+
+# docs
+docs
+
+# playground
+*.play.ts
+

@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 
 // default css string
-import defaultParaCardCSS from '@/assets/ParaCard.css?inline';
+import defaultParaCardCSS from '@/assets/ParaCard.css?raw';
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('store', 'appearance');

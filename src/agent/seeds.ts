@@ -39,6 +39,17 @@ const DEFAULT_AI_CONFIGS = {
     createdAt: 0,
     updatedAt: 0,
   },
+  'siliconflow-123': {
+    id: 'siliconflow-123',
+    name: 'Siliconflow',
+    provider: 'siliconflow',
+    model: 'tencent/Hunyuan-MT-7B',
+    localModels: ['tencent/Hunyuan-MT-7B'],
+    apiKey: '',
+    baseUrl: 'https://api.siliconflow.com/v1',
+    createdAt: 0,
+    updatedAt: 0,
+  },
 } as const satisfies AIConfigs;
 
 const TranslateSystemPrompt = {

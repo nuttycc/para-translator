@@ -25,11 +25,13 @@ export const preferenceStorage = storage.defineItem<{
   version: 1,
 });
 
+export const defaultPreferences = {
+  paraCardCSS: defaultParaCardCSS,
+  targetLanguage: 'English',
+};
+
 export const usePreferenceStore = defineStore('ui-preference', () => {
-  const preferences = ref<Preference>({
-    paraCardCSS: defaultParaCardCSS,
-    targetLanguage: 'English',
-  });
+  const preferences = ref<Preference>(defaultPreferences);
 
   async function init() {
     const storedPreferences = await preferenceStorage.getValue();

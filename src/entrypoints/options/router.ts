@@ -44,7 +44,7 @@ const router = createRouter({
       component: PreferenceView,
       redirect: { name: 'preference.home' },
       children: [
-        { path: '/home', name: 'preference.home', component: PreferenceHome },
+        { path: 'home', name: 'preference.home', component: PreferenceHome },
         { path: 'custom-css', name: 'preference.custom-css', component: CssEditor },
       ],
     },

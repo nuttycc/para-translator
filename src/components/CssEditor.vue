@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class='grid gap-2'>
     <code-mirror
       v-model="preferences.paraCardCSS"
       :lang="lang"
@@ -7,6 +7,12 @@
       :extensions="extensions"
       class="css-editor"
     />
+    <div class="justify-self-end">
+      <div class="tooltip" data-tip="Reset the CSS to default">
+      <button @click="resetCss" class="btn btn-soft">RESET</button>
+    </div>
+    </div>
+
   </div>
 </template>
 
@@ -18,7 +24,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import CodeMirror from 'vue-codemirror6';
 
-import { usePreferenceStore } from '@/stores/preference';
+import { usePreferenceStore, defaultPreferences } from '@/stores/preference';
 
 // Import CSS language support
 import { css } from '@codemirror/lang-css';
@@ -26,6 +32,7 @@ import { css } from '@codemirror/lang-css';
 const preferenceStore = usePreferenceStore();
 
 const { preferences } = storeToRefs(preferenceStore);
+
 
 // Dark mode detection
 const dark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);
@@ -39,21 +46,18 @@ const extensions = computed(() => [
   EditorView.theme({
     '&': {
       height: '400px',
+      width: '33dvw',
       fontSize: '14px',
-    },
-    '.cm-focused': {
-      outline: 'none',
     },
   }),
   // Use dark theme when in dark mode
   ...(dark.value ? [oneDark] : []),
 ]);
-</script>
 
-<style scoped>
-.css-editor {
-  border: 1px solid hsl(var(--b3));
-  border-radius: 0.5rem;
-  overflow: hidden;
+function resetCss() {
+  const confirmed = window.confirm('Are you sure you want to reset the CSS to default?');
+  if (confirmed) {
+    preferences.value.paraCardCSS = defaultPreferences.paraCardCSS;
+  }
 }
-</style>
+</script>

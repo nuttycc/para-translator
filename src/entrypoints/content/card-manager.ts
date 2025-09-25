@@ -151,7 +151,6 @@ export const toggleParaCard = async (
       const documentMeta = getDocumentMeta();
       const context: AgentContext = buildAgentContext(sourceText, documentMeta);
 
-      state.context = context;
       state.sourceText = sourceText;
 
       sendMessage('agent', { context, taskType: 'translate' })

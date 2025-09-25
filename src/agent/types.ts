@@ -1,5 +1,3 @@
-import { z } from 'zod';
-
 import type { ChatCompletion } from 'openai/resources/index.mjs';
 
 export const TASK_TYPES = ['translate', 'explain'] as const;
@@ -20,20 +18,25 @@ export interface TaskRuntimeConfig {
 // storage.local
 export type TaskRuntimeConfigs = Record<TaskType, TaskRuntimeConfig>;
 
-export const AgentContextSchema = z.object({
-  sourceText: z.string(),
-  sourceLanguage: z.string().optional().default('auto'),
-  targetLanguage: z.string(),
-  siteTitle: z.string(),
-  siteUrl: z.string(),
-  siteDescription: z.string().optional().nullable(),
-});
+export interface AgentContext {
+  sourceText: string;
+  sourceLanguage?: string;
+  targetLanguage: string;
+  siteTitle: string;
+  siteUrl: string;
+  siteDescription?: string | null;
+}
 
-export type AgentContext = z.infer<typeof AgentContextSchema>;
+export const AGENT_CONTEXT_KEYS = [
+  'sourceText',
+  'sourceLanguage',
+  'targetLanguage',
+  'siteTitle',
+  'siteUrl',
+  'siteDescription',
+] as const;
 
-export const AGENT_CONTEXT_KEYS = AgentContextSchema.keyof().options satisfies ReadonlyArray<
-  keyof AgentContext
->;
+export type AgentContextKey = typeof AGENT_CONTEXT_KEYS[number];
 
 export type AgentResponse =
   | {

@@ -11,6 +11,8 @@ import type { ParaCardProps } from '@/components/ParaCard.vue';
 import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
 
+import { contentStore } from './content-utils';
+
 const logger = createLogger('ui-manager');
 
 let sharedStyleEl: HTMLStyleElement | null = null;
@@ -24,13 +26,7 @@ const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement; unwatchStyle: 
   const styleEl = document.createElement('style');
   styleEl.id = 'para-card-style';
 
-  preferenceStorage.getValue().then((newValue) => {
-    styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
-    return undefined;
-  }).catch(() => {
-    // Ignore errors during initial style setup
-  });
-
+  styleEl.textContent = contentStore?.paraCardCSS ?? paraCardCSS;
   const unwatchStyle = preferenceStorage.watch((newValue) => {
     styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
   });
@@ -130,14 +126,17 @@ export const addParaCard = async (
   const state = reactive<ParaCardProps>(createInitialParaCardState());
   const cleanupHandles: Array<() => void> = [];
 
-  const ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }> = createIntegratedUi(ctx, {
-    position: 'inline',
-    anchor: container,
-    onMount: (mountContainer: HTMLElement) => mountParaCard(ui, state, mountContainer),
-    onRemove: (mounted) => {
-      cleanupParaCard(ui, mounted);
-    },
-  });
+  const ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }> = createIntegratedUi(
+    ctx,
+    {
+      position: 'inline',
+      anchor: container,
+      onMount: (mountContainer: HTMLElement) => mountParaCard(ui, state, mountContainer),
+      onRemove: (mounted) => {
+        cleanupParaCard(ui, mounted);
+      },
+    }
+  );
 
   uiCleanupMap.set(ui, cleanupHandles);
   ui.mount();

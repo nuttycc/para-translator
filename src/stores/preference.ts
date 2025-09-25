@@ -9,39 +9,50 @@ import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('store', 'preference');
 
+export interface Preference {
+  paraCardCSS: string;
+  targetLanguage: string;
+}
+
 export const preferenceStorage = storage.defineItem<{
   paraCardCSS: string;
-  theme: string;
+  targetLanguage: string;
 }>('local:preference', {
   init: () => ({
     paraCardCSS: defaultParaCardCSS,
-    theme: 'default',
+    targetLanguage: 'English',
   }),
   version: 1,
 });
 
 export const usePreferenceStore = defineStore('ui-preference', () => {
-  const paraCardCSS = ref(defaultParaCardCSS);
-  const theme = ref('default');
+  const preferences = ref<Preference>({
+    paraCardCSS: defaultParaCardCSS,
+    targetLanguage: 'English',
+  });
 
   async function init() {
-    paraCardCSS.value = (await preferenceStorage.getValue())?.paraCardCSS ?? defaultParaCardCSS;
+    const storedPreferences = await preferenceStorage.getValue();
+
+    if (storedPreferences) {
+      preferences.value = storedPreferences;
+    }
 
     watchDebounced(
-      paraCardCSS,
+      preferences,
       async () => {
-        logger.debug`Updating para card CSS: ${paraCardCSS.value}`;
+        logger.debug`Updating preferences: ${preferences.value}`;
 
-        await preferenceStorage.setValue({ paraCardCSS: paraCardCSS.value, theme: theme.value });
+        await preferenceStorage.setValue(preferences.value);
 
-        logger.debug`CSS updated`;
+        logger.debug`Preferences updated`;
       },
-      { debounce: 500 }
+      { deep: true, debounce: 500, maxWait: 5000 }
     );
   }
 
   return {
-    paraCardCSS,
+    preferences,
     init,
   };
 });

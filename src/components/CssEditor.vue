@@ -1,7 +1,7 @@
 <template>
   <div>
     <code-mirror
-      v-model="paraCardCSS"
+      v-model="preferences.paraCardCSS"
       :lang="lang"
       :dark="dark"
       :extensions="extensions"
@@ -25,12 +25,7 @@ import { css } from '@codemirror/lang-css';
 
 const preferenceStore = usePreferenceStore();
 
-preferenceStore.init().then(() => {
-  console.log('Preference store initialized');
-  return;
-});
-
-const { paraCardCSS } = storeToRefs(preferenceStore);
+const { preferences } = storeToRefs(preferenceStore);
 
 // Dark mode detection
 const dark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);

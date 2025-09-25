@@ -1,4 +1,14 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onBeforeMount } from '#imports';
+import { usePreferenceStore } from '@/stores/preference';
+
+const preferenceStore = usePreferenceStore();
+
+onBeforeMount(async () => {
+  preferenceStore.init();
+});
+
+</script>
 
 <template>
   <div class="flex min-h-[66dvh]">

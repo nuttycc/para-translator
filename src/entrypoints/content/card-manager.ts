@@ -11,6 +11,8 @@ import type { ParaCardProps } from '@/components/ParaCard.vue';
 import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
 
+import { contentStore } from './content-utils';
+
 const logger = createLogger('card-manager');
 
 /**
@@ -70,7 +72,7 @@ const buildAgentContext = (
 ): AgentContext => ({
   sourceText,
   sourceLanguage: 'auto',
-  targetLanguage: 'zh-CN',
+  targetLanguage: contentStore?.targetLanguage ?? 'zh-CN',
   siteTitle: documentMeta.title,
   siteUrl: window.location.href,
   siteDescription: documentMeta.description,

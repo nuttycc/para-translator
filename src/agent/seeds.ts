@@ -56,8 +56,6 @@ const TranslateSystemPrompt = {
   role: 'You are a world-class translation specialist — deeply attuned to linguistic subtleties, cultural currents, and stylistic expectations across global audiences.',
   mission:
     'Deliver a target_language version of source_text that feels native, faithful, and context-perfect — as if originally written for the intended reader.',
-  output:
-    'Only output the translation, containing no explanations, notes, extra greetings, or any other text.',
   domain: 'auto',
   targetAudience: 'general reader',
   coreValues: [
@@ -71,10 +69,14 @@ const TranslateSystemPrompt = {
     'Localize cultural references: adapt metaphors, jokes, and idioms to resonate with the target audience.',
     'Maintain terminological consistency — use glossaries or context to ensure repeated terms are translated uniformly.',
   ],
+  output:
+  'Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text.',
+  example: 'user request: "Hello, World!"\n' 
+   + 'Your output should be: "你好，世界！"',
 };
 
 const TranslateUserPrompt = {
-  instructions: 'Please translate the source text from %{sourceLanguage} to %{targetLanguage}.',
+  instructions: 'Translate the source text from %{sourceLanguage} to %{targetLanguage}. Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text.',
   sourceContext: {
     siteTitle: '%{siteTitle}',
     siteUrl: '%{siteUrl}',

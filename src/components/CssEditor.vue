@@ -18,19 +18,19 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import CodeMirror from 'vue-codemirror6';
 
-import { useAppearanceStore } from '@/stores/appearance';
+import { usePreferenceStore } from '@/stores/preference';
 
 // Import CSS language support
 import { css } from '@codemirror/lang-css';
 
-const appearanceStore = useAppearanceStore();
+const preferenceStore = usePreferenceStore();
 
-appearanceStore.init().then(() => {
-  console.log('Appearance store initialized');
+preferenceStore.init().then(() => {
+  console.log('Preference store initialized');
   return;
 });
 
-const { paraCardCSS } = storeToRefs(appearanceStore);
+const { paraCardCSS } = storeToRefs(preferenceStore);
 
 // Dark mode detection
 const dark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);

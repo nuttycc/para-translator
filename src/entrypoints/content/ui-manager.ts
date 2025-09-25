@@ -4,7 +4,7 @@ import { createApp, h, reactive } from 'vue';
 
 import paraCardCSS from '@/assets/ParaCard.css?inline';
 import ParaCard from '@/components/ParaCard.vue';
-import { appearanceStorage } from '@/stores/appearance';
+import { preferenceStorage } from '@/stores/preference';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
@@ -24,14 +24,14 @@ const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement; unwatchStyle: 
   const styleEl = document.createElement('style');
   styleEl.id = 'para-card-style';
 
-  appearanceStorage.getValue().then((newValue) => {
+  preferenceStorage.getValue().then((newValue) => {
     styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
     return undefined;
   }).catch(() => {
     // Ignore errors during initial style setup
   });
 
-  const unwatchStyle = appearanceStorage.watch((newValue) => {
+  const unwatchStyle = preferenceStorage.watch((newValue) => {
     styleEl.textContent = newValue?.paraCardCSS ?? paraCardCSS;
   });
 

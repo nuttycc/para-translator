@@ -7,12 +7,12 @@ import { ref } from 'vue';
 import defaultParaCardCSS from '@/assets/ParaCard.css?raw';
 import { createLogger } from '@/utils/logger';
 
-const logger = createLogger('store', 'appearance');
+const logger = createLogger('store', 'preference');
 
-export const appearanceStorage = storage.defineItem<{
+export const preferenceStorage = storage.defineItem<{
   paraCardCSS: string;
   theme: string;
-}>('local:appearance', {
+}>('local:preference', {
   init: () => ({
     paraCardCSS: defaultParaCardCSS,
     theme: 'default',
@@ -20,19 +20,19 @@ export const appearanceStorage = storage.defineItem<{
   version: 1,
 });
 
-export const useAppearanceStore = defineStore('ui-appearance', () => {
+export const usePreferenceStore = defineStore('ui-preference', () => {
   const paraCardCSS = ref(defaultParaCardCSS);
   const theme = ref('default');
 
   async function init() {
-    paraCardCSS.value = (await appearanceStorage.getValue())?.paraCardCSS ?? defaultParaCardCSS;
+    paraCardCSS.value = (await preferenceStorage.getValue())?.paraCardCSS ?? defaultParaCardCSS;
 
     watchDebounced(
       paraCardCSS,
       async () => {
         logger.debug`Updating para card CSS: ${paraCardCSS.value}`;
 
-        await appearanceStorage.setValue({ paraCardCSS: paraCardCSS.value, theme: theme.value });
+        await preferenceStorage.setValue({ paraCardCSS: paraCardCSS.value, theme: theme.value });
 
         logger.debug`CSS updated`;
       },

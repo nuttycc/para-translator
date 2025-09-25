@@ -5,7 +5,7 @@ import HistoryView from '@/entrypoints/options/views/HistoryView.vue';
 import TaskView from '@/entrypoints/options/views/TaskView.vue';
 import AiConfig from '@/components/AiConfig.vue';
 import TaskConfig from '@/components/TaskConfig.vue';
-import AppearanceView from '@/entrypoints/options/views/AppearanceView.vue';
+import AppearanceView from '@/entrypoints/options/views/PreferenceView.vue';
 import CssEditor from '@/components/CssEditor.vue';
 
 const router = createRouter({

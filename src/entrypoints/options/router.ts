@@ -5,8 +5,9 @@ import HistoryView from '@/entrypoints/options/views/HistoryView.vue';
 import TaskView from '@/entrypoints/options/views/TaskView.vue';
 import AiConfig from '@/components/AiConfig.vue';
 import TaskConfig from '@/components/TaskConfig.vue';
-import AppearanceView from '@/entrypoints/options/views/PreferenceView.vue';
+import PreferenceView from '@/entrypoints/options/views/PreferenceView.vue';
 import CssEditor from '@/components/CssEditor.vue';
+import PreferenceHome from '@/components/PreferenceHome.vue';
 
 const router = createRouter({
   linkActiveClass: 'btn-active btn-accent',
@@ -38,12 +39,13 @@ const router = createRouter({
       component: HistoryView,
     },
     {
-      path: '/appearance',
-      name: 'appearance',
-      component: AppearanceView,
-      redirect: { name: 'appearance.custom-css' },
+      path: '/preference',
+      name: 'preference',
+      component: PreferenceView,
+      redirect: { name: 'preference.home' },
       children: [
-        { path: 'custom-css', name: 'appearance.custom-css', component: CssEditor },
+        { path: '/home', name: 'preference.home', component: PreferenceHome },
+        { path: 'custom-css', name: 'preference.custom-css', component: CssEditor },
       ],
     },
   ],

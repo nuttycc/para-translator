@@ -4,6 +4,7 @@ import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { useAiProviderStore } from '@/stores';
+import LayoutWithNav from '@/components/LayoutWithNav.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -51,7 +52,7 @@ const scrollToActiveConfig = async () => {
 };
 
 const addNewConfig = async () => {
-  const newConfigId = `new-${Date.now()}`;
+  const newConfigId = `x-${Date.now()}`;
   await aiProviderStore.upsert({
     id: newConfigId,
     name: `New Config ${aiProviderStore.configIds.length + 1}`,
@@ -85,22 +86,22 @@ watch(
 </script>
 
 <template>
-  <div class="flex items-start justify-center gap-9">
-    <div class="navbar flex basis-1/4 flex-col items-start gap-2 self-start">
+  <LayoutWithNav>
+    <template #nav>
       <button class="btn btn-soft btn-primary w-36" @click="addNewConfig">+ New Config</button>
 
-      <div class="divider w-36 my-0"></div>
+      <div class="divider my-0"></div>
 
       <div
         ref="scrollContainer"
-        class="flex h-[68vh] flex-col items-start justify-start gap-2 overflow-y-auto pr-3"
+        class="flex h-[68vh] flex-col items-start justify-start gap-2 overflow-y-auto"
       >
         <router-link
           v-for="configId in configIds"
           :key="configId"
           :data-config-id="configId"
           :to="{ name: 'ai.config', params: { configId } }"
-          :class="['btn btn-soft w-36 text-sm focus:outline-0']"
+          :class="['btn btn-soft text-sm focus:outline-0 w-36']"
           :title="aiConfigs[configId]?.name || String(configId)"
         >
           <p class="truncate">
@@ -108,13 +109,14 @@ watch(
           </p>
         </router-link>
       </div>
-    </div>
-    <div class="flex-auto">
+    </template>
+
+    <template #content>
       <router-view v-slot="{ Component }">
         <keep-alive :max="10">
           <component :is="Component" :key="$route.params.configId" :config-id="activeConfigId" />
         </keep-alive>
       </router-view>
-    </div>
-  </div>
+    </template>
+  </LayoutWithNav>
 </template>

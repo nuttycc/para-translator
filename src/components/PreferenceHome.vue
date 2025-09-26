@@ -12,7 +12,7 @@ const languageOptions = { 'zh-CN': 'Chinese(Simplified)', en: 'English', ja: 'Ja
 </script>
 <template>
   <div>
-    <h1>Preference</h1>
+    <div class="mb-4 text-xl font-bold">Preference</div>
 
     <fieldset class="fieldset">
       <legend class="fieldset-legend">Target Language</legend>

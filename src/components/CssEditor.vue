@@ -45,8 +45,7 @@ const extensions = computed(() => [
   EditorView.lineWrapping,
   EditorView.theme({
     '&': {
-      height: '400px',
-      width: '33dvw',
+      height: '66dvh',
       fontSize: '14px',
     },
   }),

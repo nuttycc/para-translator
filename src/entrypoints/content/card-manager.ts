@@ -4,7 +4,7 @@ import { isEditable } from '@/entrypoints/content/content-utils';
 import { addParaCard } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
-import { extractReadableText, findClosestTextContainer, isParagraphLike } from '@/utils/paragraph';
+import { extractReadableText, findClosestTextContainer } from '@/utils/paragraph';
 
 import type { AgentContext } from '@/agent/types';
 import type { ParaCardProps } from '@/components/ParaCard.vue';
@@ -43,7 +43,7 @@ export const cardUIs = new Map<string, ParaCardEntry>();
 export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
   const cardEntry = cardUIs.get(paraKey);
   if (!cardEntry) {
-    logger.debug`no para card found for cleanup: ${paraKey}`;
+    logger.debug`No para card found for cleanup: ${paraKey}`;
     return;
   }
 
@@ -52,9 +52,9 @@ export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
   if (removeUI && ui && typeof ui.remove === 'function') {
     try {
       ui.remove();
-      logger.debug`removed para card UI for ${paraKey}`;
+      logger.debug`Removed para card UI for ${paraKey}`;
     } catch (error) {
-      logger.error`failed to remove para card UI for ${paraKey}: ${error}`;
+      logger.error`Failed to remove para card UI for ${paraKey}: ${error}`;
     }
   }
 
@@ -62,7 +62,7 @@ export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
 
   if (container) {
     container.removeAttribute('data-para-id');
-    logger.debug`cleaned up dataset for para card ${paraKey}`;
+    logger.debug`Cleaned up dataset for para card ${paraKey}`;
   }
 };
 
@@ -95,32 +95,28 @@ export const toggleParaCard = async (
   currentHoveredElement: HTMLElement | null
 ): Promise<void> => {
   if (!currentHoveredElement) {
-    logger.debug`skip: no element currently hovered`;
+    logger.debug`Skip: no element currently hovered`;
     return;
   }
 
   if (isEditable(currentHoveredElement) || isEditable(document.activeElement)) {
-    logger.debug`skip: input/textarea/contenteditable is focused or hovered`;
+    logger.debug`Skip: input/textarea/contenteditable is focused or hovered`;
     return;
   }
 
   const container = findClosestTextContainer(currentHoveredElement);
   if (!container) {
-    logger.debug`skip: no container found`;
+    logger.debug`Skip: no container found`;
     return;
   }
 
-  logger.debug`hovered text container ${{
+  logger.debug`Found text container ${{
+    hoveredElement: currentHoveredElement.tagName,
     containerTag: container.tagName,
   }}`;
 
   const sourceText = extractReadableText(container);
-  logger.debug`extracted text meta ${{ length: sourceText.length, preview: sourceText.slice(0, 80) }}`;
-
-  if (!isParagraphLike(sourceText)) {
-    logger.debug`skip: not paragraph-like`;
-    return;
-  }
+  logger.debug`Extracted text meta ${{ length: sourceText.length, preview: sourceText.slice(0, 80) }}`;
 
   // Stable paragraph key (persisted on the container once created)
   const existingKey = container.getAttribute('data-para-id');
@@ -141,9 +137,9 @@ export const toggleParaCard = async (
 
     if (ui && typeof ui.remove === 'function') {
       cardUIs.set(paraKey, { ui, container, state });
-      logger.debug`added para card for ${paraKey}`;
+      logger.debug`Added para card for ${paraKey}`;
     } else {
-      logger.error`failed to create valid UI for para card ${paraKey}`;
+      logger.error`Failed to create valid UI for para card ${paraKey}`;
       container.removeAttribute('data-para-id');
       return;
     }
@@ -159,7 +155,7 @@ export const toggleParaCard = async (
         .then((translateResponse) => {
           if (!cardUIs.has(paraKey)) return;
           if (translateResponse.ok) {
-            logger.debug`translateResponse.data: ${translateResponse.data.slice(0, 20)}`;
+            logger.debug`Translate response: ${translateResponse.data.slice(0, 20)}`;
             state.translation = translateResponse.data;
           } else {
             throw new Error(translateResponse.error);

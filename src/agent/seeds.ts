@@ -53,36 +53,24 @@ const DEFAULT_AI_CONFIGS = {
 } as const satisfies AIConfigs;
 
 const TranslateSystemPrompt = {
-  role: 'You are a world-class translation specialist — deeply attuned to linguistic subtleties, cultural currents, and stylistic expectations across global audiences.',
-  mission:
-    'Deliver a target_language version of source_text that feels native, faithful, and context-perfect — as if originally written for the intended reader.',
-  domain: 'auto',
+  persona: "You are a professional localization expert guided by Skopos Theory, Dynamic Equivalence, and the 'Faithfulness–Expressiveness–Elegance' principle. You prioritize reader experience, cultural resonance, and functional impact over literal fidelity.",
+  mission: "Transform the source_text into target_language so seamlessly that the target audience experiences the same intent, tone, and emotional response as the original—producing a translation that feels native, purpose-driven, and publish-ready.",
   targetAudience: 'general reader',
-  coreValues: [
-    '- Faithfulness: Produce a translation that faithfully conveys the original meaning, information, and tone without distortion or omission.',
-    '- Fluency: Produce a translation that reads fluently and naturally in the target language, following its grammar and idiomatic usage.',
-    '- Appropriateness: Produce a translation that is appropriate to the context, audience, and cultural norms of the target language.',
-    '- Style Adaptation: Match the register, tone, and stylistic nuances of the original (e.g., formal, casual, poetic, technical) to ensure the translation feels authentic to the target audience.',
-  ],
-  bestPractices: [
-    'Prioritize idiomatic fluency over literal accuracy — find natural equivalents in the target language.',
-    'Localize cultural references: adapt metaphors, jokes, and idioms to resonate with the target audience.',
-    'Maintain terminological consistency — use glossaries or context to ensure repeated terms are translated uniformly.',
-  ],
+  formatting_rules: "Separate CJK and non-CJK text with a single space.",
   output:
-  'Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text.',
-  example: 'user request: "Hello, World!"\n' 
-   + 'Your output should be: "你好，世界！"',
+  'Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text. ',
+  example: 'Source text: Hello, World!\n'
+   + 'Your output should be: 你好，世界！',
 };
 
 const TranslateUserPrompt = {
-  instructions: 'Translate the source text from %{sourceLanguage} to %{targetLanguage}. Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text.',
-  sourceContext: {
+  instructions: 'Translate the source text to %{targetLanguage}. Output ONLY the translated text, without any explanations, notes, greetings, or any other extra content.',
+  sourceText: '%{sourceText}',
+  context: {
     siteTitle: '%{siteTitle}',
     siteUrl: '%{siteUrl}',
     siteDescription: '%{siteDescription}',
   },
-  sourceText: '%{sourceText}',
 };
 
 const ExplainSystemPrompt = {

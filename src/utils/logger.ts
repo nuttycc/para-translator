@@ -10,6 +10,7 @@ import {
 } from '@logtape/logtape';
 
 configureSync({
+  reset: true,
   sinks: { console: getConsoleSink({ formatter: defaultConsoleFormatter }) },
   loggers: [
     { category: ['logtape', 'meta'], lowestLevel: 'warning', sinks: ['console'] },

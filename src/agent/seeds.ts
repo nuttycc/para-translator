@@ -1,6 +1,17 @@
 import type { AIConfigs, TaskRuntimeConfigs } from '@/agent/types';
 
 const DEFAULT_AI_CONFIGS = {
+  'chutes-123': {
+    id: 'chutes-123',
+    name: 'Chutes',
+    provider: 'chutes',
+    model: 'chutes-123',
+    localModels: ['zai-org/GLM-4.5-Air', 'openai/gpt-oss-20b', 'meituan-longcat/LongCat-Flash-Chat-FP8'],
+    apiKey: '',
+    baseUrl: 'https://llm.chutes.ai/v1',
+    createdAt: 0,
+    updatedAt: 0,
+  },
   'openrouter-123': {
     id: 'openrouter-123',
     name: 'OpenRouter',
@@ -9,17 +20,6 @@ const DEFAULT_AI_CONFIGS = {
     localModels: ['openai/gpt-4o', 'x-ai/grok-4-fast:free'],
     apiKey: '',
     baseUrl: 'https://openrouter.ai/api/v1',
-    createdAt: 0,
-    updatedAt: 0,
-  },
-  'glm-123': {
-    id: 'glm-123',
-    name: 'GLM',
-    provider: 'glm',
-    model: 'glm-4.5-flash',
-    localModels: ['glm-4.5-flash'],
-    apiKey: '',
-    baseUrl: 'https://open.bigmodel.cn/api/paas/v4/',
     createdAt: 0,
     updatedAt: 0,
   },
@@ -53,18 +53,20 @@ const DEFAULT_AI_CONFIGS = {
 } as const satisfies AIConfigs;
 
 const TranslateSystemPrompt = {
-  persona: "You are a professional localization expert guided by Skopos Theory, Dynamic Equivalence, and the 'Faithfulness–Expressiveness–Elegance' principle. You prioritize reader experience, cultural resonance, and functional impact over literal fidelity.",
-  mission: "Transform the source_text into target_language so seamlessly that the target audience experiences the same intent, tone, and emotional response as the original—producing a translation that feels native, purpose-driven, and publish-ready.",
+  persona:
+    "You are a professional localization expert guided by Skopos Theory, Dynamic Equivalence, and the 'Faithfulness–Expressiveness–Elegance' principle. You prioritize reader experience, cultural resonance, and functional impact over literal fidelity.",
+  mission:
+    'Transform the source_text into target_language so seamlessly that the target audience experiences the same intent, tone, and emotional response as the original—producing a translation that feels native, purpose-driven, and publish-ready.',
   targetAudience: 'general reader',
-  formatting_rules: "Separate CJK and non-CJK text with a single space.",
+  formatting_rules: 'Separate CJK and non-CJK text with a single space.',
   output:
-  'Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text. ',
-  example: 'Source text: Hello, World!\n'
-   + 'Your output should be: 你好，世界！',
+    'Output ONLY the translation result, without any explanations, notes, greetings, or any other extra text. ',
+  example: 'Source text: Hello, World!\nYour output should be: 你好，世界！',
 };
 
 const TranslateUserPrompt = {
-  instructions: 'Translate the source text to %{targetLanguage}. Output ONLY the translated text, without any explanations, notes, greetings, or any other extra content.',
+  instructions:
+    'Translate the source text to %{targetLanguage}. Output ONLY the translated text, without any explanations, notes, greetings, or any other extra content.',
   sourceText: '%{sourceText}',
   context: {
     siteTitle: '%{siteTitle}',

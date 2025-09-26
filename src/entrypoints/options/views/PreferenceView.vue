@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePreferenceStore } from '@/stores/preference';
 import LayoutWithNav from '@/components/LayoutWithNav.vue';
+import { usePreferenceStore } from '@/stores/preference';
 
 const preferenceStore = usePreferenceStore();
 

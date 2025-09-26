@@ -17,7 +17,7 @@ const languageOptions = { 'zh-CN': 'Chinese(Simplified)', en: 'English', ja: 'Ja
     <fieldset class="fieldset">
       <legend class="fieldset-legend">Target Language</legend>
       <select class="select" v-model="preferences.targetLanguage">
-        <option v-for="(v, k) in languageOptions" :value="v" :data-code="k">
+        <option v-for="(v, k) in languageOptions" :key="k" :value="v" :data-code="k">
           {{ v }}
         </option>
       </select>

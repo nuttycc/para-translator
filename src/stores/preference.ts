@@ -31,7 +31,7 @@ export const defaultPreferences = {
 };
 
 export const usePreferenceStore = defineStore('ui-preference', () => {
-  const preferences = ref<Preference>(defaultPreferences);
+  const preferences = ref<Preference>({ ...defaultPreferences });
 
   async function init() {
     const storedPreferences = await preferenceStorage.getValue();

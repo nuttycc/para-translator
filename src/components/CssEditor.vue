@@ -1,5 +1,5 @@
 <template>
-  <div class='grid gap-2'>
+  <div class="grid gap-2">
     <code-mirror
       v-model="preferences.paraCardCSS"
       :lang="lang"
@@ -9,10 +9,9 @@
     />
     <div class="justify-self-end">
       <div class="tooltip" data-tip="Reset the CSS to default">
-      <button @click="resetCss" class="btn btn-soft">RESET</button>
+        <button @click="resetCss" class="btn btn-soft">RESET</button>
+      </div>
     </div>
-    </div>
-
   </div>
 </template>
 
@@ -24,7 +23,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import CodeMirror from 'vue-codemirror6';
 
-import { usePreferenceStore, defaultPreferences } from '@/stores/preference';
+import { defaultPreferences, usePreferenceStore } from '@/stores/preference';
 
 // Import CSS language support
 import { css } from '@codemirror/lang-css';
@@ -32,7 +31,6 @@ import { css } from '@codemirror/lang-css';
 const preferenceStore = usePreferenceStore();
 
 const { preferences } = storeToRefs(preferenceStore);
-
 
 // Dark mode detection
 const dark = ref(window.matchMedia('(prefers-color-scheme: dark)').matches);

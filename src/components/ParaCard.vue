@@ -10,7 +10,6 @@ export interface ParaCardProps {
 }
 
 const { showContext, sourceText, translation, explanation, error } = defineProps<ParaCardProps>();
-
 </script>
 
 <template>

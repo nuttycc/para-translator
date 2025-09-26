@@ -36,7 +36,7 @@ export const AGENT_CONTEXT_KEYS = [
   'siteDescription',
 ] as const;
 
-export type AgentContextKey = typeof AGENT_CONTEXT_KEYS[number];
+export type AgentContextKey = (typeof AGENT_CONTEXT_KEYS)[number];
 
 export type AgentResponse =
   | {

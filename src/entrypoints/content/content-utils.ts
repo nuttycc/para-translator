@@ -19,9 +19,7 @@ export const initContentStore = () => {
     .getValue()
     .then((value) => {
       logger.debug`content store initialized with ${value}`;
-      if (value) {
-        contentStore = value;
-      }
+      contentStore = value ?? null;
       return;
     })
     .catch(() => {
@@ -30,9 +28,7 @@ export const initContentStore = () => {
 
   preferenceStorage.watch((value) => {
     logger.debug`content store updated with ${value}`;
-    if (value) {
-      contentStore = value;
-    }
+    contentStore = value ?? null;
     return;
   });
 };

@@ -193,7 +193,7 @@ watch(showRemoteModels, (value) => {
               </fieldset>
             </legend>
 
-            <div v-if="!showRemoteModels" class="join join-vertical gap-2 ">
+            <div v-if="!showRemoteModels" class="join join-vertical gap-2">
               <div class="join-item flex gap-2">
                 <select class="select flex-1" v-model="config.model">
                   <option v-if="config.localModels.length === 0" disabled selected>

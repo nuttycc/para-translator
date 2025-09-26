@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { browser } from '#imports';
-import { onErrorCaptured } from 'vue';
 import { Bolt, Wrench } from 'lucide-vue-next';
+import { onErrorCaptured } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 
 import { createLogger } from '@/utils/logger';
@@ -10,8 +10,9 @@ import { showToast, testToast } from '@/utils/toast';
 const logger = createLogger('options');
 
 onErrorCaptured((err) => {
+  const message = err instanceof Error ? err.message : String(err);
   showToast({
-    message: 'Error: ' + err,
+    message: `Unexpected error: ${message}`,
     type: 'error',
     position: 'toast-bottom toast-center',
     duration: 10000,
@@ -47,7 +48,6 @@ const resetStorage = () => {
 const openDrawer = () => {
   document.getElementById('my-drawer')?.click();
 };
-
 </script>
 
 <template>

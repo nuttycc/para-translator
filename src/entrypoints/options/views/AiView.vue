@@ -3,8 +3,8 @@ import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-import { useAiProviderStore } from '@/stores';
 import LayoutWithNav from '@/components/LayoutWithNav.vue';
+import { useAiProviderStore } from '@/stores';
 
 const route = useRoute();
 const router = useRouter();
@@ -101,7 +101,7 @@ watch(
           :key="configId"
           :data-config-id="configId"
           :to="{ name: 'ai.config', params: { configId } }"
-          :class="['btn btn-soft text-sm focus:outline-0 w-36']"
+          :class="['btn btn-soft w-36 text-sm focus:outline-0']"
           :title="aiConfigs[configId]?.name || String(configId)"
         >
           <p class="truncate">

@@ -3,30 +3,26 @@ import { CircleAlert } from 'lucide-vue-next';
 
 export interface ParaCardProps {
   showContext?: boolean;
-  sourceText: string;
-  translation: string | null;
-  explanation: string | null;
+  sourceText?: string;
+  translation?: string;
+  explanation?: string;
   error?: { type: 'translate' | 'explain'; message: string };
 }
 
-const props = withDefaults(defineProps<ParaCardProps>(), {
-  showContext: false,
-  translation: '',
-  explanation: '',
-});
+const { showContext, sourceText, translation, explanation, error } = defineProps<ParaCardProps>();
 </script>
 
 <template>
   <div class="para-card">
-    <div v-if="props.error?.type === 'translate'" role="alert" class="para-card-alert">
+    <div v-if="error?.type === 'translate'" role="alert" class="para-card-alert">
       <CircleAlert />
-      <span>{{ props.error.message }}</span>
+      <span>{{ error.message }}</span>
     </div>
-    <div v-if="!props.translation" class="para-card-loading">
+    <div v-if="!translation" class="para-card-loading">
       <span>Loading...</span>
     </div>
     <div v-else class="para-card-content">
-      {{ props.translation }}
+      {{ translation }}
     </div>
   </div>
 </template>

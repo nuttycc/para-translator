@@ -19,4 +19,10 @@ describe('renderTemplate', () => {
     const result = renderTemplate(template, context);
     expect(result).toBe('translate Hello world to zh-CN');
   });
+
+  it('should return original string if key does not exist', () => {
+    const template = 'translate %{sourceText} to %{unknown}';
+    const result = renderTemplate(template, context);
+    expect(result).toBe('translate Hello world to %{unknown}');
+  });
 });

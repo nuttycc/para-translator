@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import { browser } from '#imports';
 import { Bolt, Wrench } from 'lucide-vue-next';
+import { onErrorCaptured } from 'vue';
 import { RouterLink, RouterView } from 'vue-router';
 
 import { createLogger } from '@/utils/logger';
 import { showToast, testToast } from '@/utils/toast';
 
 const logger = createLogger('options');
+
+onErrorCaptured((err) => {
+  const message = err instanceof Error ? err.message : String(err);
+  showToast({
+    message: `Unexpected error: ${message}`,
+    type: 'error',
+    position: 'toast-bottom toast-center',
+    duration: 10000,
+  });
+  return false;
+});
 
 const runToastTest = () => {
   testToast();
@@ -74,6 +86,7 @@ const openDrawer = () => {
       <div class="flex gap-2">
         <RouterLink :to="{ name: 'ai.config' }" class="btn btn-soft"> AI</RouterLink>
         <RouterLink :to="{ name: 'tasks.detail' }" class="btn btn-soft">Tasks</RouterLink>
+        <RouterLink :to="{ name: 'preference' }" class="btn btn-soft">Preference</RouterLink>
         <RouterLink :to="{ name: 'history' }" class="btn btn-soft">History</RouterLink>
       </div>
     </div>

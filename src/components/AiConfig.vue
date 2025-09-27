@@ -127,12 +127,12 @@ watch(showRemoteModels, (value) => {
 });
 </script>
 <template>
-  <div class="card card-lg px-16 shadow-xl">
-    <div class="card-body flex flex-col">
-      <h1 class="card-title mb-6 text-2xl font-bold">{{ config.name }}</h1>
+  <div>
+    <div class="flex flex-col">
+      <div class="mb-4 text-xl font-bold">{{ config.name }}</div>
       <div class="space-y-4">
         <!-- name -->
-        <div class="form-control w-full">
+        <div>
           <label class="label" for="name">
             <span class="label-text font-medium">Config Name</span>
           </label>
@@ -145,7 +145,7 @@ watch(showRemoteModels, (value) => {
           />
         </div>
         <!-- Base URL -->
-        <div class="form-control w-full">
+        <div>
           <label class="label" for="baseurl">
             <span class="label-text font-medium">Base URL</span>
           </label>
@@ -154,12 +154,12 @@ watch(showRemoteModels, (value) => {
             id="baseurl"
             v-model="config.baseUrl"
             class="input input-bordered w-full"
-            placeholder="https://api.example.com"
+            placeholder="https://api.example.com/v1"
           />
         </div>
 
         <!-- API Key -->
-        <div class="form-control w-full">
+        <div>
           <label class="label" for="apikey">
             <span class="label-text font-medium">API Key</span>
           </label>
@@ -180,7 +180,7 @@ watch(showRemoteModels, (value) => {
         </div>
 
         <!-- Models -->
-        <div class="form-control w-full">
+        <div>
           <fieldset class="fieldset flex flex-col gap-2">
             <legend class="label label-text flex gap-2 font-medium">
               Model
@@ -194,8 +194,8 @@ watch(showRemoteModels, (value) => {
             </legend>
 
             <div v-if="!showRemoteModels" class="join join-vertical gap-2">
-              <div class="join-item flex items-center-safe gap-2">
-                <select class="select" v-model="config.model">
+              <div class="join-item flex gap-2">
+                <select class="select flex-1" v-model="config.model">
                   <option v-if="config.localModels.length === 0" disabled selected>
                     Please add a custom model first
                   </option>
@@ -216,7 +216,7 @@ watch(showRemoteModels, (value) => {
                 <input
                   type="text"
                   placeholder="Input a model id"
-                  class="input"
+                  class="input flex-1"
                   v-model="newLocalModel"
                 />
 

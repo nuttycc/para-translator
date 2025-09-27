@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia';
 import { computed, nextTick, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+import LayoutWithNav from '@/components/LayoutWithNav.vue';
 import { useAiProviderStore } from '@/stores';
 
 const route = useRoute();
@@ -51,7 +52,7 @@ const scrollToActiveConfig = async () => {
 };
 
 const addNewConfig = async () => {
-  const newConfigId = `new-${Date.now()}`;
+  const newConfigId = `x-${Date.now()}`;
   await aiProviderStore.upsert({
     id: newConfigId,
     name: `New Config ${aiProviderStore.configIds.length + 1}`,
@@ -85,15 +86,15 @@ watch(
 </script>
 
 <template>
-  <div class="flex items-start justify-center gap-9">
-    <div class="navbar flex basis-1/4 flex-col items-start gap-2 self-start">
-      <div>
-        <button class="btn btn-soft btn-primary" @click="addNewConfig">+ New Config</button>
-      </div>
+  <LayoutWithNav>
+    <template #nav>
+      <button class="btn btn-soft btn-primary w-36" @click="addNewConfig">+ New Config</button>
+
+      <div class="divider my-0"></div>
 
       <div
         ref="scrollContainer"
-        class="flex h-[68vh] flex-col items-start justify-start gap-2 overflow-y-auto pr-3"
+        class="flex h-[68vh] flex-col items-start justify-start gap-2 overflow-y-auto"
       >
         <router-link
           v-for="configId in configIds"
@@ -108,13 +109,14 @@ watch(
           </p>
         </router-link>
       </div>
-    </div>
-    <div class="flex-auto">
+    </template>
+
+    <template #content>
       <router-view v-slot="{ Component }">
         <keep-alive :max="10">
           <component :is="Component" :key="$route.params.configId" :config-id="activeConfigId" />
         </keep-alive>
       </router-view>
-    </div>
-  </div>
+    </template>
+  </LayoutWithNav>
 </template>

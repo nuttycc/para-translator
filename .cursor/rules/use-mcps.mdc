@@ -4,13 +4,13 @@ globs:
 alwaysApply: true
 ---
 
-# Use MCPS
+# Use MCP
 
 You should use MCPs smartly even without me having to explicitly ask.
 
 Restrictions: Always use `English` for all MCP calls.
 
-## Deepwiki
+## DeepWiki
 
 DeepWiki provides up-to-date documentation you can talk to, for every repo in the world. Think Deep Research for GitHub.
 
@@ -22,15 +22,3 @@ DeepWiki provides up-to-date documentation you can talk to, for every repo in th
   - `In vuejs/core, how does 'createApp' work internally? Please provide implementation details with source code snippets.`
   - `In vuejs/core, what APIs are available for creating a reactive object? Please compare the main options with their strengths and use cases.`
 
-## Context7
-
-Context7 MCP pulls up-to-date, version-specific documentation and code examples straight from the source — and places them directly into your prompt.
-
-- **Match:** `Always use context7 when I need code generation, setup or configuration steps, or library/API documentation. This means you should automatically use the Context7 MCP tools to resolve library id and get library docs without me having to explicitly ask.`
-
-## Perplexity
-
-Perplexity MCP provides instant, accurate answers to your questions with real-time data.
-
-- **Match:** `Always use perplexity when I need to search the web for information`
-- **Required Roles:** [`system`, `user`]

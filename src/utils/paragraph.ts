@@ -5,10 +5,21 @@
 export function findClosestTextContainer(target: EventTarget | null): HTMLElement | null {
   if (!(target instanceof Node)) return null;
   let element = target instanceof Element ? target : target.parentElement;
-  if (!element || !(element instanceof HTMLElement)) return null;
+
+  // Walk up the parentElement chain until we find the first HTMLElement
+  let searchDepth = 0;
+  while (element && !(element instanceof HTMLElement) && searchDepth < 20) {
+    element = element.parentElement;
+    searchDepth++;
+  }
+
+  if (!element) return null;
+
+  // At this point, element is guaranteed to be an HTMLElement
+  const htmlElement = element as HTMLElement;
 
   // Traverse up the DOM tree from the current element to find the best text container
-  let current: HTMLElement | null = element;
+  let current: HTMLElement | null = htmlElement;
   let bestCandidate: HTMLElement | null = null;
   let bestScore = 0;
 

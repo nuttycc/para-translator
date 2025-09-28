@@ -21,7 +21,7 @@ export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
   private configService = new TaskConfigService();
-  private clientPool = new OpenAIClientPool();
+  private clientPool: OpenAIClientPool | null = null;
   private readonly runsMutex = new Mutex();
 
   async init() {
@@ -32,7 +32,9 @@ export class LangAgent implements LangAgentSpec {
   dispose() {
     this.log.info`Disposing LangAgent`;
     this.configService.dispose();
-    this.clientPool.clear();
+    if (this.clientPool) {
+      this.clientPool.clear();
+    }
   }
 
   async perform(taskType: TaskType, context: AgentContext): Promise<AgentResponse> {
@@ -40,6 +42,13 @@ export class LangAgent implements LangAgentSpec {
       this.log.info`Performing task: ${taskType}...`;
 
       const config = this.configService.get(taskType);
+
+      // Lazy load OpenAI client pool
+      if (!this.clientPool) {
+        const { OpenAIClientPool } = await import('@/agent/services/openai-client-pool');
+        this.clientPool = new OpenAIClientPool();
+      }
+
       const client = await this.clientPool.get(config.aiConfigId);
       const runner = RUNNERS[taskType];
 

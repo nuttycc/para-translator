@@ -3,7 +3,6 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive } from 'vue';
 
 import paraCardCSS from '@/assets/ParaCard.css?inline';
-import ParaCard from '@/components/ParaCard.vue';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
@@ -14,8 +13,15 @@ import { contentStore } from './content-utils';
 
 const logger = createLogger('ui-manager');
 
+// Shared style element management - reduces DOM overhead by reusing CSS
 let sharedStyleEl: HTMLStyleElement | null = null;
 let sharedStyleRefCount = 0;
+
+export const updateSharedStyleContent = () => {
+  if (sharedStyleEl) {
+    sharedStyleEl.textContent = contentStore?.paraCardCSS ?? paraCardCSS;
+  }
+};
 
 const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement } => {
   if (sharedStyleEl && document.head.contains(sharedStyleEl)) {
@@ -35,6 +41,7 @@ const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement } => {
 const sharedPinia = createPinia();
 setActivePinia(sharedPinia);
 
+// WeakMap prevents memory leaks - automatically garbage collects when UI instances are removed
 export const uiAppMap = new WeakMap<
   IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
   App
@@ -51,8 +58,10 @@ const createInitialParaCardState = (): ParaCardProps => ({
   explanation: '',
 });
 
-export const createParaCardApp = (state: ParaCardProps): App =>
-  createApp({
+export const createParaCardApp = async (state: ParaCardProps): Promise<App> => {
+  const { default: ParaCard } = await import('@/components/ParaCard.vue');
+
+  return createApp({
     components: {
       ParaCard,
     },
@@ -60,16 +69,17 @@ export const createParaCardApp = (state: ParaCardProps): App =>
       return () => h(ParaCard, state);
     },
   });
+};
 
-const mountParaCard = (
+const mountParaCard = async (
   ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
   state: ParaCardProps,
   mountContainer: HTMLElement
-) => {
+): Promise<{ app: App; styleEl: HTMLStyleElement }> => {
   const { styleEl } = ensureSharedStyleElement();
   sharedStyleRefCount += 1;
 
-  const app = createParaCardApp(state);
+  const app = await createParaCardApp(state);
   app.use(sharedPinia);
   app.mount(mountContainer);
 
@@ -83,24 +93,26 @@ const mountParaCard = (
   return { app, styleEl };
 };
 
-const cleanupParaCard = (
-  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
-  mounted: { app: App; styleEl: HTMLStyleElement } | undefined
+/**
+ * Clean up Vue app and shared styles for a given UI instance
+ * @param ui - The integrated UI instance to clean up
+ */
+export const cleanupVueAppAndStyles = (
+  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>
 ) => {
-  if (!mounted) return;
+  const app = uiAppMap.get(ui);
+  if (!app) return;
 
-  const { app } = mounted;
-
+  // Execute cleanup handles before unmounting
   const handles = uiCleanupMap.get(ui);
   if (handles) {
-    handles.forEach((stop) => {
-      stop();
-    });
+    handles.forEach((stop) => stop());
   }
   uiCleanupMap.delete(ui);
 
   app.unmount();
 
+  // Manage shared style element lifecycle
   if (sharedStyleRefCount > 0) {
     sharedStyleRefCount -= 1;
   }
@@ -108,8 +120,10 @@ const cleanupParaCard = (
     sharedStyleEl.remove();
     sharedStyleEl = null;
   }
+
   uiAppMap.delete(ui);
 };
+
 
 export const addParaCard = async (
   ctx: ContentScriptContext,
@@ -121,17 +135,24 @@ export const addParaCard = async (
   const state = reactive<ParaCardProps>(createInitialParaCardState());
   const cleanupHandles: Array<() => void> = [];
 
-  const ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }> = createIntegratedUi(
+  const ui = createIntegratedUi(
     ctx,
     {
       position: 'inline',
       anchor: container,
-      onMount: (mountContainer: HTMLElement) => mountParaCard(ui, state, mountContainer),
-      onRemove: (mounted) => {
-        cleanupParaCard(ui, mounted);
+      onMount: (mountContainer: HTMLElement) => {
+        mountParaCard(ui, state, mountContainer).catch((error: unknown) => {
+          logger.error`Failed to mount ParaCard: ${error}`;
+        });
+        // Return placeholder - actual mounting is async
+        return { app: null as unknown as App, styleEl: null as unknown as HTMLStyleElement };
+      },
+      onRemove: () => {
+        // Cleanup handled by business layer - callback kept for WXT compatibility
+        logger.debug`WXT UI removed - cleanup handled by business layer`;
       },
     }
-  );
+  ) as IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
 
   uiCleanupMap.set(ui, cleanupHandles);
   ui.mount();

@@ -3,6 +3,7 @@ import { preferenceStorage } from '@/stores/preference';
 import type { Preference } from '@/stores/preference';
 
 import { logger } from './index';
+import { updateSharedStyleContent } from './ui-manager';
 
 export const isEditable = (element: Element | null): boolean => {
   if (!(element instanceof HTMLElement)) {
@@ -29,6 +30,7 @@ export const initContentStore = () => {
   preferenceStorage.watch((value) => {
     logger.debug`content store updated with ${value}`;
     contentStore = value ?? null;
+    updateSharedStyleContent();
     return;
   });
 };

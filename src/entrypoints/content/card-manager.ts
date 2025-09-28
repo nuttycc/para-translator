@@ -1,7 +1,7 @@
 import { DISABLED_EXPLANATION } from '@/constant';
 import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
 import { isEditable } from '@/entrypoints/content/content-utils';
-import { addParaCard } from '@/entrypoints/content/ui-manager';
+import { addParaCard, cleanupVueAppAndStyles } from '@/entrypoints/content/ui-manager';
 import { sendMessage } from '@/messaging';
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer } from '@/utils/paragraph';
@@ -16,11 +16,8 @@ import { contentStore } from './content-utils';
 const logger = createLogger('card-manager');
 
 /**
- * Live translation cards keyed by a stable paragraph identifier.
- * Each map entry contains:
- * - `ui`: Integrated UI handle
- * - `container`: host element for the card
- * - `state`: reactive `ParaCard` props mutated as results arrive
+ * Tracks active translation cards to manage their lifecycle and prevent memory leaks.
+ * Each entry associates a paragraph with its UI components for coordinated cleanup.
  */
 interface ParaCardEntry {
   ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
@@ -28,6 +25,7 @@ interface ParaCardEntry {
   state: ParaCardProps;
 }
 
+// Global registry of active cards for coordinated cleanup and state management
 export const cardUIs = new Map<string, ParaCardEntry>();
 
 /**
@@ -49,6 +47,13 @@ export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
 
   const { ui, container } = cardEntry;
 
+  try {
+    cleanupVueAppAndStyles(ui);
+    logger.debug`Cleaned up Vue app and styles for ${paraKey}`;
+  } catch (error) {
+    logger.error`Failed to cleanup Vue resources for ${paraKey}: ${error}`;
+  }
+
   if (removeUI && ui && typeof ui.remove === 'function') {
     try {
       ui.remove();
@@ -66,6 +71,10 @@ export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
   }
 };
 
+/**
+ * Constructs the context object required by the translation agent.
+ * Provides document metadata and user preferences to inform translation quality.
+ */
 const buildAgentContext = (
   sourceText: string,
   documentMeta: { title: string; description: string }
@@ -79,9 +88,9 @@ const buildAgentContext = (
 });
 
 /**
- * Toggle a translation card for the currently hovered paragraph-like container.
- * - If a card already exists for the container, remove it.
- * - Otherwise, create a loading card and request async results.
+ * Manages the lifecycle of translation cards based on user interaction.
+ * Prevents interference with user input by avoiding cards on editable elements.
+ * Uses stable paragraph identifiers to maintain card state across DOM changes.
  *
  * @param ctx - WXT content script context
  * @param currentHoveredElement - The element currently under the cursor
@@ -118,21 +127,17 @@ export const toggleParaCard = async (
   const sourceText = extractReadableText(container);
   logger.debug`Extracted text meta ${{ length: sourceText.length, preview: sourceText.slice(0, 80) }}`;
 
-  // Stable paragraph key (persisted on the container once created)
   const existingKey = container.getAttribute('data-para-id');
   const paraKey = existingKey && existingKey.trim().length > 0 ? existingKey : crypto.randomUUID();
 
-  // Persist immediately to prevent duplicate cards on rapid toggles
   container.setAttribute('data-para-id', paraKey);
 
-  // Toggle behavior: remove if exists; otherwise create and load
   if (cardUIs.has(paraKey)) {
     cleanupParaCard(paraKey);
     return;
   }
 
   try {
-    // 1) Create loading UI
     const { ui, state } = await addParaCard(ctx, container);
 
     if (ui && typeof ui.remove === 'function') {
@@ -144,7 +149,6 @@ export const toggleParaCard = async (
       return;
     }
 
-    // 2) Request translation and explanation from the agent
     try {
       const documentMeta = getDocumentMeta();
       const context: AgentContext = buildAgentContext(sourceText, documentMeta);
@@ -195,20 +199,15 @@ export const toggleParaCard = async (
           });
       }
 
-      // Ignore late results if the card was removed during async work
       if (!cardUIs.has(paraKey)) {
         return;
       }
-
-      container.setAttribute('data-para-id', paraKey);
     } catch (err) {
       state.error = { type: 'explain', message: err instanceof Error ? err.message : String(err) };
     }
   } catch (error) {
     logger.error`failed to add/update para card for ${paraKey}: ${error}`;
-    // UI may not exist yet, skip removing
     cleanupParaCard(paraKey, false);
-    // Clean up stale attributes even if cardUIs doesn't have an entry
     container.removeAttribute('data-para-id');
   }
 };

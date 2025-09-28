@@ -46,7 +46,9 @@ export class LangAgent implements LangAgentSpec {
       // Lazy load OpenAI client pool
       if (!this.clientPool) {
         const { OpenAIClientPool } = await import('@/agent/services/openai-client-pool');
-        this.clientPool = new OpenAIClientPool();
+        if (!this.clientPool) {
+          this.clientPool = new OpenAIClientPool();
+        }
       }
 
       const client = await this.clientPool.get(config.aiConfigId);

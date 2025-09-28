@@ -47,11 +47,13 @@ export const cleanupParaCard = (paraKey: string, removeUI = true): void => {
 
   const { ui, container } = cardEntry;
 
-  try {
-    cleanupVueAppAndStyles(ui);
-    logger.debug`Cleaned up Vue app and styles for ${paraKey}`;
-  } catch (error) {
-    logger.error`Failed to cleanup Vue resources for ${paraKey}: ${error}`;
+  if (removeUI) {
+    try {
+      cleanupVueAppAndStyles(ui);
+      logger.debug`Cleaned up Vue app and styles for ${paraKey}`;
+    } catch (error) {
+      logger.error`Failed to cleanup Vue resources for ${paraKey}: ${error}`;
+    }
   }
 
   if (removeUI && ui && typeof ui.remove === 'function') {

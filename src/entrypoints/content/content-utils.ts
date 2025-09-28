@@ -1,9 +1,9 @@
+import { updateSharedStyleContent } from '@/entrypoints/content/ui-manager';
 import { preferenceStorage } from '@/stores/preference';
 
 import type { Preference } from '@/stores/preference';
 
 import { logger } from './index';
-import { updateSharedStyleContent } from './ui-manager';
 
 export const isEditable = (element: Element | null): boolean => {
   if (!(element instanceof HTMLElement)) {

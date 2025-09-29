@@ -21,7 +21,6 @@ export class LangAgent implements LangAgentSpec {
   private readonly log = createLogger('agent');
   readonly taskTypes = TASK_TYPES;
   private configService = new TaskConfigService();
-  private clientPool: OpenAIClientPool | null = null;
   private readonly runsMutex = new Mutex();
 
   async init() {
@@ -29,11 +28,21 @@ export class LangAgent implements LangAgentSpec {
     await this.configService.init();
   }
 
-  dispose() {
+  async dispose() {
     this.log.info`Disposing LangAgent`;
     this.configService.dispose();
-    if (this.clientPool) {
-      this.clientPool.clear();
+
+    // Clear the client pool if it was initialized
+    if (clientPoolPromise) {
+      try {
+        const clientPool = await clientPoolPromise;
+        clientPool.clear();
+      } catch (err) {
+        // Ignore errors during cleanup
+        this.log.warn`Failed to clear client pool during dispose: ${err}`;
+      }
+      // Reset the promise so a new pool can be created if needed
+      clientPoolPromise = null;
     }
   }
 
@@ -43,15 +52,9 @@ export class LangAgent implements LangAgentSpec {
 
       const config = this.configService.get(taskType);
 
-      // Lazy load OpenAI client pool
-      if (!this.clientPool) {
-        const { OpenAIClientPool } = await import('@/agent/services/openai-client-pool');
-        if (!this.clientPool) {
-          this.clientPool = new OpenAIClientPool();
-        }
-      }
-
-      const client = await this.clientPool.get(config.aiConfigId);
+      // Get OpenAI client pool using single-flight initialization
+      const clientPool = await getClientPool();
+      const client = await clientPool.get(config.aiConfigId);
       const runner = RUNNERS[taskType];
 
       const response = await runner.run(context, config, client);
@@ -94,6 +97,7 @@ export class LangAgent implements LangAgentSpec {
 }
 
 let langAgentPromise: Promise<LangAgent> | null = null;
+let clientPoolPromise: Promise<OpenAIClientPool> | null = null;
 
 export async function getLangAgent(): Promise<LangAgent> {
   if (!langAgentPromise) {
@@ -109,4 +113,14 @@ export async function getLangAgent(): Promise<LangAgent> {
     })();
   }
   return langAgentPromise;
+}
+
+async function getClientPool(): Promise<OpenAIClientPool> {
+  if (!clientPoolPromise) {
+    clientPoolPromise = (async () => {
+      const { OpenAIClientPool } = await import('@/agent/services/openai-client-pool');
+      return new OpenAIClientPool();
+    })();
+  }
+  return clientPoolPromise;
 }

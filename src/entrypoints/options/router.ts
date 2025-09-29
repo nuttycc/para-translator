@@ -44,7 +44,11 @@ const router = createRouter({
       redirect: { name: 'preference.home' },
       children: [
         { path: 'home', name: 'preference.home', component: PreferenceHome },
-        { path: 'custom-css', name: 'preference.custom-css', component:() => import('@/components/CssEditor.vue') },
+        {
+          path: 'custom-css',
+          name: 'preference.custom-css',
+          component: () => import('@/components/CssEditor.vue'),
+        },
       ],
     },
   ],

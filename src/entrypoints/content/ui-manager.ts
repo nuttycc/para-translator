@@ -3,13 +3,13 @@ import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive } from 'vue';
 
 import paraCardCSS from '@/assets/ParaCard.css?inline';
+
+import { contentStore } from '@/entrypoints/content/content-utils';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
 import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
-
-import { contentStore } from './content-utils';
 
 // Preload the ParaCard component to make mounting synchronous
 let paraCardComponent: unknown = null;
@@ -136,7 +136,6 @@ export const cleanupVueAppAndStyles = (
 
   uiAppMap.delete(ui);
 };
-
 
 export const addParaCard = async (
   ctx: ContentScriptContext,

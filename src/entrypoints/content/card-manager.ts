@@ -1,7 +1,7 @@
-import { validateAndExtractContext } from './card-validation';
-import { createCardUI } from './card-ui';
 import { executeCardTasks } from './card-execution';
-import { manageCardLifecycle, isCardActive } from './card-lifecycle';
+import { isCardActive, manageCardLifecycle } from './card-lifecycle';
+import { createCardUI } from './card-ui';
+import { validateAndExtractContext } from './card-validation';
 
 import type { ContentScriptContext } from '#imports';
 

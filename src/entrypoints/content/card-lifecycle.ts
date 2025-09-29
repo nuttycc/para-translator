@@ -106,7 +106,10 @@ export const manageCardLifecycle = async (
   ctx: ContentScriptContext,
   paraKey: string,
   container: HTMLElement,
-  createCardFn: () => Promise<{ ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>; state: ParaCardProps }>
+  createCardFn: () => Promise<{
+    ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
+    state: ParaCardProps;
+  }>
 ): Promise<void> => {
   // If card already exists, clean it up (toggle behavior)
   if (cardUIs.has(paraKey)) {

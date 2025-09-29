@@ -1,10 +1,10 @@
-import { isEditable } from '@/entrypoints/content/content-utils';
-import { getDocumentMeta } from '@/entrypoints/content/cache-manager';
-import { extractReadableText, findClosestTextContainer } from '@/utils/paragraph';
 import { createLogger } from '@/utils/logger';
+import { extractReadableText, findClosestTextContainer } from '@/utils/paragraph';
+
+import { getDocumentMeta } from './cache-manager';
+import { contentStore, isEditable } from './content-utils';
 
 import type { AgentContext } from '@/agent/types';
-import { contentStore } from './content-utils';
 
 const logger = createLogger('card-validation');
 

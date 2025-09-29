@@ -64,7 +64,7 @@ const executeTranslationTask = async (
   try {
     const translateResponse = await sendMessage('agent', {
       context,
-      taskType: 'translate'
+      taskType: 'translate',
     });
 
     if (!isCardStillActive()) return;
@@ -99,7 +99,7 @@ const executeExplanationTask = async (
   try {
     const explanationResponse = await sendMessage('agent', {
       context,
-      taskType: 'explain'
+      taskType: 'explain',
     });
 
     if (!isCardStillActive()) return;

@@ -1,6 +1,5 @@
 import { Mutex } from 'es-toolkit/promise';
 
-import { OpenAIClientPool } from '@/agent/services/openai-client-pool';
 import { TaskConfigService } from '@/agent/services/task-config-service';
 import { agentStorage } from '@/agent/storage';
 import { explainRunner } from '@/agent/tasks/explain';
@@ -8,9 +7,10 @@ import { translateRunner } from '@/agent/tasks/translate';
 import { TASK_TYPES } from '@/agent/types';
 import { createLogger } from '@/utils/logger';
 
+import type { OpenAIClientPool } from '@/agent/services/openai-client-pool';
 import type { TaskRunner } from '@/agent/tasks/types';
 import type { AgentContext, AgentResponse, LangAgentSpec, TaskType } from '@/agent/types';
-import type { ChatCompletion } from 'openai/resources/index.mjs';
+import type { OpenAI } from 'openai';
 
 const RUNNERS: Record<TaskType, TaskRunner> = {
   translate: translateRunner,
@@ -72,7 +72,7 @@ export class LangAgent implements LangAgentSpec {
   private async recordExecution(
     taskType: TaskType,
     context: AgentContext,
-    response: ChatCompletion,
+    response: OpenAI.Chat.ChatCompletion,
     aiConfigId: string
   ) {
     await this.runsMutex.acquire();

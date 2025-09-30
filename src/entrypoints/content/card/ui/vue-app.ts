@@ -2,10 +2,9 @@ import { createIntegratedUi } from '#imports';
 import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive } from 'vue';
 
-import paraCardCSS from '@/assets/ParaCard.css?inline';
-
-import { contentStore } from '@/entrypoints/content/content-utils';
 import { createLogger } from '@/utils/logger';
+
+import { decrementStyleRefCount, ensureSharedStyleElement, incrementStyleRefCount } from './style-manager';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
 import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
@@ -21,32 +20,7 @@ const preloadParaCardComponent = async () => {
   return paraCardComponent;
 };
 
-const logger = createLogger('ui-manager');
-
-// Shared style element management - reduces DOM overhead by reusing CSS
-let sharedStyleEl: HTMLStyleElement | null = null;
-let sharedStyleRefCount = 0;
-
-export const updateSharedStyleContent = () => {
-  if (sharedStyleEl) {
-    sharedStyleEl.textContent = contentStore?.paraCardCSS ?? paraCardCSS;
-  }
-};
-
-const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement } => {
-  if (sharedStyleEl && document.head.contains(sharedStyleEl)) {
-    return { styleEl: sharedStyleEl };
-  }
-
-  const styleEl = document.createElement('style');
-  styleEl.id = 'para-card-style';
-
-  styleEl.textContent = contentStore?.paraCardCSS ?? paraCardCSS;
-
-  document.head.appendChild(styleEl);
-  sharedStyleEl = styleEl;
-  return { styleEl };
-};
+const logger = createLogger('vue-app');
 
 const sharedPinia = createPinia();
 setActivePinia(sharedPinia);
@@ -90,7 +64,7 @@ const mountParaCard = (
   mountContainer: HTMLElement
 ): { app: App; styleEl: HTMLStyleElement } => {
   const { styleEl } = ensureSharedStyleElement();
-  sharedStyleRefCount += 1;
+  incrementStyleRefCount();
 
   const app = createParaCardApp(state);
   app.use(sharedPinia);
@@ -126,13 +100,7 @@ export const cleanupVueAppAndStyles = (
   app.unmount();
 
   // Manage shared style element lifecycle
-  if (sharedStyleRefCount > 0) {
-    sharedStyleRefCount -= 1;
-  }
-  if (sharedStyleRefCount === 0 && sharedStyleEl) {
-    sharedStyleEl.remove();
-    sharedStyleEl = null;
-  }
+  decrementStyleRefCount();
 
   uiAppMap.delete(ui);
 };

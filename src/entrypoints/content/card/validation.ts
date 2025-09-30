@@ -1,8 +1,9 @@
 import { createLogger } from '@/utils/logger';
 import { extractReadableText, findClosestTextContainer } from '@/utils/paragraph';
 
-import { getDocumentMeta } from './cache-manager';
-import { contentStore, isEditable } from './content-utils';
+import { getDocumentMeta } from '../cache/document-meta';
+import { contentStore } from '../core/store';
+import { isEditable } from '../core/utils';
 
 import type { AgentContext } from '@/agent/types';
 

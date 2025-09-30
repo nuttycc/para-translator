@@ -1,4 +1,4 @@
-import { cleanupVueAppAndStyles } from '@/entrypoints/content/ui-manager';
+import { cleanupVueAppAndStyles } from '@/entrypoints/content/card/ui/vue-app';
 import { createLogger } from '@/utils/logger';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';

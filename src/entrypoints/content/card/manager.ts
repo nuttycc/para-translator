@@ -1,7 +1,7 @@
-import { executeCardTasks } from './card-execution';
-import { isCardActive, manageCardLifecycle } from './card-lifecycle';
-import { createCardUI } from './card-ui';
-import { validateAndExtractContext } from './card-validation';
+import { executeCardTasks } from './execution';
+import { isCardActive, manageCardLifecycle } from './lifecycle';
+import { addParaCard } from './ui/vue-app';
+import { validateAndExtractContext } from './validation';
 
 import type { ContentScriptContext } from '#imports';
 
@@ -32,7 +32,7 @@ export const toggleParaCard = async (
   // Manage card lifecycle (create new or cleanup existing)
   await manageCardLifecycle(ctx, paraKey, container, async () => {
     // Create the UI for the card
-    const { ui, state } = await createCardUI(ctx, container);
+    const { ui, state } = await addParaCard(ctx, container);
 
     // Execute translation and explanation tasks
     executeCardTasks(paraKey, state, agentContext, () => isCardActive(paraKey));

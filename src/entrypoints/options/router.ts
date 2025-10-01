@@ -1,6 +1,7 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 import AiConfig from '@/components/AiConfig.vue';
+import CssEditor from '@/components/CssEditor.vue';
 import PreferenceHome from '@/components/PreferenceHome.vue';
 import TaskConfig from '@/components/TaskConfig.vue';
 import AiView from '@/entrypoints/options/views/AiView.vue';
@@ -44,11 +45,7 @@ const router = createRouter({
       redirect: { name: 'preference.home' },
       children: [
         { path: 'home', name: 'preference.home', component: PreferenceHome },
-        {
-          path: 'custom-css',
-          name: 'preference.custom-css',
-          component: () => import('@/components/CssEditor.vue'),
-        },
+        { path: 'custom-css', name: 'preference.custom-css', component: CssEditor },
       ],
     },
   ],

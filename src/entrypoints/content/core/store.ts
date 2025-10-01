@@ -1,19 +1,16 @@
+import { updateSharedStyleContent } from '@/entrypoints/content/card/ui/style-manager';
 import { preferenceStorage } from '@/stores/preference';
+import { createLogger } from '@/utils/logger';
 
 import type { Preference } from '@/stores/preference';
 
-import { logger } from './index';
-
-export const isEditable = (element: Element | null): boolean => {
-  if (!(element instanceof HTMLElement)) {
-    return false;
-  }
-  const tagName = element.tagName.toUpperCase();
-  return tagName === 'INPUT' || tagName === 'TEXTAREA' || element.isContentEditable;
-};
+const logger = createLogger('content-store');
 
 export let contentStore: Preference | null = null;
 
+/**
+ * Initialize the content store by loading preferences and watching for changes.
+ */
 export const initContentStore = () => {
   preferenceStorage
     .getValue()
@@ -29,6 +26,7 @@ export const initContentStore = () => {
   preferenceStorage.watch((value) => {
     logger.debug`content store updated with ${value}`;
     contentStore = value ?? null;
+    updateSharedStyleContent();
     return;
   });
 };

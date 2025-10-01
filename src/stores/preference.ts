@@ -5,6 +5,7 @@ import { ref } from 'vue';
 
 // default css string
 import defaultParaCardCSS from '@/assets/ParaCard.css?raw';
+
 import { createLogger } from '@/utils/logger';
 
 const logger = createLogger('store', 'preference');

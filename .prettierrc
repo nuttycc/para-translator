@@ -18,13 +18,13 @@
     "<BUILTIN_MODULES>",
     "<THIRD_PARTY_MODULES>",
     "",
-    "^@/",
+    "^@/assets/.*\\.css",
     "",
-    "<TYPES>",
+    "^@/",
     "",
     "^[./]",
     "",
-    ".css$"
+    "<TYPES>"
   ],
   "importOrderCaseSensitive": false,
   "importOrderParserPlugins": ["typescript", "jsx", "decorators-legacy", "vue"],

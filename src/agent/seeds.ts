@@ -6,11 +6,7 @@ const DEFAULT_AI_CONFIGS = {
     name: 'Chutes',
     provider: 'chutes',
     model: 'chutes-123',
-    localModels: [
-      'zai-org/GLM-4.5-Air',
-      'openai/gpt-oss-20b',
-      'meituan-longcat/LongCat-Flash-Chat-FP8',
-    ],
+    localModels: ['zai-org/GLM-4.5-Air', 'openai/gpt-oss-20b', 'meituan-longcat/LongCat-Flash-Chat-FP8'],
     apiKey: '',
     baseUrl: 'https://llm.chutes.ai/v1',
     createdAt: 0,

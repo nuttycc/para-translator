@@ -2,30 +2,39 @@ import { createIntegratedUi } from '#imports';
 import { createPinia, setActivePinia } from 'pinia';
 import { createApp, h, reactive } from 'vue';
 
+import paraCardCSS from '@/assets/ParaCard.css?inline';
+import ParaCard from '@/components/ParaCard.vue';
 import { createLogger } from '@/utils/logger';
-
-import { decrementStyleRefCount, ensureSharedStyleElement, incrementStyleRefCount } from './style-manager';
 
 import type { ParaCardProps } from '@/components/ParaCard.vue';
 import type { ContentScriptContext, IntegratedContentScriptUi } from '#imports';
 import type { App } from 'vue';
 
-// Preload the ParaCard component to make mounting synchronous
-let paraCardComponent: unknown = null;
-const preloadParaCardComponent = async () => {
-  if (!paraCardComponent) {
-    const { default: component } = await import('@/components/ParaCard.vue');
-    paraCardComponent = component;
-  }
-  return paraCardComponent;
-};
+import { contentStore } from './content-utils';
 
-const logger = createLogger('vue-app');
+const logger = createLogger('ui-manager');
+
+let sharedStyleEl: HTMLStyleElement | null = null;
+let sharedStyleRefCount = 0;
+
+const ensureSharedStyleElement = (): { styleEl: HTMLStyleElement } => {
+  if (sharedStyleEl && document.head.contains(sharedStyleEl)) {
+    return { styleEl: sharedStyleEl };
+  }
+
+  const styleEl = document.createElement('style');
+  styleEl.id = 'para-card-style';
+
+  styleEl.textContent = contentStore?.paraCardCSS ?? paraCardCSS;
+
+  document.head.appendChild(styleEl);
+  sharedStyleEl = styleEl;
+  return { styleEl };
+};
 
 const sharedPinia = createPinia();
 setActivePinia(sharedPinia);
 
-// WeakMap prevents memory leaks - automatically garbage collects when UI instances are removed
 export const uiAppMap = new WeakMap<
   IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
   App
@@ -42,13 +51,8 @@ const createInitialParaCardState = (): ParaCardProps => ({
   explanation: '',
 });
 
-export const createParaCardApp = (state: ParaCardProps): App => {
-  const ParaCard = paraCardComponent;
-  if (!ParaCard) {
-    throw new Error('ParaCard component not preloaded. Call preloadParaCardComponent() first.');
-  }
-
-  return createApp({
+export const createParaCardApp = (state: ParaCardProps): App =>
+  createApp({
     components: {
       ParaCard,
     },
@@ -56,15 +60,14 @@ export const createParaCardApp = (state: ParaCardProps): App => {
       return () => h(ParaCard, state);
     },
   });
-};
 
 const mountParaCard = (
   ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
   state: ParaCardProps,
   mountContainer: HTMLElement
-): { app: App; styleEl: HTMLStyleElement } => {
+) => {
   const { styleEl } = ensureSharedStyleElement();
-  incrementStyleRefCount();
+  sharedStyleRefCount += 1;
 
   const app = createParaCardApp(state);
   app.use(sharedPinia);
@@ -80,28 +83,31 @@ const mountParaCard = (
   return { app, styleEl };
 };
 
-/**
- * Clean up Vue app and shared styles for a given UI instance
- * @param ui - The integrated UI instance to clean up
- */
-export const cleanupVueAppAndStyles = (
-  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>
+const cleanupParaCard = (
+  ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>,
+  mounted: { app: App; styleEl: HTMLStyleElement } | undefined
 ) => {
-  const app = uiAppMap.get(ui);
-  if (!app) return;
+  if (!mounted) return;
 
-  // Execute cleanup handles before unmounting
+  const { app } = mounted;
+
   const handles = uiCleanupMap.get(ui);
   if (handles) {
-    handles.forEach((stop) => stop());
+    handles.forEach((stop) => {
+      stop();
+    });
   }
   uiCleanupMap.delete(ui);
 
   app.unmount();
 
-  // Manage shared style element lifecycle
-  decrementStyleRefCount();
-
+  if (sharedStyleRefCount > 0) {
+    sharedStyleRefCount -= 1;
+  }
+  if (sharedStyleRefCount === 0 && sharedStyleEl) {
+    sharedStyleEl.remove();
+    sharedStyleEl = null;
+  }
   uiAppMap.delete(ui);
 };
 
@@ -112,9 +118,6 @@ export const addParaCard = async (
   ui: IntegratedContentScriptUi<{ app: App; styleEl: HTMLStyleElement }>;
   state: ParaCardProps;
 }> => {
-  // Preload the component to ensure synchronous mounting
-  await preloadParaCardComponent();
-
   const state = reactive<ParaCardProps>(createInitialParaCardState());
   const cleanupHandles: Array<() => void> = [];
 
@@ -123,18 +126,9 @@ export const addParaCard = async (
     {
       position: 'inline',
       anchor: container,
-      onMount: (mountContainer: HTMLElement): { app: App; styleEl: HTMLStyleElement } => {
-        try {
-          return mountParaCard(ui, state, mountContainer);
-        } catch (error: unknown) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
-          logger.error`Failed to mount ParaCard: ${errorMessage}`;
-          throw error;
-        }
-      },
-      onRemove: () => {
-        // Cleanup handled by business layer - callback kept for WXT compatibility
-        logger.debug`WXT UI removed - cleanup handled by business layer`;
+      onMount: (mountContainer: HTMLElement) => mountParaCard(ui, state, mountContainer),
+      onRemove: (mounted) => {
+        cleanupParaCard(ui, mounted);
       },
     }
   );

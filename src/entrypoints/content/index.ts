@@ -1,9 +1,9 @@
 import { defineContentScript } from '#imports';
 
-import { initContentStore } from '@/entrypoints/content/core/store';
+import { initContentStore } from '@/entrypoints/content/content-utils';
 // import '@/assets/content-ui.css';
 
-import { setupEventListeners } from '@/entrypoints/content/core/event-handler';
+import { setupEventListeners } from '@/entrypoints/content/event-handler';
 import { createLogger } from '@/utils/logger';
 
 export const logger = createLogger('content');

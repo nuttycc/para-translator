@@ -16,8 +16,6 @@
 </template>
 
 <script setup lang="ts">
-// Import CSS language support
-import { css } from '@codemirror/lang-css';
 import { oneDark } from '@codemirror/theme-one-dark';
 // Import CodeMirror extensions
 import { EditorView } from '@codemirror/view';
@@ -26,6 +24,9 @@ import { computed, ref } from 'vue';
 import CodeMirror from 'vue-codemirror6';
 
 import { defaultPreferences, usePreferenceStore } from '@/stores/preference';
+
+// Import CSS language support
+import { css } from '@codemirror/lang-css';
 
 const preferenceStore = usePreferenceStore();
 

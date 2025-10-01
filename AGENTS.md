@@ -1,10 +1,8 @@
 # Project Overview
 
-A browser extension that help user learn new languages by understanding webpage paragraphs.
+A browser extension that help user learn new languages by understanding paragraphs.
 
-Learning when reading.
-
-Not only read the translation, but also learn the grammar, vocabulary, and usage.
+Learn when reading.
 
 ## Key Dependencies
 
@@ -16,10 +14,9 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 
 ### Frontend & UI
 
-- **Vue Router** - Official router for Vue.js applications
 - **Pinia** - Intuitive state management for Vue.js
+- **Vue Router** - Official router for Vue.js applications
 - **Tailwind CSS + DaisyUI** - Utility-first CSS framework with component library
-- **VueUse** - Collection of Vue composition utilities
 
 ### Browser Extension
 
@@ -27,10 +24,9 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 
 ### Utilities
 
+- **LogTape** - Structured logging library
+- **VueUse** - Collection of Vue composition utilities
 - **es-toolkit** - Modern JavaScript utility library, like `lodash` but with more modern features
-- **Zod@4^** - TypeScript-first schema validation
-- **LogTape** - Structured logging library for JavaScript
-- **vue-markdown-render** - Markdown rendering component for Vue
 
 ### Test
 
@@ -42,17 +38,29 @@ Not only read the translation, but also learn the grammar, vocabulary, and usage
 - Use English By Default: use English for logging, comments, ui copywriting by default
 - Functional Patterns: Use functional patterns where possible
 
-- Use `@/` alias imports instead of relative imports
-
 - Use `#imports` module to import WXT APIs
-- Use wxt unified `browser` API directly instead of `chrome`
 - use `@wxt-dev/storage` to store extension data
+- Use wxt unified `browser` API directly instead of `chrome`
 - Prefer Tagged Template over Normal Function Call for Logging with `LogTape`
 
 ## Development 
 
-
+```bash
+# Install dependencies
 bun install
+
+# Start development server
 bun run dev
 
+# Type checking (without emit)
 bun run compile
+
+# Build for production
+bun run build
+
+# Zip for distribution
+bun run zip
+
+# Test
+bun run test
+``` 

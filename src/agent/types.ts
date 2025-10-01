@@ -1,4 +1,6 @@
-import type { ChatCompletion } from 'openai/resources/index.mjs';
+import type { OpenAI } from 'openai';
+
+type ChatCompletion = OpenAI.Chat.ChatCompletion;
 
 export const TASK_TYPES = ['translate', 'explain'] as const;
 

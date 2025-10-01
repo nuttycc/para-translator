@@ -1,6 +1,7 @@
 import type { AgentContext, TaskRuntimeConfig } from '@/agent/types';
 import type { OpenAI } from 'openai';
-import type { ChatCompletion } from 'openai/resources/index.mjs';
+
+type ChatCompletion = OpenAI.Chat.Completions.ChatCompletion;
 
 export interface OpenAIClient {
   openai: OpenAI;

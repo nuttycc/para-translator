@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
-import type { AgentContext } from '@/agent/types';
-
 import { renderTemplate } from '../template';
+
+import type { AgentContext } from '@/agent/types';
 
 describe('renderTemplate', () => {
   const context: AgentContext = {
